@@ -22,7 +22,29 @@ async function fetchPokemon() {
         || data.sprites.front_default,
       types: data.types.map(t => t.type.name),
       abilities: data.abilities.map(a => a.ability.name),
-      stats: data.stats.map(s => s.base_stat)
+      stats: data.stats.map(s => s.base_stat),
+
+      regionalForms: 'None',
+      alternativeForms: 'None',
+
+      megaForms:
+        ['venusaur','charizard','blastoise','alakazam','gengar',
+        'kangaskhan','pinsir','gyarados','aerodactyl','mewtwo']
+        .includes(data.name)
+        ? 'Available'
+        : 'None',
+
+      gmaxForms:
+        ['venusaur','charizard','blastoise',
+        'pikachu','eevee','snorlax','gengar']
+        .includes(data.name)
+        ? 'Available'
+        : 'None',
+
+      battleForms:
+        data.name === 'mewtwo'
+        ? 'Mega X / Mega Y'
+        : 'None'
     };
 
     allPokemon.push(pokemon);
@@ -76,6 +98,12 @@ function openModal(pokemon) {
     `)
     .join('');
 
+  document.getElementById('regionalForms').textContent = pokemon.regionalForms;
+  document.getElementById('alternativeForms').textContent = pokemon.alternativeForms;
+  document.getElementById('megaForms').textContent = pokemon.megaForms;
+  document.getElementById('gmaxForms').textContent = pokemon.gmaxForms;
+  document.getElementById('battleForms').textContent = pokemon.battleForms;
+
   document.getElementById('modalAbilities').innerHTML = pokemon.abilities
     .map(ability => `<li>${capitalize(ability)}</li>`)
     .join('');
@@ -92,35 +120,55 @@ function renderChart(stats) {
   }
 
   statsChart = new Chart(ctx, {
-    type: 'radar',
+    type: 'bar',
     data: {
       labels: ['HP', 'ATK', 'DEF', 'SPA', 'SPD', 'SPE'],
       datasets: [{
         label: 'Base Stats',
         data: stats,
+
+        backgroundColor: stats.map(stat => {
+
+          if (stat < 50) return '#ef4444';
+          if (stat < 80) return '#f59e0b';
+          if (stat < 110) return '#84cc16';
+
+          return '#22c55e';
+        }),
+
+        borderRadius: 8
       }]
     },
+
     options: {
       responsive: true,
+
       scales: {
-        r: {
-          suggestedMin: 0,
-          suggestedMax: 180,
+
+        y: {
+          beginAtZero: true,
+          max: 180,
+
           ticks: {
-            backdropColor: 'transparent',
             color: 'white'
           },
-          pointLabels: {
-            color: 'white'
-          },
+
           grid: {
-            color: '#555'
+            color: '#444'
+          }
+        },
+
+        x: {
+          ticks: {
+            color: 'white'
           },
-          angleLines: {
-            color: '#555'
+
+          grid: {
+            color: '#222'
           }
         }
       },
+
       plugins: {
         legend: {
           labels: {
