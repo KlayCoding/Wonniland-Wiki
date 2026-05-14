@@ -6,93 +6,97 @@
   <title>Wonniland Wiki</title>
 
   <link rel="stylesheet" href="style.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-  <header>
-    <div class="logo-header">
-      <img class="pokeball-logo"
-      src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
-      alt="Pokeball">
+<header>
+  <div class="logo-header">
+    <img class="pokeball-logo"
+    src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png">
 
-      <h1>Wonniland Wiki</h1>
-    </div>
-
-    <input
-      type="text"
-      id="searchInput"
-      placeholder="Search Pokémon..."
-    >
-  </header>
-
-  <main>
-    <div id="pokemonGrid" class="pokemon-grid"></div>
-  </main>
-
-  <div id="pokemonModal" class="modal hidden">
-    <div class="modal-content">
-
-      <button id="closeModal" class="close-btn">✕</button>
-
-      <div class="modal-top">
-
-        <div class="sprite-wrapper">
-          <img id="modalSprite" src="" alt="Pokemon Sprite">
-        </div>
-
-        <div class="pokemon-info">
-          <h2 id="modalName"></h2>
-
-          <p id="modalDex"></p>
-          <p id="modalCustomId"></p>
-
-          <div id="modalTypes" class="types"></div>
-
-          <div class="abilities-box">
-            <h3>Abilities</h3>
-            <ul id="modalAbilities"></ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="extra-forms">
-
-        <div class="info-box">
-          <h3>Regional Forms</h3>
-          <p id="regionalForms">None</p>
-        </div>
-
-        <div class="info-box">
-          <h3>Alternative Forms</h3>
-          <p id="alternativeForms">None</p>
-        </div>
-
-        <div class="info-box">
-          <h3>Mega Evolution</h3>
-          <p id="megaForms">None</p>
-        </div>
-
-        <div class="info-box">
-          <h3>Gigantamax Form</h3>
-          <p id="gmaxForms">None</p>
-        </div>
-
-        <div class="info-box">
-          <h3>Battle Forms</h3>
-          <p id="battleForms">None</p>
-        </div>
-
-      </div>
-
-      <div class="stats-section">
-        <canvas id="statsChart"></canvas>
-      </div>
-
-    </div>
+    <h1>Wonniland Wiki</h1>
   </div>
 
-  <script src="script.js"></script>
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search Pokémon..."
+  >
+</header>
+
+<main>
+  <div id="pokemonGrid" class="pokemon-grid"></div>
+</main>
+
+<div id="pokemonModal" class="modal hidden">
+
+  <div class="modal-content">
+
+    <button id="closeModal" class="close-btn">✕</button>
+
+    <div class="modal-banner"></div>
+
+    <div class="modal-top">
+
+      <div class="sprite-wrapper">
+        <img id="modalSprite" src="">
+      </div>
+
+      <div class="pokemon-info">
+
+        <h2 id="modalName"></h2>
+
+        <div class="basic-info">
+          <span id="modalDex"></span>
+          <span id="modalCustomId"></span>
+        </div>
+
+        <div id="modalTypes" class="types"></div>
+
+        <div class="abilities-box">
+          <h3>Abilities</h3>
+          <ul id="modalAbilities"></ul>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="forms-grid">
+
+      <div class="info-box">
+        <h3>Regional Forms</h3>
+        <p id="regionalForms"></p>
+      </div>
+
+      <div class="info-box">
+        <h3>Mega Evolution</h3>
+        <p id="megaForms"></p>
+      </div>
+
+      <div class="info-box">
+        <h3>Gigantamax</h3>
+        <p id="gmaxForms"></p>
+      </div>
+
+      <div class="info-box">
+        <h3>Battle Forms</h3>
+        <p id="battleForms"></p>
+      </div>
+
+    </div>
+
+    <div class="stats-card">
+
+      <h2>Base Stats</h2>
+
+      <div id="statsContainer"></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>

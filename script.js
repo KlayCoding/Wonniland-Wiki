@@ -4,47 +4,49 @@ const closeModal = document.getElementById('closeModal');
 const searchInput = document.getElementById('searchInput');
 
 let allPokemon = [];
-let statsChart;
 
-async function fetchPokemon() {
+async function fetchPokemon(){
 
-  for (let i = 1; i <= 151; i++) {
+  for(let i=1;i<=151;i++){
 
     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`);
     const data = await res.json();
 
     const pokemon = {
-      id: data.id,
-      customId: 1000 + data.id,
-      name: data.name,
+
+      id:data.id,
+      customId:1000 + data.id,
+      name:data.name,
+
       sprite:
         data.sprites.versions['generation-v']['black-white'].animated.front_default
         || data.sprites.front_default,
-      types: data.types.map(t => t.type.name),
-      abilities: data.abilities.map(a => a.ability.name),
-      stats: data.stats.map(s => s.base_stat),
 
-      regionalForms: 'None',
-      alternativeForms: 'None',
+      types:data.types.map(t=>t.type.name),
 
-      megaForms:
-        ['venusaur','charizard','blastoise','alakazam','gengar',
-        'kangaskhan','pinsir','gyarados','aerodactyl','mewtwo']
-        .includes(data.name)
-        ? 'Available'
-        : 'None',
+      abilities:data.abilities.map(a=>a.ability.name),
 
-      gmaxForms:
-        ['venusaur','charizard','blastoise',
-        'pikachu','eevee','snorlax','gengar']
-        .includes(data.name)
-        ? 'Available'
-        : 'None',
+      stats:{
+        hp:data.stats[0].base_stat,
+        atk:data.stats[1].base_stat,
+        def:data.stats[2].base_stat,
+        spa:data.stats[3].base_stat,
+        spd:data.stats[4].base_stat,
+        spe:data.stats[5].base_stat
+      },
 
-      battleForms:
-        data.name === 'mewtwo'
-        ? 'Mega X / Mega Y'
-        : 'None'
+      regionalForms:'None',
+      megaForms:['venusaur','charizard','blastoise','alakazam','gengar','mewtwo'].includes(data.name)
+      ? 'Available'
+      : 'None',
+
+      gmaxForms:['venusaur','charizard','blastoise','pikachu','gengar'].includes(data.name)
+      ? 'Available'
+      : 'None',
+
+      battleForms:data.name === 'mewtwo'
+      ? 'Mega X / Mega Y'
+      : 'None'
     };
 
     allPokemon.push(pokemon);
@@ -53,155 +55,157 @@ async function fetchPokemon() {
   }
 }
 
-function createCard(pokemon) {
+function createCard(pokemon){
 
   const card = document.createElement('div');
+
   card.className = 'card';
 
   card.innerHTML = `
-    <img src="${pokemon.sprite}" alt="${pokemon.name}">
+    <img src="${pokemon.sprite}">
 
     <p class="dex-number">#${pokemon.id}</p>
 
     <h3>${capitalize(pokemon.name)}</h3>
 
     <div class="types">
-      ${pokemon.types
-        .map(type => `
-          <span class="type ${type}">
-            ${capitalize(type)}
-          </span>
-        `)
-        .join('')}
+      ${pokemon.types.map(type=>`
+        <span class="type ${type}">
+          ${capitalize(type)}
+        </span>
+      `).join('')}
     </div>
   `;
 
-  card.addEventListener('click', () => openModal(pokemon));
+  card.addEventListener('click',()=>openModal(pokemon));
 
   grid.appendChild(card);
 }
 
-function openModal(pokemon) {
+function openModal(pokemon){
 
   modal.classList.remove('hidden');
 
   document.getElementById('modalSprite').src = pokemon.sprite;
-  document.getElementById('modalName').textContent = capitalize(pokemon.name);
-  document.getElementById('modalDex').textContent = `Pokédex #${pokemon.id}`;
-  document.getElementById('modalCustomId').textContent = `Custom ID: ${pokemon.customId}`;
 
-  document.getElementById('modalTypes').innerHTML = pokemon.types
-    .map(type => `
+  document.getElementById('modalName').textContent =
+    capitalize(pokemon.name);
+
+  document.getElementById('modalDex').textContent =
+    `Pokédex #${pokemon.id}`;
+
+  document.getElementById('modalCustomId').textContent =
+    `Wiki ID #${pokemon.customId}`;
+
+  document.getElementById('modalTypes').innerHTML =
+    pokemon.types.map(type=>`
       <span class="type ${type}">
         ${capitalize(type)}
       </span>
-    `)
-    .join('');
+    `).join('');
 
-  document.getElementById('regionalForms').textContent = pokemon.regionalForms;
-  document.getElementById('alternativeForms').textContent = pokemon.alternativeForms;
-  document.getElementById('megaForms').textContent = pokemon.megaForms;
-  document.getElementById('gmaxForms').textContent = pokemon.gmaxForms;
-  document.getElementById('battleForms').textContent = pokemon.battleForms;
+  document.getElementById('modalAbilities').innerHTML =
+    pokemon.abilities.map(ability=>`
+      <li>${capitalize(ability)}</li>
+    `).join('');
 
-  document.getElementById('modalAbilities').innerHTML = pokemon.abilities
-    .map(ability => `<li>${capitalize(ability)}</li>`)
-    .join('');
+  document.getElementById('regionalForms').textContent =
+    pokemon.regionalForms;
 
-  renderChart(pokemon.stats);
+  document.getElementById('megaForms').textContent =
+    pokemon.megaForms;
+
+  document.getElementById('gmaxForms').textContent =
+    pokemon.gmaxForms;
+
+  document.getElementById('battleForms').textContent =
+    pokemon.battleForms;
+
+  renderStats(pokemon.stats);
 }
 
-function renderChart(stats) {
+function renderStats(stats){
 
-  const ctx = document.getElementById('statsChart');
+  const statsContainer =
+    document.getElementById('statsContainer');
 
-  if (statsChart) {
-    statsChart.destroy();
+  statsContainer.innerHTML = '';
+
+  const labels = {
+    hp:'HP',
+    atk:'Attack',
+    def:'Defense',
+    spa:'Sp. Atk',
+    spd:'Sp. Def',
+    spe:'Speed'
+  };
+
+  for(const key in stats){
+
+    const value = stats[key];
+
+    const row = document.createElement('div');
+
+    row.className = 'stat-row';
+
+    row.innerHTML = `
+      <div class="stat-label">${labels[key]}</div>
+
+      <div class="stat-value">${value}</div>
+
+      <div class="stat-bar-bg">
+        <div
+          class="stat-bar"
+          style="
+            width:${Math.min(value / 180 * 100,100)}%;
+            background:${getStatColor(value)};
+          "
+        ></div>
+      </div>
+    `;
+
+    statsContainer.appendChild(row);
   }
-
-  statsChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['HP', 'ATK', 'DEF', 'SPA', 'SPD', 'SPE'],
-      datasets: [{
-        label: 'Base Stats',
-        data: stats,
-
-        backgroundColor: stats.map(stat => {
-
-          if (stat < 50) return '#ef4444';
-          if (stat < 80) return '#f59e0b';
-          if (stat < 110) return '#84cc16';
-
-          return '#22c55e';
-        }),
-
-        borderRadius: 8
-      }]
-    },
-
-    options: {
-      responsive: true,
-
-      scales: {
-
-        y: {
-          beginAtZero: true,
-          max: 180,
-
-          ticks: {
-            color: 'white'
-          },
-
-          grid: {
-            color: '#444'
-          }
-        },
-
-        x: {
-          ticks: {
-            color: 'white'
-          },
-
-          grid: {
-            color: '#222'
-          }
-        }
-      },
-
-      plugins: {
-        legend: {
-          labels: {
-            color: 'white'
-          }
-        }
-      }
-    }
-  });
 }
 
-function capitalize(text) {
-  return text.charAt(0).toUpperCase() + text.slice(1);
+function getStatColor(value){
+
+  if(value < 50) return '#ef4444';
+
+  if(value < 80) return '#f59e0b';
+
+  if(value < 110) return '#84cc16';
+
+  return '#22c55e';
 }
 
-closeModal.addEventListener('click', () => {
+function capitalize(text){
+
+  return text.charAt(0).toUpperCase()
+    + text.slice(1);
+}
+
+closeModal.addEventListener('click',()=>{
   modal.classList.add('hidden');
 });
 
-modal.addEventListener('click', (e) => {
-  if (e.target === modal) {
+modal.addEventListener('click',(e)=>{
+
+  if(e.target === modal){
+
     modal.classList.add('hidden');
   }
 });
 
-searchInput.addEventListener('input', () => {
+searchInput.addEventListener('input',()=>{
 
-  const value = searchInput.value.toLowerCase();
+  const value =
+    searchInput.value.toLowerCase();
 
   grid.innerHTML = '';
 
   allPokemon
-    .filter(pokemon =>
+    .filter(pokemon=>
       pokemon.name.includes(value)
       || pokemon.id.toString().includes(value)
     )
