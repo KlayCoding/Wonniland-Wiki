@@ -1,0 +1,166 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #111827;
+  color: white;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+}
+
+header {
+  padding: 20px;
+  text-align: center;
+}
+
+header h1 {
+  margin-bottom: 15px;
+  font-size: 2.5rem;
+}
+
+#searchInput {
+  width: 300px;
+  max-width: 90%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 1rem;
+}
+
+.pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.card {
+  background: #1f2937;
+  border-radius: 16px;
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: #60a5fa;
+}
+
+.card img {
+  width: 96px;
+  height: 96px;
+  image-rendering: pixelated;
+}
+
+.card h3 {
+  margin-top: 10px;
+}
+
+.dex-number {
+  opacity: 0.7;
+  margin-bottom: 10px;
+}
+
+.types {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.type {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #1f2937;
+  width: 90%;
+  max-width: 900px;
+  border-radius: 20px;
+  padding: 30px;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.modal-top {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.modal-top img {
+  width: 160px;
+  image-rendering: pixelated;
+}
+
+.stats-section {
+  margin-top: 30px;
+}
+
+canvas {
+  max-height: 400px;
+}
+
+.normal { background: #A8A77A; }
+.fire { background: #EE8130; }
+.water { background: #6390F0; }
+.electric { background: #F7D02C; color: black; }
+.grass { background: #7AC74C; }
+.ice { background: #96D9D6; color: black; }
+.fighting { background: #C22E28; }
+.poison { background: #A33EA1; }
+.ground { background: #E2BF65; color: black; }
+.flying { background: #A98FF3; }
+.psychic { background: #F95587; }
+.bug { background: #A6B91A; }
+.rock { background: #B6A136; }
+.ghost { background: #735797; }
+.dragon { background: #6F35FC; }
+.dark { background: #705746; }
+.steel { background: #B7B7CE; color: black; }
+.fairy { background: #D685AD; }
+
+@media (max-width: 700px) {
+  .modal-top {
+    flex-direction: column;
+    text-align: center;
+  }
+}

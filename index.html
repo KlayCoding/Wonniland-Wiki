@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BW Pokédex</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <header>
+    <h1>BW Pokédex</h1>
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search Pokémon..."
+    >
+  </header>
+
+  <main>
+    <div id="pokemonGrid" class="pokemon-grid"></div>
+  </main>
+
+  <div id="pokemonModal" class="modal hidden">
+    <div class="modal-content">
+
+      <button id="closeModal" class="close-btn">✕</button>
+
+      <div class="modal-top">
+        <img id="modalSprite" src="" alt="Pokemon Sprite">
+
+        <div>
+          <h2 id="modalName"></h2>
+          <p id="modalDex"></p>
+          <p id="modalCustomId"></p>
+
+          <div id="modalTypes" class="types"></div>
+
+          <div>
+            <h3>Abilities</h3>
+            <ul id="modalAbilities"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <canvas id="statsChart"></canvas>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
