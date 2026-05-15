@@ -1,20 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wonniland Wiki</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wonniland Wiki</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <header>
-<h1>Wonniland Wiki</h1>
-<input type="text" id="searchInput" placeholder="Search Pokémon or ID...">
+  <div class="header-box">
+    <img
+      class="pokeball"
+      src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
+      alt="Pokeball"
+    >
+
+    <h1>Wonniland Wiki</h1>
+  </div>
+
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search Pokémon or ID..."
+  >
 </header>
+
 <main>
-<div id="pokemonGrid" class="pokemon-grid"></div>
+  <div id="pokemonGrid" class="pokemon-grid"></div>
 </main>
-<script src="pokemon.js"></script>
+
 <script src="script.js"></script>
+
 </body>
 </html>
