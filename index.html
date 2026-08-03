@@ -146,6 +146,21 @@
     #enc-map-list{width:220px;min-width:220px;border-right:1px solid var(--border);overflow-y:auto;max-height:70vh;flex-shrink:0;}
     #enc-detail{flex:1;overflow-y:auto;max-height:70vh;padding:16px;}
     #enc-body{display:flex;}
+    /* ── Wild Encounter Editor (same structure, amber accent = editable) ───── */
+    #enc-editor{width:100%;max-width:min(1100px,calc(100vw - 64px));margin-bottom:24px;animation:fadeUp .5s ease .05s both;}
+    #enc-editor-btn{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 24px;border-radius:14px;border:2px solid rgba(255,183,77,.35);background:linear-gradient(135deg,rgba(255,183,77,.08),rgba(230,150,30,.03));cursor:pointer;transition:all .25s;width:100%;font-family:'Press Start 2P',monospace;font-size:11px;color:#ffb74d;letter-spacing:.5px;}
+    #enc-editor-btn:hover{border-color:#ffb74d;background:rgba(255,183,77,.12);transform:translateY(-2px);}
+    #enc-editor-panel{display:none;margin-top:12px;background:#111827;border:1px solid rgba(255,183,77,.25);border-radius:14px;overflow:hidden;}
+    #enc-editor-panel-header{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);background:rgba(255,183,77,.05);}
+    #enc-editor-map-search{flex:1;background:#0d1117;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:8px 12px;outline:none;transition:border-color .2s;}
+    #enc-editor-map-search:focus{border-color:#ffb74d;}
+    #enc-editor-map-list{width:220px;min-width:220px;border-right:1px solid var(--border);overflow-y:auto;max-height:70vh;flex-shrink:0;}
+    #enc-editor-detail{flex:1;overflow-y:auto;max-height:70vh;padding:16px;}
+    #enc-editor-body{display:flex;}
+    .enc-mon-chip.editable{cursor:pointer;}
+    .enc-mon-chip.editable:hover{border-color:#ffb74d;background:rgba(255,183,77,.1);}
+    .enc-mon-chip .enc-edit-hint{font-size:8px;color:#ffb74d;font-family:'Press Start 2P',monospace;opacity:0;transition:opacity .15s;}
+    .enc-mon-chip.editable:hover .enc-edit-hint{opacity:1;}
     .enc-map-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;transition:background .15s;line-height:1.4;}
     .enc-map-item:hover{background:rgba(100,181,246,.07);}
     .enc-map-item.active{background:rgba(100,181,246,.12);border-left:3px solid #64b5f6;color:#64b5f6;font-weight:700;}
@@ -550,34 +565,18 @@
   <p>Pokédex & Wild Encounter reference for Wonni's Pokémon Wonniland version adventure!</p>
 </header>
 
-<!-- ── Encounter Browser ─────────────────────────────────────────────────── -->
-<div id="enc-browser">
-  <button id="enc-browser-btn">🌿 WILD ENCOUNTER BROWSER &nbsp;▼</button>
-  <div id="enc-panel">
-    <div id="enc-panel-header">
-      <input id="enc-map-search" placeholder="Search location…" autocomplete="off"/>
-      <button id="enc-close-btn" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:var(--gray);font-size:13px;padding:4px 10px;cursor:pointer;">✕</button>
+<!-- ── Wild Encounter Editor (editable copy of the Wild Encounter Browser) ── -->
+<div id="enc-editor">
+  <button id="enc-editor-btn">✏️ WILD ENCOUNTER EDITOR &nbsp;▼</button>
+  <div id="enc-editor-panel">
+    <div id="enc-editor-panel-header">
+      <input id="enc-editor-map-search" placeholder="Search location…" autocomplete="off"/>
+      <button id="enc-editor-close-btn" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:var(--gray);font-size:13px;padding:4px 10px;cursor:pointer;">✕</button>
     </div>
-    <div id="enc-body">
-      <div id="enc-map-list"></div>
-      <div id="enc-detail"><div style="color:var(--gray);font-size:12px;padding:40px;text-align:center;">← Select a location to see encounters</div></div>
+    <div id="enc-editor-body">
+      <div id="enc-editor-map-list"></div>
+      <div id="enc-editor-detail"><div style="color:var(--gray);font-size:12px;padding:40px;text-align:center;">← Select a location to edit its encounters</div></div>
     </div>
-  </div>
-</div>
-
-<!-- ── Pokémon Roulette ───────────────────────────────────────────────────── -->
-
-  <div id="dex-browser">
-  <button id="dex-browser-btn">📖 POKÉDEX BROWSER &nbsp;▼</button>
-  <div id="dex-panel">
-    <div id="dex-panel-header">
-      <input id="dex-search" placeholder="Search Pokémon…" autocomplete="off"/>
-      <span id="dex-count">—</span>
-      <button id="dex-close-btn" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:var(--gray);font-size:13px;padding:4px 10px;cursor:pointer;">✕</button>
-    </div>
-    <div id="dex-type-filter"></div>
-    <div id="dex-group-filter"></div>
-    <div id="dex-grid"></div>
   </div>
 </div>
 
@@ -595,7 +594,36 @@
     <div id="pool-grid"></div>
   </div>
 </div>
+
 <!-- ── Encounter Browser ─────────────────────────────────────────────────── -->
+<div id="enc-browser">
+  <button id="enc-browser-btn">🌿 WILD ENCOUNTER BROWSER &nbsp;▼</button>
+  <div id="enc-panel">
+    <div id="enc-panel-header">
+      <input id="enc-map-search" placeholder="Search location…" autocomplete="off"/>
+      <button id="enc-close-btn" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:var(--gray);font-size:13px;padding:4px 10px;cursor:pointer;">✕</button>
+    </div>
+    <div id="enc-body">
+      <div id="enc-map-list"></div>
+      <div id="enc-detail"><div style="color:var(--gray);font-size:12px;padding:40px;text-align:center;">← Select a location to see encounters</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="dex-browser">
+  <button id="dex-browser-btn">📖 POKÉDEX BROWSER &nbsp;▼</button>
+  <div id="dex-panel">
+    <div id="dex-panel-header">
+      <input id="dex-search" placeholder="Search Pokémon…" autocomplete="off"/>
+      <span id="dex-count">—</span>
+      <button id="dex-close-btn" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:var(--gray);font-size:13px;padding:4px 10px;cursor:pointer;">✕</button>
+    </div>
+    <div id="dex-type-filter"></div>
+    <div id="dex-group-filter"></div>
+    <div id="dex-grid"></div>
+  </div>
+</div>
+
 <div id="loadingScreen" style="position:fixed;inset:0;background:#0d1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px;">
   <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:#CE93D8;">WONNILAND WIKI</div>
   <div style="font-size:11px;color:#666;font-family:'Press Start 2P',monospace;">Loading Pokédex data…</div>
@@ -1968,17 +1996,146 @@ function initDexBrowser(){
   }
 }
 
+// ── Shared SPECIES_ → ALL_MON resolver ─────────────────────────────────────────
+// Same matching logic the Wild Encounter Browser already uses internally (with
+// its hand-tuned overrides for tricky names/cosmetic forms) — hoisted here so
+// the Pokémon Pool and Wild Encounter Editor can resolve species reliably too.
+// Built lazily (after ALL_MON is populated) — see loadPokemonData().then(...) below.
+let SPECIES_INDEX=null;
+function buildSpeciesIndex(){
+  const idx={};
+  const norm=s=>s.toLowerCase().replace(/[''\.♀♂:]/g,'').replace(/\s+/g,'_').replace(/-/g,'_').replace(/[()]/g,'');
+  ALL_MON.forEach(m=>{
+    idx[norm(m.name)]=m;
+    const base=m.name.replace(/\s*\([^)]*\)/g,'').replace(/^(Mega|GMax|Galarian|Hisuian|Alolan|Paldean)-/i,'').trim();
+    if(!idx[norm(base)]) idx[norm(base)]=m;
+  });
+  const OVERRIDES={
+    'SPECIES_NIDORAN_F':'Nidoran♀','SPECIES_NIDORAN_M':'Nidoran♂',
+    'SPECIES_FARFETCHD':'Farfetch\'d','SPECIES_FARFETCHD_GALAR':'Galarian-Farfetch\'d',
+    'SPECIES_MIME_JR':'Mime Jr.','SPECIES_JANGMO_O':'Jangmo-o',
+    'SPECIES_TYPE_NULL':'Type: Null','SPECIES_MR_MIME':'Mr. Mime',
+    'SPECIES_MR_RIME':'Mr. Rime','SPECIES_MR_MIME_GALAR':'Mr. Mime (Galarian)',
+    'SPECIES_FLABEBE':'Flabébé','SPECIES_FLABEBE_BLUE':'Flabébé',
+    'SPECIES_FLABEBE_RED':'Flabébé','SPECIES_FLABEBE_YELLOW':'Flabébé',
+    'SPECIES_FLABEBE_WHITE':'Flabébé','SPECIES_FLABEBE_ORANGE':'Flabébé',
+    'SPECIES_BASCULIN_RED_STRIPED':'Basculin (Red)','SPECIES_BASCULIN_BLUE_STRIPED':'Basculin (Blue)',
+    'SPECIES_SHELLOS_WEST':'Shellos (West Sea)','SPECIES_SHELLOS_EAST':'Shellos (East Sea)',
+    'SPECIES_GASTRODON_WEST':'Gastrodon (West Sea)','SPECIES_GASTRODON_EAST':'Gastrodon (East Sea)',
+    'SPECIES_GRENINJA':'Greninja (Normal)','SPECIES_GRENINJA_ASH':'Greninja (Ash)',
+    'SPECIES_KELDEO':'Keldeo (Ordianry)','SPECIES_KELDEO_RESOLUTE':'Keldeo (Resolute)',
+    'SPECIES_SHAYMIN':'Shaymin (Land)','SPECIES_SHAYMIN_SKY':'Shaymin (Sky)',
+    'SPECIES_SILVALLY':'Silvally (Normal)',
+    'SPECIES_MORPEKO_FULL_BELLY':'Morpeko (Full Belly)','SPECIES_MORPEKO_HANGRY':'Morpeko (Hangry)',
+    'SPECIES_WISHIWASHI_SOLO':'Wishiwashi (Solo)','SPECIES_WISHIWASHI_SCHOOL':'Wishiwashi (School)',
+    'SPECIES_OGERPON_TEAL':'Ogerpon (Teal)',
+  };
+  const FAMILY_FALLBACKS={
+    'ALCREMIE':'Alcremie','UNOWN':'Unown (A)','SCATTERBUG':'Scatterbug (Icy Snow)',
+    'PIKACHU_COSPLAY':'Pikachu','PIKACHU_HOENN':'Pikachu','PIKACHU_KALOS':'Pikachu',
+    'PIKACHU_SINNOH':'Pikachu','PIKACHU_UNOVA':'Pikachu','PIKACHU_WORLD':'Pikachu',
+    'PIKACHU_PARTNER':'Pikachu','PICHU_SPIKY_EARED':'Pichu',
+    'BURMY_SANDY':'Burmy','BURMY_TRASH':'Burmy',
+    'DEERLING_SUMMER':'Deerling','DEERLING_AUTUMN':'Deerling','DEERLING_WINTER':'Deerling',
+  };
+  return (species)=>{
+    if(!species||species==='SPECIES_NONE') return null;
+    if(OVERRIDES[species]){
+      const name=OVERRIDES[species];
+      return ALL_MON.find(x=>x.name===name)||ALL_MON.find(x=>x.name.startsWith(name.split(' ')[0]))||null;
+    }
+    const raw=species.replace('SPECIES_','');
+    for(const [key,name] of Object.entries(FAMILY_FALLBACKS)){
+      if(raw===key||raw.startsWith(key+'_')){
+        return ALL_MON.find(x=>x.name===name)||null;
+      }
+    }
+    const n=norm(raw.replace(/_/g,' '));
+    if(idx[n]) return idx[n];
+    const parts=raw.split('_');
+    for(let i=parts.length;i>0;i--){
+      const attempt=norm(parts.slice(0,i).join(' '));
+      if(idx[attempt]) return idx[attempt];
+    }
+    return null;
+  };
+}
+function speciesNameToMon(species){
+  const mon=SPECIES_INDEX?SPECIES_INDEX(species):null;
+  if(mon) return {mon, displayName:mon.name};
+  const raw=(species||'').replace('SPECIES_','').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  return {mon:null, displayName:raw};
+}
+
+// ── Species picker overlay (used by the Wild Encounter Editor to reassign a slot) ──
+// Best-effort reverse mapping from a display name back to a SPECIES_XXX-style
+// constant. This mirrors the naming pattern used in wild_encounters.json for the
+// regular/regional-form cases, but it's a guess, not a lookup — double-check the
+// generated key for cosmetic-only forms (Alcremie flavors, Unown letters, Vivillon
+// patterns, etc.) before relying on it outside this editor.
+function nameToSpeciesKey(name){
+  return 'SPECIES_'+(name||'').toUpperCase()
+    .replace(/♀/g,'_F').replace(/♂/g,'_M')
+    .replace(/[^A-Z0-9]+/g,'_')
+    .replace(/^_+|_+$/g,'');
+}
+function openSpeciesPicker(currentMon, onPick){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  const box=document.createElement('div');
+  box.style.cssText='background:#13192a;border:2px solid rgba(255,183,77,.35);border-radius:14px;width:100%;max-width:520px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;';
+  const hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);background:rgba(255,183,77,.06);';
+  const title=document.createElement('div');title.style.cssText='font-size:12px;font-weight:700;flex:1;';
+  title.textContent=currentMon?`Replace ${currentMon.name}`:'Choose a Pokémon';
+  const closeBtn=document.createElement('button');closeBtn.type='button';
+  closeBtn.style.cssText='background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:var(--gray);font-size:14px;padding:3px 9px;cursor:pointer;';
+  closeBtn.textContent='✕';
+  closeBtn.addEventListener('click',()=>overlay.remove());
+  hdr.append(title,closeBtn);
+  const searchWrap=document.createElement('div');searchWrap.style.cssText='padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;';
+  const search=document.createElement('input');search.placeholder='Search Pokémon…';
+  search.style.cssText='width:100%;background:#0d1117;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:8px 12px;outline:none;box-sizing:border-box;';
+  searchWrap.appendChild(search);
+  const list=document.createElement('div');
+  list.style.cssText='overflow-y:auto;padding:10px 16px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;';
+  box.append(hdr,searchWrap,list);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  function renderList(q){
+    list.innerHTML='';
+    const ql=q.toLowerCase().trim();
+    const filtered=ql?ALL_MON.filter(m=>m.name.toLowerCase().includes(ql)):ALL_MON;
+    filtered.slice(0,300).forEach(m=>{
+      const sf=getSpriteFile(m);
+      const tile=document.createElement('div');
+      tile.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);cursor:pointer;transition:all .15s;';
+      tile.addEventListener('mouseenter',()=>tile.style.borderColor='#ffb74d');
+      tile.addEventListener('mouseleave',()=>tile.style.borderColor='var(--border)');
+      const img=document.createElement('img');img.style.cssText='width:44px;height:44px;image-rendering:pixelated;';
+      img.src=`${PKM_BASE1}${sf}.png`;img.onerror=()=>iconUrlFallback(img,m.id,sf);
+      const nm=document.createElement('div');nm.style.cssText='font-size:9px;text-align:center;line-height:1.2;';nm.textContent=m.name;
+      tile.append(img,nm);
+      tile.addEventListener('click',()=>{ onPick(m); overlay.remove(); });
+      list.appendChild(tile);
+    });
+  }
+  search.addEventListener('input',()=>renderList(search.value));
+  renderList('');
+  search.focus();
+}
+
 // ── POKÉMON POOL (copy of Pokédex Browser + wild-encounter lock indicator) ─────
 // Locked = species occupies at least one encounter slot in wild_encounters.json,
 // anywhere (any route, any method, any time of day). Loaded independently of the
 // Wild Encounter Browser so the Pool works even if that panel was never opened.
-// NOTE: wild_encounters.json only has internal SPECIES_XXX identifiers, and the
-// Pokédex data here only has display names (no shared ID field between the two).
-// Matching is done on a normalized name (lowercased, symbols/spaces stripped) —
-// this should cover the large majority of entries correctly, but odd regional/
-// special forms are worth spot-checking once this is live.
-let LOCKED_SPECIES=null; // Set of normalized names, populated on first Pool open
-function normMonName(name){ return (name||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+// Resolution goes through the same SPECIES_INDEX used by the Wild Encounter
+// Browser/Editor (with its hand-tuned overrides), so this should be accurate for
+// the same cases that browser already gets right — still worth spot-checking
+// tricky regional/cosmetic forms once this is live.
+let LOCKED_SPECIES=null;   // Set of ALL_MON .name values that occupy a wild-encounter slot
+let RELATED_SPECIES=null;  // Set of ALL_MON .name values sharing an evolution_line with a locked mon (excludes the locked mons themselves)
 async function loadLockedSpeciesSet(){
   if(LOCKED_SPECIES) return LOCKED_SPECIES;
   const set=new Set();
@@ -1992,7 +2149,9 @@ async function loadLockedSpeciesSet(){
         const block=e[key];
         if(block&&Array.isArray(block.mons)){
           block.mons.forEach(m=>{
-            if(m.species) set.add(normMonName(m.species.replace(/^SPECIES_/,'').replace(/_/g,' ')));
+            if(!m.species) return;
+            const mon=SPECIES_INDEX?SPECIES_INDEX(m.species):null;
+            if(mon) set.add(mon.name);
           });
         }
       });
@@ -2001,8 +2160,20 @@ async function loadLockedSpeciesSet(){
     console.warn('Pokémon Pool: could not load wild_encounters.json for lock indicator', err);
   }
   LOCKED_SPECIES=set;
+  // Build the related-species set (same evolution family as a locked mon)
+  const related=new Set();
+  set.forEach(lockedName=>{
+    const mon=ALL_MON.find(m=>m.name===lockedName);
+    const fam=mon&&mon._full&&mon._full.evolution_line;
+    if(!fam||fam==='???') return;
+    ALL_MON.forEach(m=>{
+      if(m._full&&m._full.evolution_line===fam&&!set.has(m.name)) related.add(m.name);
+    });
+  });
+  RELATED_SPECIES=related;
   return set;
 }
+
 
 function initPoolBrowser(){
   const btn=document.getElementById('pool-browser-btn');
@@ -2074,6 +2245,23 @@ function initPoolBrowser(){
     renderPool();
   });
   poolControls.appendChild(lockToggle);
+  // Related-species toggle: marks evolution-family members of any locked mon.
+  // Cycle: off → show icon → show icon + hide those mons.
+  let relatedMode='off';
+  const RELATED_LABELS={off:'🔗 Related: Off',show:'🔗 Show Related',hide:'🔗 Hide Related'};
+  const relatedToggle=document.createElement('button');relatedToggle.type='button';
+  relatedToggle.style.cssText='font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--gray);cursor:pointer;font-family:"Press Start 2P",monospace;transition:all .15s;';
+  relatedToggle.textContent=RELATED_LABELS[relatedMode];
+  relatedToggle.addEventListener('click',()=>{
+    relatedMode = relatedMode==='off' ? 'show' : relatedMode==='show' ? 'hide' : 'off';
+    relatedToggle.textContent=RELATED_LABELS[relatedMode];
+    const active=relatedMode!=='off';
+    relatedToggle.style.background=active?'rgba(100,181,246,.15)':'rgba(255,255,255,.04)';
+    relatedToggle.style.borderColor=active?'#64b5f6':'var(--border)';
+    relatedToggle.style.color=active?'#64b5f6':'var(--gray)';
+    renderPool();
+  });
+  poolControls.appendChild(relatedToggle);
   poolHdr.after(poolControls);
 
   btn.addEventListener('click',async ()=>{
@@ -2137,7 +2325,8 @@ function initPoolBrowser(){
 
   searchEl.addEventListener('input',()=>renderPool());
 
-  function isLocked(m){ return !!(LOCKED_SPECIES && LOCKED_SPECIES.has(normMonName(m.name))); }
+  function isLocked(m){ return !!(LOCKED_SPECIES && LOCKED_SPECIES.has(m.name)); }
+  function isRelated(m){ return !!(RELATED_SPECIES && RELATED_SPECIES.has(m.name)); }
 
   function renderPool(){
     const q=searchEl.value.toLowerCase().trim();
@@ -2153,6 +2342,10 @@ function initPoolBrowser(){
     else if(poolSort==='bst_asc') mons.sort((a,b)=>(a.bst||0)-(b.bst||0));
     else if(poolSort==='type') mons.sort((a,b)=>(a.t1||'').localeCompare(b.t1||''));
     else mons.sort((a,b)=>(a.id||9999)-(b.id||9999));
+    // Related-species filter (hide mode only removes; "show" just marks via badge below)
+    if(relatedMode==='hide'){
+      mons=mons.filter(m=>!isRelated(m));
+    }
     // Locked-species filter/reorder (on top of the base sort, stable)
     if(lockMode==='hide'){
       mons=mons.filter(m=>!isLocked(m));
@@ -2168,6 +2361,7 @@ function initPoolBrowser(){
     mons.forEach(m=>{
       const sf=getSpriteFile(m);
       const locked=isLocked(m);
+      const related=relatedMode!=='off'&&!locked&&isRelated(m);
       const tile=document.createElement('div');tile.className='dex-tile'+(locked?' locked':'');
       const img=document.createElement('img');
       img.dataset.monid=m.id||m.spriteId;
@@ -2193,6 +2387,13 @@ function initPoolBrowser(){
       starBtn.textContent='⭐';starBtn.title=isFav?'Remove from favorites':'Add to favorites';
       starBtn.addEventListener('click',(e)=>{e.stopPropagation();const nowFav=toggleFavorite(m.name);starBtn.style.opacity=nowFav?1:.3;starBtn.title=nowFav?'Remove from favorites':'Add to favorites';if(showFavsOnly)renderPool();});
       tile.style.position='relative';tile.appendChild(starBtn);
+      // Related badge — same evolution family as a locked mon (shown instead of
+      // the lock badge below, since a mon is either locked or merely related)
+      if(related){
+        const relBadge=document.createElement('span');relBadge.className='lock-badge';relBadge.textContent='🔗';relBadge.style.filter='none';
+        relBadge.title='Same evolution family as a locked Pokémon';
+        tile.appendChild(relBadge);
+      }
       // Lock badge — species already occupies a wild-encounter slot somewhere
       if(locked){
         const lockBadge=document.createElement('span');lockBadge.className='lock-badge';lockBadge.textContent='🔒';
@@ -2206,6 +2407,514 @@ function initPoolBrowser(){
 }
 
 // ── ENCOUNTER BROWSER ─────────────────────────────────────────────────────────
+// ── WILD ENCOUNTER EDITOR (editable copy of the Wild Encounter Browser) ──────
+// Works on its own in-memory copy of wild_encounters.json — edits made here are
+// session-only for now (not saved back to a file, not synced to the read-only
+// Wild Encounter Browser or to the Pokémon Pool's locked-species list). Good for
+// planning/trying out layouts; say the word if you want an export or save step
+// added on top of this.
+function initEncEditor(){
+  const btn=document.getElementById('enc-editor-btn');
+  const panel=document.getElementById('enc-editor-panel');
+  const mapSearch=document.getElementById('enc-editor-map-search');
+  const mapList=document.getElementById('enc-editor-map-list');
+  const detail=document.getElementById('enc-editor-detail');
+  let open=false, encData=null, currentMap=null, currentTime='Morning';
+  const RATES_LAND=[15,10,10,10,10,10,10,5,5,5,5,5];
+  const RATES_WATER=[50,20,15,10,5];
+  const RATES_FISH=[70,30,60,20,20];
+  const RATES_ROCK=[100,100];
+  const RATES_HIDDEN=[100,100,100,100,100,100,100,100,100,100,100,100];
+  const TIME_LABELS=['Morning','Day','Evening','Night'];
+  const TIME_ICONS={'Morning':'🌅','Day':'☀️','Evening':'🌆','Night':'🌙'};
+  // Fishing rods: slots 0-1=Old Rod, 2-4=Good Rod, 5-9=Super Rod
+  const ROD_POOLS={
+    old_rod:  {slots:[0,1],  rates:[70,30],          label:'Old Rod',   icon:'🎣',col:'#90caf9'},
+    good_rod: {slots:[2,3,4],rates:[60,20,20],        label:'Good Rod',  icon:'🎣',col:'#42a5f5'},
+    super_rod:{slots:[5,6,7,8,9],rates:[40,20,20,15,5],label:'Super Rod',icon:'🎣',col:'#1565c0'},
+  };
+  const METHOD_META={
+    land_mons:  {label:'Land',     icon:'🌿',col:'#4caf50',rates:RATES_LAND},
+    water_mons: {label:'Surfing',  icon:'🌊',col:'#4f90d3',rates:RATES_WATER},
+    old_rod:    {label:'Old Rod',  icon:'🎣',col:'#90caf9',rates:[70,30],    isFishing:true,slots:[0,1]},
+    good_rod:   {label:'Good Rod', icon:'🎣',col:'#42a5f5',rates:[60,20,20], isFishing:true,slots:[2,3,4]},
+    super_rod:  {label:'Super Rod',icon:'🎣',col:'#1565c0',rates:[40,20,20,15,5],isFishing:true,slots:[5,6,7,8,9]},
+    rock_smash_mons:{label:'Rock Smash',icon:'🪨',col:'#b29a3c',rates:RATES_ROCK},
+    hidden_mons:{label:'Hidden',   icon:'🍂',col:'#81c784',rates:RATES_HIDDEN},
+  };
+  const METHODS_ALL=Object.keys(METHOD_META);
+  const activeMethods=new Set(METHODS_ALL); // all on by default
+  const MAP_IMG_BASE='https://raw.githubusercontent.com/KlayCoding/Wonniland/main/maps/';
+
+  // Map key → PNG filename (try exact match first, then lowercase)
+  function mapImgUrl(mapKey){ return MAP_IMG_BASE+mapKey+'.png'; }
+
+  btn.addEventListener('click',()=>{
+    open=!open; panel.style.display=open?'block':'none';
+    btn.textContent=open?'✏️ WILD ENCOUNTER EDITOR  ▲':'✏️ WILD ENCOUNTER EDITOR  ▼';
+    if(open&&!encData) loadEncData();
+  });
+  document.getElementById('enc-editor-close-btn').addEventListener('click',()=>{
+    open=false;panel.style.display='none';btn.textContent='✏️ WILD ENCOUNTER EDITOR  ▼';
+  });
+
+  // ── Header: search tabs (Location / Pokémon) + method filter ────────────────
+  const encHeader=document.getElementById('enc-editor-panel-header');
+  // Search mode toggle
+  const modeToggle=document.createElement('div');
+  modeToggle.style.cssText='display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex-shrink:0;';
+  const locBtn=document.createElement('button');locBtn.type='button';locBtn.textContent='📍 Location';
+  locBtn.style.cssText='padding:7px 12px;font-size:11px;border:none;background:rgba(100,181,246,.15);color:#64b5f6;cursor:pointer;font-weight:700;';
+  const monBtn=document.createElement('button');monBtn.type='button';monBtn.textContent='🔍 Pokémon';
+  monBtn.style.cssText='padding:7px 12px;font-size:11px;border:none;background:transparent;color:var(--gray);cursor:pointer;';
+  modeToggle.append(locBtn,monBtn);
+  encHeader.insertBefore(modeToggle, mapSearch);
+  let searchMode='location';
+  locBtn.addEventListener('click',()=>{ searchMode='location'; locBtn.style.cssText='padding:7px 12px;font-size:11px;border:none;background:rgba(100,181,246,.15);color:#64b5f6;cursor:pointer;font-weight:700;'; monBtn.style.cssText='padding:7px 12px;font-size:11px;border:none;background:transparent;color:var(--gray);cursor:pointer;'; mapSearch.placeholder='Search location…'; if(encData) buildMapList(encData); });
+  monBtn.addEventListener('click',()=>{ searchMode='pokemon'; monBtn.style.cssText='padding:7px 12px;font-size:11px;border:none;background:rgba(100,181,246,.15);color:#64b5f6;cursor:pointer;font-weight:700;'; locBtn.style.cssText='padding:7px 12px;font-size:11px;border:none;background:transparent;color:var(--gray);cursor:pointer;'; mapSearch.placeholder='Search Pokémon…'; if(encData&&mapSearch.value.trim()) buildPokemonSearch(mapSearch.value.trim()); });
+
+  // Method filter chips (below header, above body)
+  const methodBar=document.createElement('div');
+  methodBar.style.cssText='display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;';
+  METHODS_ALL.forEach(m=>{
+    const meta=METHOD_META[m];
+    const chip=document.createElement('button');chip.type='button';
+    chip.style.cssText=`font-size:9px;padding:4px 10px;border-radius:5px;border:1px solid ${meta.col}55;background:${meta.col}22;color:${meta.col};cursor:pointer;transition:all .15s;font-weight:700;`;
+    chip.textContent=meta.icon+' '+meta.label;chip.dataset.method=m;
+    // active by default
+    chip.style.opacity='1';
+    chip.addEventListener('click',()=>{
+      if(activeMethods.has(m)&&activeMethods.size>1){ activeMethods.delete(m); chip.style.opacity='.4'; chip.style.fontWeight='400'; }
+      else if(!activeMethods.has(m)){ activeMethods.add(m); chip.style.opacity='1'; chip.style.fontWeight='700'; }
+      // Re-render current view
+      if(searchMode==='location'&&currentMap&&encData){
+        const entries=encData.filter(e=>e.map===currentMap);
+        renderDetail(entries);
+      }
+    });
+    methodBar.appendChild(chip);
+  });
+  panel.insertBefore(methodBar, document.getElementById('enc-editor-body'));
+
+  async function loadEncData(){
+    mapList.innerHTML='<div style="padding:20px;color:var(--gray);font-size:11px;">Loading…</div>';
+    try{
+      const r=await fetch('wild_encounters.json');
+      const d=await r.json();
+      encData=d.wild_encounter_groups[0].encounters;
+      buildMapList(encData);
+    }catch(e){
+      mapList.innerHTML='<div style="padding:20px;color:#e57373;font-size:11px;">Failed to load encounters.</div>';
+    }
+  }
+
+  function mapToName(m){ return m.replace('MAP_','').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
+
+  function buildMapList(enc){
+    const seen=new Map();
+    enc.filter(e=>!e.map.includes('_FR_')&&!e.map.includes('_LG_')&&!e.map.includes('FRLG')&&!e.base_label.includes('_FR_')&&!e.base_label.includes('_LG_')).forEach(e=>{ if(!seen.has(e.map)) seen.set(e.map,e); });
+    const entries=[...seen.entries()];
+    const sections=[
+      {label:'ROUTES',filter:m=>m.includes('ROUTE')&&!m.includes('SAFARI')},
+      {label:'CITIES & TOWNS',filter:m=>m.includes('CITY')||m.includes('TOWN')},
+      {label:'CAVES & TUNNELS',filter:m=>m.includes('CAVE')||m.includes('TUNNEL')||m.includes('CAVERN')},
+      {label:'WATER & ISLANDS',filter:m=>m.includes('ISLAND')||m.includes('OCEAN')||m.includes('SEA')},
+      {label:'SAFARI & SPECIAL',filter:m=>m.includes('SAFARI')||m.includes('BATTLE')||m.includes('RESORT')},
+      {label:'DUNGEONS & TOWERS',filter:m=>m.includes('TOWER')||m.includes('DUNGEON')||m.includes('RUIN')||m.includes('TOMB')},
+      {label:'OTHER AREAS',filter:()=>true},
+    ];
+    const assigned=new Set();
+    mapList.innerHTML='';
+    sections.forEach(({label,filter})=>{
+      const inSection=entries.filter(([k])=>!assigned.has(k)&&filter(k));
+      if(!inSection.length) return;
+      const hdr=document.createElement('div');hdr.className='enc-map-group-header';hdr.textContent=label;
+      mapList.appendChild(hdr);
+      inSection.forEach(([k])=>{
+        assigned.add(k);
+        const item=document.createElement('div');item.className='enc-map-item';
+        item.textContent=mapToName(k);item.dataset.map=k;
+        item.addEventListener('click',()=>{
+          mapList.querySelectorAll('.enc-map-item').forEach(i=>i.classList.remove('active'));
+          item.classList.add('active'); currentMap=k; currentTime='Morning';
+          renderDetail(enc.filter(e=>e.map===k));
+        });
+        mapList.appendChild(item);
+      });
+    });
+  }
+
+  // ── Pokémon search mode ────────────────────────────────────────────────────
+  function buildPokemonSearch(q){
+    if(!encData||!q) return;
+    const q2=q.toLowerCase();
+    // Find all entries where this pokemon appears
+    const results=[]; // {mapKey, methods:[{method,time,level,rate}]}
+    const seen=new Map();
+    encData.forEach(e=>{
+      if(e.map.includes('_FR_')||e.map.includes('_LG_')) return;
+      const timeLabel=e.base_label.split('_').pop(); // Morning/Day/Evening/Night
+      METHODS_ALL.forEach(method=>{
+        const meta=METHOD_META[method];
+        let monsWithIdx=[];
+        if(meta.isFishing){
+          const fishData=e['fishing_mons'];
+          if(!fishData||!fishData.mons) return;
+          monsWithIdx=meta.slots.map((slot,i)=>({mon:fishData.mons[slot],rate:meta.rates[i]})).filter(x=>x.mon);
+        } else {
+          const data=e[method];
+          if(!data||!data.mons) return;
+          monsWithIdx=data.mons.map((mon,i)=>({mon,rate:meta.rates[i]||'?'}));
+        }
+        monsWithIdx.forEach(({mon,rate})=>{
+          const {mon:monData,displayName}=speciesNameToMon(mon.species);
+          if(!displayName.toLowerCase().includes(q2)&&!(monData&&monData.name.toLowerCase().includes(q2))) return;
+          const rates=METHOD_META[method].rates;
+          const key=e.map+'|'+method+'|'+mon.species;
+          if(!seen.has(e.map)) seen.set(e.map,{mapKey:e.map,hits:[]});
+          const mapResult=seen.get(e.map);
+          // Check if already added this species+method combo (just add time)
+          const existing=mapResult.hits.find(h=>h.species===mon.species&&h.method===method);
+          if(existing){ if(!existing.times.includes(timeLabel)) existing.times.push(timeLabel); }
+          else{ mapResult.hits.push({species:mon.species,displayName,monData,method,times:[timeLabel],minLevel:mon.min_level,maxLevel:mon.max_level,rate}); }
+        });
+      });
+    });
+
+    // Render results in map list area
+    mapList.innerHTML='';
+    const resultEntries=[...seen.values()];
+    if(!resultEntries.length){
+      mapList.innerHTML=`<div style="padding:20px;color:var(--gray);font-size:11px;">No results for "${q}"</div>`;
+      detail.innerHTML=''; return;
+    }
+    // Show result list on left, detail on right
+    const monName=resultEntries[0]?.hits[0]?.displayName||q;
+    resultEntries.forEach(({mapKey,hits})=>{
+      const item=document.createElement('div');item.className='enc-map-item';
+      item.style.cssText+='';
+      const nameEl=document.createElement('div');nameEl.style.fontWeight='600';nameEl.textContent=mapToName(mapKey);
+      const methodIcons=document.createElement('div');methodIcons.style.cssText='font-size:14px;margin-top:3px;';
+      const usedMethods=[...new Set(hits.map(h=>h.method))];
+      methodIcons.textContent=usedMethods.map(m=>METHOD_META[m].icon).join(' ');
+      item.append(nameEl,methodIcons);
+      item.addEventListener('click',()=>{
+        mapList.querySelectorAll('.enc-map-item').forEach(i=>i.classList.remove('active'));
+        item.classList.add('active'); currentMap=mapKey;
+        renderPokemonDetail(mapKey,hits,q2);
+      });
+      mapList.appendChild(item);
+    });
+    detail.innerHTML=`<div style="color:var(--gray);font-size:12px;padding:30px;text-align:center;">← ${resultEntries.length} location${resultEntries.length>1?'s':''} found for <b style="color:var(--text);">${monName}</b></div>`;
+  }
+
+  function renderPokemonDetail(mapKey,hits,q2){
+    detail.innerHTML='';
+    // Map image
+    const mapImg=document.createElement('img');
+    mapImg.src=mapImgUrl(mapKey);
+    mapImg.style.cssText='width:100%;border-radius:10px;margin-bottom:14px;display:block;max-height:240px;object-fit:cover;';
+    mapImg.onerror=()=>mapImg.style.display='none';
+    detail.appendChild(mapImg);
+    // Title
+    const title=document.createElement('div');title.style.cssText='font-size:14px;font-weight:700;margin-bottom:12px;';title.textContent=mapToName(mapKey);detail.appendChild(title);
+    hits.forEach(({displayName,monData,method,times,minLevel,maxLevel,rate})=>{
+      if(!activeMethods.has(method)) return;
+      const meta=METHOD_META[method];
+      const chip=document.createElement('div');chip.className='enc-mon-chip';
+      chip.style.cssText=`border-color:${meta.col}44;margin-bottom:8px;width:100%;`;
+      const img=document.createElement('img');
+      img.style.cssText='width:52px;height:52px;image-rendering:pixelated;flex-shrink:0;';
+      if(monData){img.src=`${PKM_BASE1}${getSpriteFile(monData)}.png`;img.onerror=()=>iconUrlFallback(img,monData.id,getSpriteFile(monData));}
+      const info=document.createElement('div');info.className='enc-mon-info';info.style.flex='1';
+      const name=document.createElement('div');name.className='enc-mon-name';name.textContent=displayName;
+      const lvl=document.createElement('div');lvl.className='enc-mon-sub';lvl.textContent=`Lv. ${minLevel}${minLevel!==maxLevel?'–'+maxLevel:''}`;
+      const typeRow=document.createElement('div');typeRow.style.cssText='display:flex;gap:3px;margin-top:2px;';
+      if(monData){typeRow.appendChild(tb(monData.t1));if(monData.t2)typeRow.appendChild(tb(monData.t2));}
+      info.append(name,lvl,typeRow);
+      const right=document.createElement('div');right.style.cssText='display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;';
+      const ratePill=document.createElement('div');ratePill.className='enc-rate-pill';ratePill.textContent=rate+'%';
+      const methodTag=document.createElement('div');methodTag.style.cssText=`font-size:9px;color:${meta.col};font-family:'Press Start 2P',monospace;`;methodTag.textContent=meta.icon+' '+meta.label;
+      const timePills=document.createElement('div');timePills.style.cssText='display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;';
+      times.forEach(t=>{ const p=document.createElement('span');p.textContent=TIME_ICONS[t]||t;p.title=t;p.style.cssText='font-size:14px;';timePills.appendChild(p); });
+      right.append(ratePill,methodTag,timePills);
+      chip.append(img,info,right);
+      if(monData) chip.addEventListener('click',()=>showPokedex(monData));
+      detail.appendChild(chip);
+    });
+  }
+
+  mapSearch.addEventListener('input',()=>{
+    const q=mapSearch.value.trim();
+    if(searchMode==='location'){
+      const ql=q.toLowerCase();
+      mapList.querySelectorAll('.enc-map-item').forEach(item=>{ item.style.display=item.textContent.toLowerCase().includes(ql)?'':'none'; });
+      mapList.querySelectorAll('.enc-map-group-header').forEach(hdr=>{ let next=hdr.nextElementSibling;let any=false; while(next&&next.classList.contains('enc-map-item')){if(next.style.display!=='none')any=true;next=next.nextElementSibling;} hdr.style.display=any?'':'none'; });
+    } else {
+      if(q.length>=2) buildPokemonSearch(q);
+      else{ mapList.innerHTML='<div style="padding:20px;color:var(--gray);font-size:11px;">Type at least 2 letters…</div>'; detail.innerHTML=''; }
+    }
+  });
+
+  function renderDetail(timeEntries){
+    detail.innerHTML='';
+    if(!timeEntries.length) return;
+    const mapKey=timeEntries[0].map;
+    // Map image
+    const mapImg=document.createElement('img');
+    mapImg.src=mapImgUrl(mapKey);
+    mapImg.style.cssText='width:100%;border-radius:10px;margin-bottom:14px;display:block;max-height:240px;object-fit:cover;';
+    mapImg.onerror=()=>mapImg.style.display='none';
+    detail.appendChild(mapImg);
+
+    // Header row: location name + chart button
+    const detailHdr=document.createElement('div');
+    detailHdr.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
+    const locTitle=document.createElement('div');locTitle.style.cssText='font-size:14px;font-weight:700;';locTitle.textContent=mapToName(mapKey);
+    const chartBtn=document.createElement('button');chartBtn.type='button';
+    chartBtn.style.cssText='font-size:10px;padding:5px 12px;border-radius:7px;border:1px solid rgba(100,181,246,.4);background:rgba(100,181,246,.1);color:#64b5f6;cursor:pointer;transition:all .2s;font-family:"Press Start 2P",monospace;';
+    chartBtn.textContent='📊 Types';
+    chartBtn.addEventListener('click',()=>showTypeChart(timeEntries));
+    detailHdr.append(locTitle,chartBtn);
+    detail.appendChild(detailHdr);
+    // Get available times
+    const availTimes=timeEntries.map(e=>{ const lbl=e.base_label; for(const t of TIME_LABELS){if(lbl.endsWith('_'+t)||lbl.includes('_'+t+'_'))return t;} return 'Day'; });
+    const uniqueTimes=[...new Set(availTimes.length?availTimes:['Day'])];
+    if(uniqueTimes.length<=1){
+      buildMethodSections(timeEntries[0]||{},detail);
+      return;
+    }
+    // Time tabs
+    const tabs=document.createElement('div');tabs.className='enc-time-tabs';
+    const methods=document.createElement('div');detail.append(tabs,methods);
+    uniqueTimes.forEach(t=>{
+      const tab=document.createElement('button');tab.type='button';tab.className='enc-time-tab';
+      const tabIcon=document.createElement('div');tabIcon.style.cssText='font-size:24px;line-height:1;';tabIcon.textContent=TIME_ICONS[t]||'🕐';
+      const tabLbl=document.createElement('div');tabLbl.style.cssText='font-size:8px;font-family:"Press Start 2P",monospace;';tabLbl.textContent=t;
+      tab.append(tabIcon,tabLbl); tab.dataset.time=t;
+      if(t===currentTime) tab.classList.add('active');
+      tab.addEventListener('click',()=>{
+        currentTime=t;
+        tabs.querySelectorAll('.enc-time-tab').forEach(b=>b.classList.toggle('active',b.dataset.time===t));
+        methods.innerHTML='';
+        const idx=availTimes.indexOf(t); const entry=timeEntries[idx]||timeEntries[0];
+        buildMethodSections(entry,methods);
+      });
+      tabs.appendChild(tab);
+    });
+    const firstIdx=availTimes.indexOf(currentTime); const firstEntry=timeEntries[firstIdx]||timeEntries[0];
+    buildMethodSections(firstEntry,methods);
+  }
+
+  function refreshCurrentDetail(){
+    if(currentMap && encData) renderDetail(encData.filter(e=>e.map===currentMap));
+  }
+
+  function buildMethodSections(entry,container){
+    let hasAny=false;
+    METHODS_ALL.forEach(method=>{
+      if(!activeMethods.has(method)) return;
+      const meta=METHOD_META[method];
+      let slots=[];
+      if(meta.isFishing){
+        // Extract rod-specific slots from fishing_mons — keep a live reference
+        // (`ref`) to the actual object so edits mutate the real data, not a copy.
+        const fishData=entry['fishing_mons'];
+        if(!fishData||!fishData.mons) return;
+        slots=meta.slots.map((slotIdx,i)=>({ref:fishData.mons[slotIdx],rate:meta.rates[i]})).filter(s=>s.ref);
+      } else {
+        const data=entry[method];
+        if(!data||!data.mons||!data.mons.length) return;
+        slots=data.mons.map((mon,i)=>({ref:mon,rate:meta.rates[i]||'?'}));
+      }
+      if(!slots.length) return;
+      hasAny=true;
+      const sect=document.createElement('div');sect.className='enc-method-section';
+      const title=document.createElement('div');
+      title.style.cssText=`background:${meta.col}18;color:${meta.col};border:1px solid ${meta.col}33;font-family:'Press Start 2P',monospace;font-size:9px;padding:5px 10px;border-radius:6px;margin-bottom:8px;display:inline-block;`;
+      title.textContent=`${meta.icon} ${meta.label}`;
+      const monGrid=document.createElement('div');monGrid.className='enc-mon-grid';
+      slots.forEach(slot=>{
+        const rate=slot.rate||'?';
+        const {mon:monData,displayName}=speciesNameToMon(slot.ref.species);
+        const chip=document.createElement('div');chip.className='enc-mon-chip editable';chip.style.borderColor=meta.col+'33';
+        const img=document.createElement('img');
+        if(monData){img.src=`${PKM_BASE1}${getSpriteFile(monData)}.png`;img.onerror=()=>iconUrlFallback(img,monData.id,getSpriteFile(monData));}
+        else{img.style.cssText='width:52px;height:52px;opacity:.2;';}
+        const info=document.createElement('div');info.className='enc-mon-info';
+        const name=document.createElement('div');name.className='enc-mon-name';name.textContent=displayName;
+        const sub=document.createElement('div');sub.className='enc-mon-sub';sub.textContent=`Lv. ${slot.ref.min_level}${slot.ref.min_level!==slot.ref.max_level?'–'+slot.ref.max_level:''}`;
+        const typeRow=document.createElement('div');typeRow.style.cssText='display:flex;gap:3px;flex-wrap:wrap;';
+        if(monData){typeRow.appendChild(tb(monData.t1));if(monData.t2)typeRow.appendChild(tb(monData.t2));}
+        const right=document.createElement('div');right.style.cssText='display:flex;flex-direction:column;align-items:flex-end;gap:4px;';
+        const ratePill=document.createElement('div');ratePill.className='enc-rate-pill';ratePill.textContent=rate+'%';
+        const editHint=document.createElement('div');editHint.className='enc-edit-hint';editHint.textContent='✏️ change';
+        right.append(ratePill,editHint);
+        info.append(name,sub,typeRow); chip.append(img,info,right);
+        chip.addEventListener('click',()=>{
+          openSpeciesPicker(monData,(newMon)=>{
+            slot.ref.species=nameToSpeciesKey(newMon.name);
+            refreshCurrentDetail();
+          });
+        });
+        monGrid.appendChild(chip);
+      });
+      sect.append(title,monGrid); container.appendChild(sect);
+    });
+    if(!hasAny){
+      const empty=document.createElement('div');empty.style.cssText='color:var(--gray);font-size:12px;padding:20px;text-align:center;';
+      empty.textContent='No encounter data for this location / filter.';container.appendChild(empty);
+    }
+  }
+
+  // ── Robust SPECIES_ → ALL_MON index ─────────────────────────────────────
+  const SPECIES_INDEX=(()=>{
+    const idx={};
+    const norm=s=>s.toLowerCase().replace(/[''\.♀♂:]/g,'').replace(/\s+/g,'_').replace(/-/g,'_').replace(/[()]/g,'');
+    ALL_MON.forEach(m=>{
+      idx[norm(m.name)]=m;
+      const base=m.name.replace(/\s*\([^)]*\)/g,'').replace(/^(Mega|GMax|Galarian|Hisuian|Alolan|Paldean)-/i,'').trim();
+      if(!idx[norm(base)]) idx[norm(base)]=m;
+    });
+    const OVERRIDES={
+      'SPECIES_NIDORAN_F':'Nidoran♀','SPECIES_NIDORAN_M':'Nidoran♂',
+      'SPECIES_FARFETCHD':'Farfetch\'d','SPECIES_FARFETCHD_GALAR':'Galarian-Farfetch\'d',
+      'SPECIES_MIME_JR':'Mime Jr.','SPECIES_JANGMO_O':'Jangmo-o',
+      'SPECIES_TYPE_NULL':'Type: Null','SPECIES_MR_MIME':'Mr. Mime',
+      'SPECIES_MR_RIME':'Mr. Rime','SPECIES_MR_MIME_GALAR':'Mr. Mime (Galarian)',
+      'SPECIES_FLABEBE':'Flabébé','SPECIES_FLABEBE_BLUE':'Flabébé',
+      'SPECIES_FLABEBE_RED':'Flabébé','SPECIES_FLABEBE_YELLOW':'Flabébé',
+      'SPECIES_FLABEBE_WHITE':'Flabébé','SPECIES_FLABEBE_ORANGE':'Flabébé',
+      'SPECIES_BASCULIN_RED_STRIPED':'Basculin (Red)','SPECIES_BASCULIN_BLUE_STRIPED':'Basculin (Blue)',
+      'SPECIES_SHELLOS_WEST':'Shellos (West Sea)','SPECIES_SHELLOS_EAST':'Shellos (East Sea)',
+      'SPECIES_GASTRODON_WEST':'Gastrodon (West Sea)','SPECIES_GASTRODON_EAST':'Gastrodon (East Sea)',
+      'SPECIES_GRENINJA':'Greninja (Normal)','SPECIES_GRENINJA_ASH':'Greninja (Ash)',
+      'SPECIES_KELDEO':'Keldeo (Ordianry)','SPECIES_KELDEO_RESOLUTE':'Keldeo (Resolute)',
+      'SPECIES_SHAYMIN':'Shaymin (Land)','SPECIES_SHAYMIN_SKY':'Shaymin (Sky)',
+      'SPECIES_SILVALLY':'Silvally (Normal)',
+      'SPECIES_MORPEKO_FULL_BELLY':'Morpeko (Full Belly)','SPECIES_MORPEKO_HANGRY':'Morpeko (Hangry)',
+      'SPECIES_WISHIWASHI_SOLO':'Wishiwashi (Solo)','SPECIES_WISHIWASHI_SCHOOL':'Wishiwashi (School)',
+      'SPECIES_OGERPON_TEAL':'Ogerpon (Teal)',
+    };
+    const FAMILY_FALLBACKS={
+      'ALCREMIE':'Alcremie','UNOWN':'Unown (A)','SCATTERBUG':'Scatterbug (Icy Snow)',
+      'PIKACHU_COSPLAY':'Pikachu','PIKACHU_HOENN':'Pikachu','PIKACHU_KALOS':'Pikachu',
+      'PIKACHU_SINNOH':'Pikachu','PIKACHU_UNOVA':'Pikachu','PIKACHU_WORLD':'Pikachu',
+      'PIKACHU_PARTNER':'Pikachu','PICHU_SPIKY_EARED':'Pichu',
+      'BURMY_SANDY':'Burmy','BURMY_TRASH':'Burmy',
+      'DEERLING_SUMMER':'Deerling','DEERLING_AUTUMN':'Deerling','DEERLING_WINTER':'Deerling',
+    };
+    return (species)=>{
+      if(!species||species==='SPECIES_NONE') return null;
+      if(OVERRIDES[species]){
+        const name=OVERRIDES[species];
+        return ALL_MON.find(x=>x.name===name)||ALL_MON.find(x=>x.name.startsWith(name.split(' ')[0]))||null;
+      }
+      const raw=species.replace('SPECIES_','');
+      for(const [key,name] of Object.entries(FAMILY_FALLBACKS)){
+        if(raw===key||raw.startsWith(key+'_')){
+          return ALL_MON.find(x=>x.name===name)||null;
+        }
+      }
+      const n=norm(raw.replace(/_/g,' '));
+      if(idx[n]) return idx[n];
+      const parts=raw.split('_');
+      for(let i=parts.length;i>0;i--){
+        const attempt=norm(parts.slice(0,i).join(' '));
+        if(idx[attempt]) return idx[attempt];
+      }
+      return null;
+    };
+  })();
+
+  function showTypeChart(timeEntries){
+    // Collect all unique mons across active methods and all times
+    const TYPE_COLS={'Normal':'#9099a1','Fire':'#e8622a','Water':'#4f90d3','Electric':'#f0c600','Grass':'#4caf50','Ice':'#5fd8d8','Fighting':'#d1425a','Poison':'#a040a0','Ground':'#d68b23','Flying':'#7d8bca','Psychic':'#db3c6c','Bug':'#8da12e','Rock':'#b29a3c','Ghost':'#5d5e9d','Dragon':'#5b61cf','Dark':'#5c4c3e','Steel':'#8e9bb3','Fairy':'#d980a0'};
+    const typeCounts={};
+    const seenSpecies=new Set();
+    timeEntries.forEach(e=>{
+      METHODS_ALL.forEach(method=>{
+        if(!activeMethods.has(method)) return;
+        const meta=METHOD_META[method];
+        let mons=[];
+        if(meta.isFishing){
+          const fd=e['fishing_mons'];
+          if(!fd||!fd.mons) return;
+          mons=meta.slots.map(s=>fd.mons[s]).filter(Boolean);
+        } else {
+          const data=e[method];
+          if(!data||!data.mons) return;
+          mons=data.mons;
+        }
+        mons.forEach(mon=>{
+          if(seenSpecies.has(mon.species)) return;
+          seenSpecies.add(mon.species);
+          const {mon:monData}=speciesNameToMon(mon.species);
+          if(!monData) return;
+          [monData.t1,monData.t2].filter(Boolean).forEach(t=>{
+            typeCounts[t]=(typeCounts[t]||0)+1;
+          });
+        });
+      });
+    });
+
+    const sorted=Object.entries(typeCounts).sort((a,b)=>b[1]-a[1]);
+    const total=sorted.reduce((s,[,n])=>s+n,0);
+    const mapName=mapToName(timeEntries[0].map);
+
+    // Build popup
+    const overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;z-index:1300;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
+    overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+    const box=document.createElement('div');
+    box.style.cssText='background:#13192a;border:2px solid rgba(100,181,246,.3);border-radius:14px;width:100%;max-width:480px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;';
+    // Popup header
+    const ph=document.createElement('div');
+    ph.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);background:rgba(100,181,246,.06);flex-shrink:0;';
+    const ptitle=document.createElement('div');ptitle.style.cssText='font-size:12px;font-weight:700;';ptitle.textContent='Type Distribution — '+mapName;
+    const pcl=document.createElement('button');pcl.type='button';pcl.style.cssText='background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:var(--gray);font-size:14px;padding:3px 9px;cursor:pointer;';pcl.textContent='✕';
+    pcl.addEventListener('click',()=>overlay.remove());
+    ph.append(ptitle,pcl); box.appendChild(ph);
+    // Chart body
+    const pb=document.createElement('div');pb.style.cssText='padding:16px;overflow-y:auto;';
+    const subline=document.createElement('div');subline.style.cssText='font-size:11px;color:var(--gray);margin-bottom:14px;';
+    subline.textContent=`${seenSpecies.size} unique Pokémon · ${sorted.length} types · count includes dual types`;
+    pb.appendChild(subline);
+    sorted.forEach(([type,count])=>{
+      const col=TYPE_COLS[type]||'#888';
+      const pct=Math.round(count/total*100);
+      const row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:80px 1fr 36px;gap:8px;align-items:center;margin-bottom:10px;';
+      const lbl=document.createElement('div');lbl.style.cssText=`font-size:9px;font-family:'Press Start 2P',monospace;padding:3px 6px;border-radius:4px;background:${col}22;color:${col};border:1px solid ${col}44;text-align:center;`;lbl.textContent=type;
+      const barBg=document.createElement('div');barBg.style.cssText='background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;height:18px;';
+      const barFill=document.createElement('div');barFill.style.cssText=`height:100%;border-radius:4px;background:${col};width:0%;transition:width .6s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;padding-left:6px;font-size:9px;font-weight:700;color:#fff;`;
+      barFill.textContent=count;
+      barBg.appendChild(barFill);
+      const pctEl=document.createElement('div');pctEl.style.cssText=`font-size:10px;font-weight:700;color:${col};text-align:right;`;pctEl.textContent=pct+'%';
+      row.append(lbl,barBg,pctEl); pb.appendChild(row);
+      setTimeout(()=>{barFill.style.width=Math.max(8,Math.round(count/sorted[0][1]*100))+'%';},30);
+    });
+    box.appendChild(pb); overlay.appendChild(box); document.body.appendChild(overlay);
+  }
+
+  function speciesNameToMon(species){
+    const mon=SPECIES_INDEX(species);
+    if(mon) return {mon, displayName:mon.name};
+    const raw=species.replace('SPECIES_','').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    return {mon:null, displayName:raw};
+  mapSearch.addEventListener('input',()=>{
+    const q=mapSearch.value.trim();
+    if(searchMode==='location'){
+      const ql=q.toLowerCase();
+      mapList.querySelectorAll('.enc-map-item').forEach(item=>{ item.style.display=item.textContent.toLowerCase().includes(ql)?'':'none'; });
+      mapList.querySelectorAll('.enc-map-group-header').forEach(hdr=>{ let next=hdr.nextElementSibling;let any=false; while(next&&next.classList.contains('enc-map-item')){if(next.style.display!=='none')any=true;next=next.nextElementSibling;} hdr.style.display=any?'':'none'; });
+    } else {
+      if(q.length>=2) buildPokemonSearch(q);
+      else{ mapList.innerHTML='<div style="padding:20px;color:var(--gray);font-size:11px;">Type at least 2 letters…</div>'; detail.innerHTML=''; }
+    }
+  });
+  }
+}
+
 let WILD_ENC=null;
 function initEncBrowser(){
   const btn=document.getElementById('enc-browser-btn');
@@ -2708,9 +3417,11 @@ function initEncBrowser(){
 // for now so nothing else has to be untangled while we iterate).
 loadPokemonData().then(()=>{
   document.getElementById('loadingScreen')?.remove();
-  initDexBrowser();
+  SPECIES_INDEX=buildSpeciesIndex();
+  initEncEditor();
   initPoolBrowser();
   initEncBrowser();
+  initDexBrowser();
   console.log('\u2713 Wonniland Wiki ready');
 }).catch(e=>{
   const ls=document.getElementById('loadingScreen');
