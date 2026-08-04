@@ -146,6 +146,50 @@
     #enc-map-list{width:220px;min-width:220px;border-right:1px solid var(--border);overflow-y:auto;max-height:70vh;flex-shrink:0;}
     #enc-detail{flex:1;overflow-y:auto;max-height:70vh;padding:16px;}
     #enc-body{display:flex;}
+    /* ── Emerald Text Formatter (restyled to match the site's dark theme; the
+       in-game preview box further down keeps its real game colors on purpose) ── */
+    #fmt-browser{width:100%;max-width:min(1100px,calc(100vw - 64px));margin-bottom:24px;animation:fadeUp .5s ease 0s both;}
+    #fmt-browser-btn{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 24px;border-radius:14px;border:2px solid rgba(77,182,172,.35);background:linear-gradient(135deg,rgba(77,182,172,.08),rgba(38,166,154,.03));cursor:pointer;transition:all .25s;width:100%;font-family:'Press Start 2P',monospace;font-size:11px;color:#4db6ac;letter-spacing:.5px;}
+    #fmt-browser-btn:hover{border-color:#4db6ac;background:rgba(77,182,172,.12);transform:translateY(-2px);}
+    #fmt-panel{display:none;margin-top:12px;background:#111827;border:1px solid rgba(77,182,172,.25);border-radius:14px;overflow:hidden;padding:20px;}
+    #fmt-panel .fmt-sub{color:var(--gray);margin:0 0 18px;font-size:12px;}
+    .fmt-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+    @media(max-width:880px){.fmt-layout{grid-template-columns:1fr;}}
+    .fmt-panel-inner{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;padding:16px 16px 18px;}
+    .fmt-panel-inner h3{font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:.5px;margin:0 0 12px;color:#4db6ac;display:flex;align-items:center;gap:8px;}
+    .fmt-panel-inner h3::before{content:'';width:7px;height:7px;background:#4db6ac;display:inline-block;border-radius:1px;transform:rotate(45deg);flex-shrink:0;}
+    #fmt-input{width:100%;min-height:140px;resize:vertical;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Consolas','Menlo','Courier New',monospace;font-size:13px;line-height:1.5;background:#0d1117;color:var(--text);box-sizing:border-box;}
+    #fmt-input:focus{outline:2px solid #4db6ac;outline-offset:1px;}
+    .fmt-hint{font-size:11px;color:var(--gray);margin:8px 0 16px;line-height:1.5;}
+    .fmt-hint code{background:rgba(255,255,255,.06);padding:1px 4px;border-radius:3px;}
+    .fmt-options{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-bottom:4px;}
+    .fmt-opt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--text);padding:6px 0;border-bottom:1px dashed var(--border);}
+    .fmt-opt-row label{cursor:pointer;}
+    .fmt-opt-row input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:#4db6ac;}
+    .fmt-opt-row input[type="number"]{width:56px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:'Consolas','Menlo','Courier New',monospace;text-align:center;background:#0d1117;color:var(--text);}
+    .fmt-opt-row select{padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:'Consolas','Menlo','Courier New',monospace;font-size:11.5px;background:#0d1117;color:var(--text);}
+    .fmt-stats{display:flex;gap:14px;font-size:11px;color:var(--gray);margin-top:10px;flex-wrap:wrap;}
+    .fmt-stats b{color:#4db6ac;}
+    .fmt-code-wrap{position:relative;margin-top:4px;}
+    pre#fmt-output{background:#0d1117;color:#cfd8e6;font-family:'Consolas','Menlo','Courier New',monospace;font-size:12.5px;line-height:1.65;padding:16px;border-radius:8px;overflow-x:auto;white-space:pre;min-height:90px;margin:0;border:1px solid var(--border);}
+    pre#fmt-output .kw{color:#4db6ac;}
+    pre#fmt-output .str{color:#f0c987;}
+    .fmt-copy-btn{position:absolute;top:10px;right:10px;background:#4db6ac;color:#0a1f1c;border:none;font-weight:700;font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;letter-spacing:.3px;}
+    .fmt-copy-btn:hover{background:#26a69a;color:#fff;}
+    .fmt-copy-btn.copied{background:#4CAF50;color:#fff;}
+    /* In-game preview keeps its real, game-accurate colors (white box, teal border) —
+       intentionally not reskinned, this is a WYSIWYG preview, not app chrome. */
+    .fmt-gba-screen{background:#1a1a1a;border:3px solid #000;border-radius:8px;padding:18px 14px;margin-top:8px;}
+    .fmt-scale-note{font-size:11px;color:#ccc;opacity:.75;margin:-10px 0 12px 2px;font-family:'Consolas','Menlo','Courier New',monospace;}
+    .fmt-textbox{box-sizing:content-box;background:#ffffff;border:4px solid rgb(112,200,160);border-radius:22px;box-shadow:0 3px 0 rgba(0,0,0,.25);padding:12px 18px;margin:0 auto 16px;position:relative;overflow:visible;}
+    .fmt-textbox:last-child{margin-bottom:0;}
+    .fmt-textbox .fmt-pixel-line{white-space:nowrap;line-height:1;display:block;}
+    .fmt-textbox .fmt-pixel-line:not(:last-child){margin-bottom:4px;}
+    .fmt-glyph{display:inline-block;background-image:var(--fmt-atlas-url);background-repeat:no-repeat;image-rendering:pixelated;image-rendering:crisp-edges;vertical-align:top;overflow:hidden;}
+    .fmt-glyph.fmt-tokenpill{display:inline-flex;align-items:center;justify-content:center;background:#6890c8;color:#f8f8f0;font-family:'Consolas','Menlo','Courier New',monospace;font-weight:700;border-radius:2px;overflow:visible;padding:0 3px;white-space:nowrap;}
+    .fmt-textbox .fmt-page-marker{position:absolute;bottom:5px;right:8px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid rgb(112,200,160);}
+    .fmt-page-label{font-size:11px;color:#eaf0f8;margin:0 0 6px 2px;font-family:'Consolas','Menlo','Courier New',monospace;}
+    .fmt-empty-preview{color:#eaf0f8;font-size:13px;font-family:'Consolas','Menlo','Courier New',monospace;padding:10px 2px;}
     /* ── Wild Encounter Editor (same structure, amber accent = editable) ───── */
     #enc-editor{width:100%;max-width:min(1100px,calc(100vw - 64px));margin-bottom:24px;animation:fadeUp .5s ease .05s both;}
     #enc-editor-btn{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 24px;border-radius:14px;border:2px solid rgba(255,183,77,.35);background:linear-gradient(135deg,rgba(255,183,77,.08),rgba(230,150,30,.03));cursor:pointer;transition:all .25s;width:100%;font-family:'Press Start 2P',monospace;font-size:11px;color:#ffb74d;letter-spacing:.5px;}
@@ -161,6 +205,12 @@
     .enc-mon-chip.editable:hover{border-color:#ffb74d;background:rgba(255,183,77,.1);}
     .enc-mon-chip .enc-edit-hint{font-size:8px;color:#ffb74d;font-family:'Press Start 2P',monospace;opacity:0;transition:opacity .15s;}
     .enc-mon-chip.editable:hover .enc-edit-hint{opacity:1;}
+    /* Uniform tile size inside the Wild Encounter Editor only (Browser keeps its own flow layout) */
+    #enc-editor-detail .enc-mon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:8px;align-items:stretch;}
+    #enc-editor-detail .enc-mon-chip{width:100%;height:80px;box-sizing:border-box;}
+    #enc-editor-detail .enc-mon-info{flex:1;min-width:0;}
+    #enc-editor-detail .enc-mon-name,#enc-editor-detail .enc-mon-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    #enc-editor-panel-header{flex-wrap:wrap;row-gap:8px;}
     .enc-map-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;transition:background .15s;line-height:1.4;}
     .enc-map-item:hover{background:rgba(100,181,246,.07);}
     .enc-map-item.active{background:rgba(100,181,246,.12);border-left:3px solid #64b5f6;color:#64b5f6;font-weight:700;}
@@ -564,6 +614,76 @@
   <h1>WONNILAND<br/>WIKI</h1>
   <p>Pokédex & Wild Encounter reference for Wonni's Pokémon Wonniland version adventure!</p>
 </header>
+
+<!-- ── Emerald Text Formatter (restyled, moved in from a companion tool) ── -->
+<div id="fmt-browser">
+  <button id="fmt-browser-btn">📝 EMERALD TEXT FORMATTER &nbsp;▼</button>
+  <div id="fmt-panel">
+    <p class="fmt-sub">Type dialogue text, get in-game-formatted <code>.string</code> lines out — built for Pokémon Emerald Expansion / pokeemerald scripts.</p>
+    <div class="fmt-layout">
+      <!-- LEFT: input + options -->
+      <div class="fmt-panel-inner">
+        <h3>Input</h3>
+        <textarea id="fmt-input" placeholder="Type your dialogue text here...
+
+Blank line = new page (\p)
+Everything else gets wrapped automatically.">Oh? Your Pokemon... it evolved into something amazing!
+
+I've never seen anything like this before - are you sure it's the same one?</textarea>
+        <div class="fmt-hint">Tip: a <b>blank line</b> in the input = an intentional page break (<code>\p</code>). Everything else gets re-wrapped automatically, your own line breaks are ignored. Wrapping uses the real pixel widths from <code>gFontNormalLatinGlyphWidths</code> (FONT_NORMAL) – 208px is the Emerald default dialogue box width, adjust it if your UI layout differs.</div>
+
+        <h3>Options</h3>
+        <div class="fmt-options">
+          <div class="fmt-opt-row">
+            <label for="fmt-optQuotes">Straight " &rarr; curly “ ”</label>
+            <input type="checkbox" id="fmt-optQuotes" checked>
+          </div>
+          <div class="fmt-opt-row">
+            <label for="fmt-optEllipsis">... &rarr; …</label>
+            <input type="checkbox" id="fmt-optEllipsis" checked>
+          </div>
+          <div class="fmt-opt-row">
+            <label for="fmt-optDash">-- &rarr; — (em dash)</label>
+            <input type="checkbox" id="fmt-optDash">
+          </div>
+          <div class="fmt-opt-row">
+            <label for="fmt-optCaps">pokemon &rarr; POKéMON (automatic)</label>
+            <input type="checkbox" id="fmt-optCaps">
+          </div>
+          <div class="fmt-opt-row">
+            <label for="fmt-maxChars">Max. width (pixels)</label>
+            <input type="number" id="fmt-maxChars" value="208" min="60" max="240">
+          </div>
+          <div class="fmt-opt-row">
+            <label for="fmt-linesPerPage">Lines / textbox page</label>
+            <input type="number" id="fmt-linesPerPage" value="2" min="1" max="4">
+          </div>
+          <div class="fmt-opt-row" style="grid-column:1/-1;">
+            <label for="fmt-breakStyle">Break between pages</label>
+            <select id="fmt-breakStyle">
+              <option value="p">\p — box clears, new page (default)</option>
+              <option value="l">\l — text scrolls up, box stays open</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fmt-stats" id="fmt-stats"></div>
+      </div>
+
+      <!-- RIGHT: output + preview -->
+      <div class="fmt-panel-inner">
+        <h3>Generated Code</h3>
+        <div class="fmt-code-wrap">
+          <button class="fmt-copy-btn" id="fmt-copyBtn">Copy</button>
+          <pre id="fmt-output"></pre>
+        </div>
+
+        <h3 style="margin-top:20px;">Preview (in-game look)</h3>
+        <div class="fmt-gba-screen" id="fmt-preview"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ── Wild Encounter Editor (editable copy of the Wild Encounter Browser) ── -->
 <div id="enc-editor">
@@ -2073,6 +2193,15 @@ function speciesNameToMon(species){
 // regular/regional-form cases, but it's a guess, not a lookup — double-check the
 // generated key for cosmetic-only forms (Alcremie flavors, Unown letters, Vivillon
 // patterns, etc.) before relying on it outside this editor.
+// Triggers a client-side JSON file download (no server needed — works on GitHub Pages)
+function downloadJSON(obj, filename){
+  const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
 function nameToSpeciesKey(name){
   return 'SPECIES_'+(name||'').toUpperCase()
     .replace(/♀/g,'_F').replace(/♂/g,'_M')
@@ -2407,6 +2536,252 @@ function initPoolBrowser(){
 }
 
 // ── ENCOUNTER BROWSER ─────────────────────────────────────────────────────────
+// ── EMERALD TEXT FORMATTER (moved in from a companion tool, ids/classes namespaced
+// with fmt- so nothing here can collide with the rest of the page) ────────────────
+function initFormatterTool(){
+  const $=id=>document.getElementById(id);
+  const input=$('fmt-input');
+  const output=$('fmt-output');
+  const preview=$('fmt-preview');
+  const stats=$('fmt-stats');
+  const copyBtn=$('fmt-copyBtn');
+
+  const optQuotes=$('fmt-optQuotes');
+  const optEllipsis=$('fmt-optEllipsis');
+  const optDash=$('fmt-optDash');
+  const optCaps=$('fmt-optCaps');
+  const maxCharsInput=$('fmt-maxChars');
+  const linesPerPageInput=$('fmt-linesPerPage');
+  const breakStyleSelect=$('fmt-breakStyle');
+
+  function applyCharacterFixes(text) {
+    let t = text;
+    if (optEllipsis.checked) t = t.replace(/\.\.\.|\u2026\.*/g, '…');
+    if (optDash.checked) t = t.replace(/--/g, '—');
+    if (optCaps.checked) t = t.replace(/\bpok[eé]mon\b/gi, 'POKéMON');
+    if (optQuotes.checked) {
+      let result = '';
+      let quoteOpen = true;
+      for (let i = 0; i < t.length; i++) {
+        const ch = t[i];
+        if (ch === '"') { result += quoteOpen ? '\u201C' : '\u201D'; quoteOpen = !quoteOpen; }
+        else result += ch;
+      }
+      t = result;
+    }
+    return t;
+  }
+
+  // Pixel widths for FONT_NORMAL, derived from gFontNormalLatinGlyphWidths[] (fonts.c)
+  const CHAR_WIDTHS = {
+    ' ':3, '0':6,'1':6,'2':6,'3':6,'4':6,'5':6,'6':6,'7':6,'8':6,'9':6,
+    '!':4, '?':6, '.':3, '-':6, '\u00B7':3, '\u2026':6,
+    '\u201C':6, '\u201D':6,
+    '\u2018':3, '\u2019':3, '\'':3,
+    '\u2642':6, '\u2640':6,
+    ',':3, '\u00D7':7, '/':6, '(':4, ')':4, '&':7, '+':6, '%':6, ':':3, '$':3,
+    'A':6,'B':6,'C':6,'D':6,'E':6,'F':6,'G':6,'H':6,'I':6,'J':6,'K':6,'L':6,'M':6,'N':6,
+    'O':6,'P':6,'Q':6,'R':6,'S':6,'T':6,'U':6,'V':6,'W':6,'X':6,'Y':6,'Z':6,
+    'a':6,'b':6,'c':6,'d':6,'e':6,'f':6,'g':6,'h':6,'i':4,'j':5,'k':6,'l':4,'m':6,
+    'n':6,'o':6,'p':6,'q':6,'r':5,'s':6,'t':6,'u':6,'v':6,'w':6,'x':6,'y':6,'z':6,
+  };
+
+  const FONT_ATLAS_DATA_URI = "data:image/png;base64,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";
+
+  const GLYPH_IDS = {
+    ' ':0x00, '0':0xA1,'1':0xA2,'2':0xA3,'3':0xA4,'4':0xA5,'5':0xA6,'6':0xA7,'7':0xA8,'8':0xA9,'9':0xAA,
+    '!':0xAB, '?':0xAC, '.':0xAD, '-':0xAE, '\u00B7':0xAF, '\u2026':0xB0,
+    '\u201C':0xB1, '\u201D':0xB2, '\u2018':0xB3, '\u2019':0xB4, '\'':0xB4,
+    '\u2642':0xB5, '\u2640':0xB6, ',':0xB8, '\u00D7':0xB9, '/':0xBA,
+    '(':0x5C, ')':0x5D, '&':0x2D, '+':0x2E, '%':0x5B, ':':0xF0, '$':0xFF,
+    'A':0xBB,'B':0xBC,'C':0xBD,'D':0xBE,'E':0xBF,'F':0xC0,'G':0xC1,'H':0xC2,'I':0xC3,'J':0xC4,
+    'K':0xC5,'L':0xC6,'M':0xC7,'N':0xC8,'O':0xC9,'P':0xCA,'Q':0xCB,'R':0xCC,'S':0xCD,'T':0xCE,
+    'U':0xCF,'V':0xD0,'W':0xD1,'X':0xD2,'Y':0xD3,'Z':0xD4,
+    'a':0xD5,'b':0xD6,'c':0xD7,'d':0xD8,'e':0xD9,'f':0xDA,'g':0xDB,'h':0xDC,'i':0xDD,'j':0xDE,
+    'k':0xDF,'l':0xE0,'m':0xE1,'n':0xE2,'o':0xE3,'p':0xE4,'q':0xE5,'r':0xE6,'s':0xE7,'t':0xE8,
+    'u':0xE9,'v':0xEA,'w':0xEB,'x':0xEC,'y':0xED,'z':0xEE,
+  };
+  const ATLAS_COLS = 16;
+  const ATLAS_CELL = 16;
+  const DEFAULT_CHAR_WIDTH = 6;
+
+  function charWidth(ch) { return CHAR_WIDTHS[ch] !== undefined ? CHAR_WIDTHS[ch] : DEFAULT_CHAR_WIDTH; }
+  document.documentElement.style.setProperty('--fmt-atlas-url', `url(${FONT_ATLAS_DATA_URI})`);
+
+  function textPixelWidth(str) {
+    let w = 0, i = 0;
+    while (i < str.length) {
+      if (str[i] === '{') {
+        const end = str.indexOf('}', i);
+        if (end !== -1) { w += (end - i - 1) * DEFAULT_CHAR_WIDTH; i = end + 1; continue; }
+      }
+      w += charWidth(str[i]); i++;
+    }
+    return w;
+  }
+
+  function wrapParagraph(text, maxWidthPx) {
+    const words = text.split(/\s+/).filter(w => w.length > 0);
+    const lines = [];
+    let current = '', currentWidth = 0;
+    const spaceWidth = charWidth(' ');
+    for (const word of words) {
+      const wordWidth = textPixelWidth(word);
+      const candidateWidth = current.length === 0 ? wordWidth : currentWidth + spaceWidth + wordWidth;
+      if (candidateWidth <= maxWidthPx) {
+        current = current.length === 0 ? word : current + ' ' + word;
+        currentWidth = candidateWidth;
+      } else {
+        if (current.length > 0) lines.push(current);
+        current = word; currentWidth = wordWidth;
+      }
+    }
+    if (current.length > 0) lines.push(current);
+    return lines.length ? lines : [''];
+  }
+
+  function escapeForString(line) {
+    return line.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  }
+
+  function build() {
+    const raw = input.value;
+    const maxWidthPx = Math.max(60, parseInt(maxCharsInput.value) || 208);
+    const linesPerPage = Math.max(1, parseInt(linesPerPageInput.value) || 2);
+    const breakCode = breakStyleSelect.value === 'l' ? '\\l' : '\\p';
+    const paragraphs = raw.split(/\n\s*\n/).map(p => p.replace(/\s+/g, ' ').trim()).filter(p => p.length > 0);
+
+    if (paragraphs.length === 0) {
+      output.textContent = '';
+      preview.innerHTML = '<div class="fmt-empty-preview">(no text yet)</div>';
+      stats.innerHTML = '';
+      return;
+    }
+
+    let allPages = [];
+    for (const para of paragraphs) {
+      const fixed = applyCharacterFixes(para);
+      const wrapped = wrapParagraph(fixed, maxWidthPx);
+      for (let i = 0; i < wrapped.length; i += linesPerPage) {
+        allPages.push(wrapped.slice(i, i + linesPerPage));
+      }
+    }
+
+    let codeLines = [], totalLines = 0;
+    allPages.forEach((page, pageIdx) => {
+      const isLastPage = pageIdx === allPages.length - 1;
+      page.forEach((line, lineIdx) => {
+        const isLastLineOfPage = lineIdx === page.length - 1;
+        let terminator;
+        if (isLastPage && isLastLineOfPage) terminator = '$';
+        else if (isLastLineOfPage) terminator = breakCode;
+        else terminator = '\\n';
+        codeLines.push(`\t.string "${escapeForString(line)}${terminator}"`);
+        totalLines++;
+      });
+    });
+
+    output.innerHTML = codeLines.map(l => {
+      return l.replace(/^(\t\.string )(".*")$/, (m, kw, str) =>
+        `<span class="kw">${kw}</span><span class="str">${str.replace(/(\\n|\\p|\\l|\$)(?=")/,'</span><span class="kw">$1</span><span class="str">')}</span>`
+      );
+    }).join('\n');
+
+    const SCALE = 3;
+    const boxInnerWidth = maxWidthPx * SCALE;
+
+    preview.innerHTML = '';
+    const scaleNote = document.createElement('div');
+    scaleNote.className = 'fmt-scale-note';
+    scaleNote.textContent = `Scaled ${SCALE}x — box is ${maxWidthPx}px wide in-game, glyphs are the real font (accented letters not yet mapped fall back to plain text)`;
+    preview.appendChild(scaleNote);
+
+    allPages.forEach((page, idx) => {
+      const label = document.createElement('div');
+      label.className = 'fmt-page-label';
+      label.textContent = `Page ${idx + 1} / ${allPages.length}`;
+      preview.appendChild(label);
+
+      const box = document.createElement('div');
+      box.className = 'fmt-textbox';
+      box.style.width = boxInnerWidth + 'px';
+
+      page.forEach(line => {
+        const lineEl = document.createElement('div');
+        lineEl.className = 'fmt-pixel-line';
+        lineEl.style.height = (ATLAS_CELL * SCALE) + 'px';
+        let i = 0;
+        while (i < line.length) {
+          let token, isPlaceholder = false;
+          if (line[i] === '{') {
+            const end = line.indexOf('}', i);
+            if (end !== -1) { token = line.slice(i, end + 1); isPlaceholder = true; i = end + 1; }
+            else { token = line[i]; i++; }
+          } else { token = line[i]; i++; }
+
+          const span = document.createElement('span');
+          if (isPlaceholder) {
+            span.className = 'fmt-glyph fmt-tokenpill';
+            span.textContent = token;
+            span.style.height = (ATLAS_CELL * SCALE) + 'px';
+            span.style.fontSize = Math.round(SCALE * 3.6) + 'px';
+          } else if (GLYPH_IDS[token] !== undefined) {
+            const gid = GLYPH_IDS[token];
+            const col = gid & 0xF, row = gid >> 4;
+            span.className = 'fmt-glyph';
+            span.style.width = (charWidth(token) * SCALE) + 'px';
+            span.style.height = (ATLAS_CELL * SCALE) + 'px';
+            span.style.backgroundSize = (ATLAS_COLS * ATLAS_CELL * SCALE) + 'px ' + (ATLAS_COLS * ATLAS_CELL * SCALE) + 'px';
+            span.style.backgroundPosition = `-${col * ATLAS_CELL * SCALE}px -${row * ATLAS_CELL * SCALE}px`;
+          } else {
+            span.className = 'fmt-glyph fmt-tokenpill';
+            span.textContent = token;
+            span.style.height = (ATLAS_CELL * SCALE) + 'px';
+            span.style.fontSize = Math.round(SCALE * 3.6) + 'px';
+            span.style.background = 'transparent';
+            span.style.color = '#182028';
+            span.style.fontFamily = 'Consolas, Menlo, "Courier New", monospace';
+          }
+          lineEl.appendChild(span);
+        }
+        box.appendChild(lineEl);
+      });
+
+      if (idx < allPages.length - 1) {
+        const marker = document.createElement('div');
+        marker.className = 'fmt-page-marker';
+        box.appendChild(marker);
+      }
+      preview.appendChild(box);
+    });
+
+    const widths = allPages.flat().map(l => textPixelWidth(l));
+    const longestPx = Math.max(...widths);
+    stats.innerHTML = `<span><b>${allPages.length}</b> page(s)</span><span><b>${totalLines}</b> line(s)</span><span>Widest line: <b>${longestPx}px</b> / ${maxWidthPx}px</span>`;
+  }
+
+  [input, optQuotes, optEllipsis, optDash, optCaps, maxCharsInput, linesPerPageInput, breakStyleSelect]
+    .forEach(el => el.addEventListener('input', build));
+
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(output.textContent).then(() => {
+      copyBtn.textContent = 'Copied ✓';
+      copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1400);
+    });
+  });
+
+  const btn=$('fmt-browser-btn');
+  const panel=$('fmt-panel');
+  let open=false;
+  btn.addEventListener('click',()=>{
+    open=!open; panel.style.display=open?'block':'none';
+    btn.textContent=open?'📝 EMERALD TEXT FORMATTER  ▲':'📝 EMERALD TEXT FORMATTER  ▼';
+  });
+
+  build();
+}
+
 // ── WILD ENCOUNTER EDITOR (editable copy of the Wild Encounter Browser) ──────
 // Works on its own in-memory copy of wild_encounters.json — edits made here are
 // session-only for now (not saved back to a file, not synced to the read-only
@@ -2419,7 +2794,7 @@ function initEncEditor(){
   const mapSearch=document.getElementById('enc-editor-map-search');
   const mapList=document.getElementById('enc-editor-map-list');
   const detail=document.getElementById('enc-editor-detail');
-  let open=false, encData=null, currentMap=null, currentTime='Morning';
+  let open=false, encData=null, encGroupMeta=null, currentMap=null, currentTime='Morning';
   const RATES_LAND=[15,10,10,10,10,10,10,5,5,5,5,5];
   const RATES_WATER=[50,20,15,10,5];
   const RATES_FISH=[70,30,60,20,20];
@@ -2496,12 +2871,53 @@ function initEncEditor(){
   });
   panel.insertBefore(methodBar, document.getElementById('enc-editor-body'));
 
+  // ── Editor tools: Clear All + Export ────────────────────────────────────────
+  const toolsBar=document.createElement('div');
+  toolsBar.style.cssText='display:flex;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;';
+  const clearAllBtn=document.createElement('button');clearAllBtn.type='button';
+  clearAllBtn.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;border:1px solid rgba(229,115,115,.4);background:rgba(229,115,115,.1);color:#e57373;cursor:pointer;font-family:"Press Start 2P",monospace;';
+  clearAllBtn.textContent='🗑️ Clear All';
+  clearAllBtn.addEventListener('click',()=>{
+    if(!currentMap||!encData){ alert('Select a route first.'); return; }
+    if(!confirm(`Clear ALL encounter slots for ${mapToName(currentMap)}? (session only — cannot be undone)`)) return;
+    const DIRECT_KEYS=['land_mons','water_mons','rock_smash_mons','fishing_mons','hidden_mons'];
+    encData.filter(e=>e.map===currentMap).forEach(entry=>{
+      DIRECT_KEYS.forEach(key=>{
+        const block=entry[key];
+        if(block&&Array.isArray(block.mons)) block.mons.forEach(m=>{ if(m) m.species='SPECIES_NONE'; });
+      });
+    });
+    refreshCurrentDetail();
+  });
+  toolsBar.appendChild(clearAllBtn);
+  const exportRouteBtn=document.createElement('button');exportRouteBtn.type='button';
+  exportRouteBtn.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;border:1px solid rgba(129,199,132,.4);background:rgba(129,199,132,.1);color:#81c784;cursor:pointer;font-family:"Press Start 2P",monospace;';
+  exportRouteBtn.textContent='📤 Export Route';
+  exportRouteBtn.addEventListener('click',()=>{
+    if(!currentMap||!encData){ alert('Select a route first.'); return; }
+    const payload={wild_encounter_groups:[{...(encGroupMeta||{}),encounters:encData.filter(e=>e.map===currentMap)}]};
+    downloadJSON(payload,`wild_encounters_${currentMap.replace('MAP_','').toLowerCase()}.json`);
+  });
+  toolsBar.appendChild(exportRouteBtn);
+  const exportAllBtn=document.createElement('button');exportAllBtn.type='button';
+  exportAllBtn.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;border:1px solid rgba(255,183,77,.4);background:rgba(255,183,77,.1);color:#ffb74d;cursor:pointer;font-family:"Press Start 2P",monospace;';
+  exportAllBtn.textContent='📤 Export All';
+  exportAllBtn.addEventListener('click',()=>{
+    if(!encData){ alert('Open a route first so the data is loaded.'); return; }
+    const payload={wild_encounter_groups:[{...(encGroupMeta||{}),encounters:encData}]};
+    downloadJSON(payload,'wild_encounters_export.json');
+  });
+  toolsBar.appendChild(exportAllBtn);
+  panel.insertBefore(toolsBar, document.getElementById('enc-editor-body'));
+
   async function loadEncData(){
     mapList.innerHTML='<div style="padding:20px;color:var(--gray);font-size:11px;">Loading…</div>';
     try{
       const r=await fetch('wild_encounters.json');
       const d=await r.json();
-      encData=d.wild_encounter_groups[0].encounters;
+      const grp=d.wild_encounter_groups[0];
+      encData=grp.encounters;
+      encGroupMeta={label:grp.label,for_maps:grp.for_maps,fields:grp.fields};
       buildMapList(encData);
     }catch(e){
       mapList.innerHTML='<div style="padding:20px;color:#e57373;font-size:11px;">Failed to load encounters.</div>';
@@ -3418,6 +3834,7 @@ function initEncBrowser(){
 loadPokemonData().then(()=>{
   document.getElementById('loadingScreen')?.remove();
   SPECIES_INDEX=buildSpeciesIndex();
+  initFormatterTool();
   initEncEditor();
   initPoolBrowser();
   initEncBrowser();
