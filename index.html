@@ -1125,7 +1125,7 @@ function showPokedex(mon) {
   spriteCol.append(sprite, spriteControls);
 
   const titleDiv = document.createElement('div'); titleDiv.className='pdx-title';
-  const nameDiv = document.createElement('div'); nameDiv.className='pdx-name'; nameDiv.textContent = mon.name;
+  const nameDiv = document.createElement('div'); nameDiv.className='pdx-name'; setMonNameHTML(nameDiv, mon.name);
   const numDiv = document.createElement('div'); numDiv.className='pdx-num';
   const gameId = mon.id && mon.id!=='???' ? String(mon.id).padStart(4,'0') : (mon.displayId||null);
   const dexNum = (fullData.dex_number && fullData.dex_number!=='???') ? String(fullData.dex_number) : null;
@@ -2096,7 +2096,7 @@ function initDexBrowser(){
         img.src=`${PKM_BASE1}${sf}.png`;
         img.onerror=()=>iconUrlFallback(img,m.id,m.spriteFile);
       }
-      const name=document.createElement('div');name.className='dex-name';name.textContent=m.name;
+      const name=document.createElement('div');name.className='dex-name';setMonNameHTML(name,m.name);
       const types=document.createElement('div');types.className='dex-types';
       types.appendChild(tb(m.t1)); if(m.t2) types.appendChild(tb(m.t2));
       tile.append(img,name,types);
@@ -2207,6 +2207,23 @@ function downloadJSON(obj, filename){
 // would otherwise share the same name). Everything else is classified from the
 // map name itself using real Pokémon-world geography. Verified against all 240
 // maps in the current wild_encounters.json (119 Emerald / 121 FRLG, no leftovers).
+// ── Encounter-rate rarity color scale (Wild Encounter Editor) ─────────────────
+// ── Render a Pokémon name, keeping ♀/♂ symbols at normal weight (bold renders
+// them illegibly in this font) while the rest of the name stays bold via CSS ──
+function setMonNameHTML(el, name){
+  el.innerHTML = (name||'').replace(/([♀♂])/g, '<span style="font-weight:400;">$1</span>');
+}
+
+function rarityColor(pct){
+  const p=parseFloat(pct);
+  if(isNaN(p)) return '#f0c600';
+  if(p>=50) return '#4caf50';   // very common
+  if(p>=25) return '#26c6da';   // common
+  if(p>=15) return '#f0c600';   // regular
+  if(p>=8)  return '#ff9800';   // uncommon
+  return '#e91e63';             // rare
+}
+
 function classifyMapRegion(mapKey){
   const name = mapKey.replace('MAP_','');
   if (name.endsWith('_FRLG')) return 'FRLG';
@@ -2253,10 +2270,10 @@ function openMapImageLightbox(mapKey, imgSrc){
   topBar.append(title,zoomLabel,zoomSlider,resetBtn,closeBtn);
 
   const viewport=document.createElement('div');
-  viewport.style.cssText='flex:1;width:100%;max-width:1100px;overflow:auto;border:1px solid var(--border);border-radius:10px;background:#0a0e16;display:flex;justify-content:center;align-items:flex-start;';
+  viewport.style.cssText='flex:1;width:100%;max-width:1100px;overflow:auto;border:1px solid var(--border);border-radius:10px;background:#0a0e16;';
   const img=document.createElement('img');
   img.src=imgSrc;
-  img.style.cssText='image-rendering:pixelated;display:block;';
+  img.style.cssText='image-rendering:pixelated;display:block;margin:auto;';
   viewport.appendChild(img);
 
   function applyZoom(pct){
@@ -2602,7 +2619,7 @@ function initPoolBrowser(){
         img.src=`${PKM_BASE1}${sf}.png`;
         img.onerror=()=>iconUrlFallback(img,m.id,m.spriteFile);
       }
-      const name=document.createElement('div');name.className='dex-name';name.textContent=m.name;
+      const name=document.createElement('div');name.className='dex-name';setMonNameHTML(name,m.name);
       const types=document.createElement('div');types.className='dex-types';
       types.appendChild(tb(m.t1)); if(m.t2) types.appendChild(tb(m.t2));
       tile.append(img,name,types);
@@ -2896,6 +2913,59 @@ function initEncEditor(){
   const mapList=document.getElementById('enc-editor-map-list');
   const detail=document.getElementById('enc-editor-detail');
   let open=false, encData=null, encGroupMeta=null, currentMap=null, currentTime='Morning', emeraldOnly=true;
+  // ── Blank/Current draft system ────────────────────────────────────────────
+  // Each encounter group (one map+time-of-day entry, e.g. Route101/Morning) can
+  // be switched to a "blank" scratch copy for experimenting without touching the
+  // real (current) data. draftStore/groupMode are keyed by the entry object
+  // itself (stable reference — entries come from a single encData fetch and are
+  // only ever filtered, never cloned, so identity is preserved across renders).
+  const draftStore=new WeakMap(); // entry -> blank draft structure
+  const groupMode=new WeakMap();  // entry -> 'current' | 'blank'
+  const DIRECT_METHOD_KEYS=['land_mons','water_mons','rock_smash_mons','fishing_mons','hidden_mons'];
+  function makeBlankDraft(entry){
+    const draft={};
+    DIRECT_METHOD_KEYS.forEach(key=>{
+      const block=entry[key];
+      if(block&&Array.isArray(block.mons)){
+        draft[key]={...block, mons:block.mons.map(m=>({...m, species:'SPECIES_NONE'}))};
+      }
+    });
+    return draft;
+  }
+  function getDraft(entry){
+    if(!draftStore.has(entry)) draftStore.set(entry, makeBlankDraft(entry));
+    return draftStore.get(entry);
+  }
+  function getActiveEntry(entry){
+    return (groupMode.get(entry)==='blank') ? getDraft(entry) : entry;
+  }
+  function overwriteWithDraft(entry){
+    const draft=draftStore.get(entry);
+    if(!draft) return;
+    DIRECT_METHOD_KEYS.forEach(key=>{
+      if(draft[key]&&entry[key]){
+        draft[key].mons.forEach((m,i)=>{ if(entry[key].mons[i]) entry[key].mons[i].species=m.species; });
+      }
+    });
+    groupMode.set(entry,'current');
+    draftStore.delete(entry);
+  }
+  // Builds a full, schema-valid entry for export: the real entry as-is if this
+  // group is in "current" mode, or a deep clone with the draft's species values
+  // substituted in if it's in "blank" mode (everything else — rates, levels,
+  // map, base_label — stays exactly as in the real data).
+  function buildExportEntry(entry){
+    if((groupMode.get(entry)||'current')!=='blank') return entry;
+    const draft=draftStore.get(entry);
+    if(!draft) return entry;
+    const merged=JSON.parse(JSON.stringify(entry));
+    DIRECT_METHOD_KEYS.forEach(key=>{
+      if(draft[key]&&merged[key]){
+        draft[key].mons.forEach((m,i)=>{ if(merged[key].mons[i]) merged[key].mons[i].species=m.species; });
+      }
+    });
+    return merged;
+  }
   const RATES_LAND=[15,10,10,10,10,10,10,5,5,5,5,5];
   const RATES_WATER=[50,20,15,10,5];
   const RATES_FISH=[70,30,60,20,20];
@@ -3012,19 +3082,32 @@ function initEncEditor(){
   toolsBar.appendChild(clearAllBtn);
   const exportRouteBtn=document.createElement('button');exportRouteBtn.type='button';
   exportRouteBtn.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;border:1px solid rgba(129,199,132,.4);background:rgba(129,199,132,.1);color:#81c784;cursor:pointer;font-family:"Press Start 2P",monospace;';
-  exportRouteBtn.textContent='📤 Export Route';
+  exportRouteBtn.textContent='📤 Export Route (Current)';
+  exportRouteBtn.title='Exports only the real, live data — any Blank/draft edits for this route are ignored';
   exportRouteBtn.addEventListener('click',()=>{
     if(!currentMap||!encData){ alert('Select a route first.'); return; }
     const payload={wild_encounter_groups:[{...(encGroupMeta||{}),encounters:encData.filter(e=>e.map===currentMap)}]};
     downloadJSON(payload,`wild_encounters_${currentMap.replace('MAP_','').toLowerCase()}.json`);
   });
   toolsBar.appendChild(exportRouteBtn);
+  const exportRouteDraftBtn=document.createElement('button');exportRouteDraftBtn.type='button';
+  exportRouteDraftBtn.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.05);color:#ccc;cursor:pointer;font-family:"Press Start 2P",monospace;';
+  exportRouteDraftBtn.textContent='📤 Export Route (Draft)';
+  exportRouteDraftBtn.title='Exports whatever is currently active per encounter group — draft where a group is set to Blank, real data otherwise';
+  exportRouteDraftBtn.addEventListener('click',()=>{
+    if(!currentMap||!encData){ alert('Select a route first.'); return; }
+    const entries=encData.filter(e=>e.map===currentMap).map(buildExportEntry);
+    const payload={wild_encounter_groups:[{...(encGroupMeta||{}),encounters:entries}]};
+    downloadJSON(payload,`wild_encounters_${currentMap.replace('MAP_','').toLowerCase()}_draft.json`);
+  });
+  toolsBar.appendChild(exportRouteDraftBtn);
   const exportAllBtn=document.createElement('button');exportAllBtn.type='button';
   exportAllBtn.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;border:1px solid rgba(255,183,77,.4);background:rgba(255,183,77,.1);color:#ffb74d;cursor:pointer;font-family:"Press Start 2P",monospace;';
   exportAllBtn.textContent='📤 Export All';
+  exportAllBtn.title='Includes any active Blank/draft edits across all routes you\'ve toggled to Blank';
   exportAllBtn.addEventListener('click',()=>{
     if(!encData){ alert('Open a route first so the data is loaded.'); return; }
-    const filtered = emeraldOnly ? encData.filter(e=>classifyMapRegion(e.map)==='Emerald') : encData;
+    const filtered = (emeraldOnly ? encData.filter(e=>classifyMapRegion(e.map)==='Emerald') : encData).map(buildExportEntry);
     const payload={wild_encounter_groups:[{...(encGroupMeta||{}),encounters:filtered}]};
     downloadJSON(payload, emeraldOnly ? 'wild_encounters_emerald_only.json' : 'wild_encounters_export.json');
   });
@@ -3173,13 +3256,14 @@ function initEncEditor(){
       img.style.cssText='width:52px;height:52px;image-rendering:pixelated;flex-shrink:0;';
       if(monData){img.src=`${PKM_BASE1}${getSpriteFile(monData)}.png`;img.onerror=()=>iconUrlFallback(img,monData.id,getSpriteFile(monData));}
       const info=document.createElement('div');info.className='enc-mon-info';info.style.flex='1';
-      const name=document.createElement('div');name.className='enc-mon-name';name.textContent=displayName;
+      const name=document.createElement('div');name.className='enc-mon-name';setMonNameHTML(name,displayName);
       const lvl=document.createElement('div');lvl.className='enc-mon-sub';lvl.textContent=`Lv. ${minLevel}${minLevel!==maxLevel?'–'+maxLevel:''}`;
       const typeRow=document.createElement('div');typeRow.style.cssText='display:flex;gap:3px;margin-top:2px;';
       if(monData){typeRow.appendChild(tb(monData.t1));if(monData.t2)typeRow.appendChild(tb(monData.t2));}
       info.append(name,lvl,typeRow);
       const right=document.createElement('div');right.style.cssText='display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;';
       const ratePill=document.createElement('div');ratePill.className='enc-rate-pill';ratePill.textContent=rate+'%';
+      { const rc=rarityColor(rate); ratePill.style.background=rc+'26'; ratePill.style.color=rc; }
       const methodTag=document.createElement('div');methodTag.style.cssText=`font-size:9px;color:${meta.col};font-family:'Press Start 2P',monospace;`;methodTag.textContent=meta.icon+' '+meta.label;
       const timePills=document.createElement('div');timePills.style.cssText='display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;';
       times.forEach(t=>{ const p=document.createElement('span');p.textContent=TIME_ICONS[t]||t;p.title=t;p.style.cssText='font-size:14px;';timePills.appendChild(p); });
@@ -3236,7 +3320,7 @@ function initEncEditor(){
     const availTimes=timeEntries.map(e=>{ const lbl=e.base_label; for(const t of TIME_LABELS){if(lbl.endsWith('_'+t)||lbl.includes('_'+t+'_'))return t;} return 'Day'; });
     const uniqueTimes=[...new Set(availTimes.length?availTimes:['Day'])];
     if(uniqueTimes.length<=1){
-      buildMethodSections(timeEntries[0]||{},detail);
+      if(timeEntries[0]) renderGroupToolbarAndSlots(timeEntries[0],detail);
       return;
     }
     // Time tabs
@@ -3251,14 +3335,53 @@ function initEncEditor(){
       tab.addEventListener('click',()=>{
         currentTime=t;
         tabs.querySelectorAll('.enc-time-tab').forEach(b=>b.classList.toggle('active',b.dataset.time===t));
-        methods.innerHTML='';
         const idx=availTimes.indexOf(t); const entry=timeEntries[idx]||timeEntries[0];
-        buildMethodSections(entry,methods);
+        renderGroupToolbarAndSlots(entry,methods);
       });
       tabs.appendChild(tab);
     });
     const firstIdx=availTimes.indexOf(currentTime); const firstEntry=timeEntries[firstIdx]||timeEntries[0];
-    buildMethodSections(firstEntry,methods);
+    renderGroupToolbarAndSlots(firstEntry,methods);
+  }
+
+  // Renders the Blank/Current toggle + Overwrite button for one encounter group,
+  // then the slot sections for whichever version (real or draft) is active.
+  function renderGroupToolbarAndSlots(realEntry,container){
+    container.innerHTML='';
+    const toolbar=document.createElement('div');
+    toolbar.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;';
+    const slotsContainer=document.createElement('div');
+
+    const modeToggle=document.createElement('button');modeToggle.type='button';
+    const overwriteBtn=document.createElement('button');overwriteBtn.type='button';
+    overwriteBtn.textContent='⬆️ Use Draft as Current';
+    overwriteBtn.style.cssText='font-size:10px;padding:5px 11px;border-radius:6px;border:1px solid rgba(129,199,132,.4);background:rgba(129,199,132,.1);color:#81c784;cursor:pointer;font-family:"Press Start 2P",monospace;';
+    overwriteBtn.addEventListener('click',()=>{
+      if(!confirm('Overwrite the current (live) data for this group with your draft? This replaces the real encounter data in memory — you can still Export Route (Current) afterwards to save it.')) return;
+      overwriteWithDraft(realEntry);
+      paintModeToggle();
+      slotsContainer.innerHTML='';
+      buildMethodSections(getActiveEntry(realEntry),slotsContainer);
+    });
+
+    function paintModeToggle(){
+      const m=groupMode.get(realEntry)||'current';
+      modeToggle.textContent = m==='blank' ? '⚪ Blank (draft)' : '🔵 Current (live data)';
+      modeToggle.style.cssText='font-size:10px;padding:5px 11px;border-radius:6px;cursor:pointer;font-family:"Press Start 2P",monospace;'
+        + (m==='blank' ? 'border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.06);color:#ccc;' : 'border:1px solid rgba(100,181,246,.4);background:rgba(100,181,246,.1);color:#64b5f6;');
+      overwriteBtn.style.display = m==='blank' ? '' : 'none';
+    }
+    paintModeToggle();
+    modeToggle.addEventListener('click',()=>{
+      const cur=groupMode.get(realEntry)||'current';
+      groupMode.set(realEntry, cur==='current' ? 'blank' : 'current');
+      paintModeToggle();
+      slotsContainer.innerHTML='';
+      buildMethodSections(getActiveEntry(realEntry),slotsContainer);
+    });
+    toolbar.append(modeToggle,overwriteBtn);
+    container.append(toolbar,slotsContainer);
+    buildMethodSections(getActiveEntry(realEntry),slotsContainer);
   }
 
   function refreshCurrentDetail(){
@@ -3297,12 +3420,13 @@ function initEncEditor(){
         if(monData){img.src=`${PKM_BASE1}${getSpriteFile(monData)}.png`;img.onerror=()=>iconUrlFallback(img,monData.id,getSpriteFile(monData));}
         else{img.style.cssText='width:52px;height:52px;opacity:.2;';}
         const info=document.createElement('div');info.className='enc-mon-info';
-        const name=document.createElement('div');name.className='enc-mon-name';name.textContent=displayName;
+        const name=document.createElement('div');name.className='enc-mon-name';setMonNameHTML(name,displayName);
         const sub=document.createElement('div');sub.className='enc-mon-sub';sub.textContent=`Lv. ${slot.ref.min_level}${slot.ref.min_level!==slot.ref.max_level?'–'+slot.ref.max_level:''}`;
         const typeRow=document.createElement('div');typeRow.style.cssText='display:flex;gap:3px;flex-wrap:wrap;';
         if(monData){typeRow.appendChild(tb(monData.t1));if(monData.t2)typeRow.appendChild(tb(monData.t2));}
         const right=document.createElement('div');right.style.cssText='display:flex;flex-direction:column;align-items:flex-end;gap:4px;';
         const ratePill=document.createElement('div');ratePill.className='enc-rate-pill';ratePill.textContent=rate+'%';
+        { const rc=rarityColor(rate); ratePill.style.background=rc+'26'; ratePill.style.color=rc; }
         const editHint=document.createElement('div');editHint.className='enc-edit-hint';editHint.textContent='✏️ change';
         right.append(ratePill,editHint);
         info.append(name,sub,typeRow); chip.append(img,info,right);
@@ -3312,6 +3436,18 @@ function initEncEditor(){
             refreshCurrentDetail();
           });
         });
+        if(monData){
+          chip.style.position='relative';
+          const clearBtn=document.createElement('button');clearBtn.type='button';
+          clearBtn.textContent='✕';clearBtn.title='Clear this slot';
+          clearBtn.style.cssText='position:absolute;top:4px;right:4px;width:16px;height:16px;line-height:14px;padding:0;border-radius:50%;border:1px solid rgba(229,115,115,.5);background:rgba(229,115,115,.15);color:#e57373;font-size:10px;cursor:pointer;z-index:2;';
+          clearBtn.addEventListener('click',(e)=>{
+            e.stopPropagation();
+            slot.ref.species='SPECIES_NONE';
+            refreshCurrentDetail();
+          });
+          chip.appendChild(clearBtn);
+        }
         monGrid.appendChild(chip);
       });
       sect.append(title,monGrid); container.appendChild(sect);
@@ -3722,7 +3858,7 @@ function initEncBrowser(){
       img.style.cssText='width:52px;height:52px;image-rendering:pixelated;flex-shrink:0;';
       if(monData){img.src=`${PKM_BASE1}${getSpriteFile(monData)}.png`;img.onerror=()=>iconUrlFallback(img,monData.id,getSpriteFile(monData));}
       const info=document.createElement('div');info.className='enc-mon-info';info.style.flex='1';
-      const name=document.createElement('div');name.className='enc-mon-name';name.textContent=displayName;
+      const name=document.createElement('div');name.className='enc-mon-name';setMonNameHTML(name,displayName);
       const lvl=document.createElement('div');lvl.className='enc-mon-sub';lvl.textContent=`Lv. ${minLevel}${minLevel!==maxLevel?'–'+maxLevel:''}`;
       const typeRow=document.createElement('div');typeRow.style.cssText='display:flex;gap:3px;margin-top:2px;';
       if(monData){typeRow.appendChild(tb(monData.t1));if(monData.t2)typeRow.appendChild(tb(monData.t2));}
@@ -3843,7 +3979,7 @@ function initEncBrowser(){
         if(monData){img.src=`${PKM_BASE1}${getSpriteFile(monData)}.png`;img.onerror=()=>iconUrlFallback(img,monData.id,getSpriteFile(monData));}
         else{img.style.cssText='width:52px;height:52px;opacity:.2;';}
         const info=document.createElement('div');info.className='enc-mon-info';
-        const name=document.createElement('div');name.className='enc-mon-name';name.textContent=displayName;
+        const name=document.createElement('div');name.className='enc-mon-name';setMonNameHTML(name,displayName);
         const sub=document.createElement('div');sub.className='enc-mon-sub';sub.textContent=`Lv. ${mon.min_level}${mon.min_level!==mon.max_level?'–'+mon.max_level:''}`;
         const typeRow=document.createElement('div');typeRow.style.cssText='display:flex;gap:3px;flex-wrap:wrap;';
         if(monData){typeRow.appendChild(tb(monData.t1));if(monData.t2)typeRow.appendChild(tb(monData.t2));}
