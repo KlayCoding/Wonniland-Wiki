@@ -2934,7 +2934,7 @@ function initEncEditor(){
   const mapSearch=document.getElementById('enc-editor-map-search');
   const mapList=document.getElementById('enc-editor-map-list');
   const detail=document.getElementById('enc-editor-detail');
-  let open=false, encData=null, encGroupMeta=null, currentMap=null, currentTime='Morning', emeraldOnly=true;
+  let open=false, encData=null, encGroupMeta=null, currentMap=null, currentTime='Morning', emeraldOnly=true, undoBtn=null;
   // ── Blank/Current draft system ────────────────────────────────────────────
   // Each encounter group (one map+time-of-day entry, e.g. Route101/Morning) can
   // be switched to a "blank" scratch copy for experimenting without touching the
@@ -3567,7 +3567,6 @@ function initEncEditor(){
     buildMapList(encData);
     if(currentMap) renderDetail(encData.filter(e=>e.map===currentMap));
   }
-  let undoBtn=null;
   function refreshCurrentDetail(){
     saveDraftsToStorage();
     if(currentMap && encData) renderDetail(encData.filter(e=>e.map===currentMap));
