@@ -2295,7 +2295,7 @@ function openMapImageLightbox(mapKey, imgSrc){
   document.addEventListener('keydown',escHandler);
 }
 
-function openSpeciesPicker(currentMon, onPick){
+function openSpeciesPicker(currentMon, onPick, usedNames){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
   overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
@@ -2314,6 +2314,12 @@ function openSpeciesPicker(currentMon, onPick){
   const search=document.createElement('input');search.placeholder='Search Pokémon…';
   search.style.cssText='width:100%;background:#0d1117;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:8px 12px;outline:none;box-sizing:border-box;';
   searchWrap.appendChild(search);
+  if(usedNames&&usedNames.size){
+    const hint=document.createElement('div');
+    hint.textContent='🔶 = already placed elsewhere on this route';
+    hint.style.cssText='font-size:10px;color:var(--gray);padding-top:6px;';
+    searchWrap.appendChild(hint);
+  }
   const list=document.createElement('div');
   list.style.cssText='overflow-y:auto;padding:10px 16px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;';
   box.append(hdr,searchWrap,list);
@@ -2325,14 +2331,21 @@ function openSpeciesPicker(currentMon, onPick){
     const filtered=ql?ALL_MON.filter(m=>m.name.toLowerCase().includes(ql)):ALL_MON;
     filtered.slice(0,300).forEach(m=>{
       const sf=getSpriteFile(m);
+      const dup=!!(usedNames&&usedNames.has(m.name));
       const tile=document.createElement('div');
-      tile.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);cursor:pointer;transition:all .15s;';
+      tile.style.cssText=`display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid ${dup?'rgba(255,167,38,.5)':'var(--border)'};cursor:pointer;transition:all .15s;position:relative;`+(dup?'opacity:.7;':'');
       tile.addEventListener('mouseenter',()=>tile.style.borderColor='#ffb74d');
-      tile.addEventListener('mouseleave',()=>tile.style.borderColor='var(--border)');
+      tile.addEventListener('mouseleave',()=>tile.style.borderColor=dup?'rgba(255,167,38,.5)':'var(--border)');
       const img=document.createElement('img');img.style.cssText='width:44px;height:44px;image-rendering:pixelated;';
       img.src=`${PKM_BASE1}${sf}.png`;img.onerror=()=>iconUrlFallback(img,m.id,sf);
-      const nm=document.createElement('div');nm.style.cssText='font-size:9px;text-align:center;line-height:1.2;';nm.textContent=m.name;
+      const nm=document.createElement('div');nm.style.cssText='font-size:9px;text-align:center;line-height:1.2;';setMonNameHTML(nm,m.name);
       tile.append(img,nm);
+      if(dup){
+        const dupBadge=document.createElement('span');dupBadge.textContent='🔶';
+        dupBadge.title='Already placed elsewhere on this route';
+        dupBadge.style.cssText='position:absolute;top:2px;right:4px;font-size:10px;';
+        tile.appendChild(dupBadge);
+      }
       tile.addEventListener('click',()=>{ onPick(m); overlay.remove(); });
       list.appendChild(tile);
     });
@@ -2355,7 +2368,9 @@ function openSpeciesPicker(currentMon, onPick){
 // Pool's region toggle is switched to "All Games".
 let RAW_ENCOUNTERS=null;   // full parsed encounters array, fetched once
 let LOCKED_SPECIES=null;   // Set of ALL_MON .name values that occupy a wild-encounter slot
+let LOCKED_ROUTES=null;    // Map: species name -> Set of readable location names it's locked on
 let RELATED_SPECIES=null;  // Set of ALL_MON .name values sharing an evolution_line with a locked mon (excludes the locked mons themselves)
+function mapKeyToName(m){ return m.replace('MAP_','').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 async function loadLockedSpeciesSet(poolEmeraldOnly){
   if(!RAW_ENCOUNTERS){
     try{
@@ -2372,6 +2387,7 @@ async function loadLockedSpeciesSet(poolEmeraldOnly){
 }
 function recomputeLockedSpecies(poolEmeraldOnly){
   const set=new Set();
+  const routes=new Map();
   const encounters = poolEmeraldOnly ? RAW_ENCOUNTERS.filter(e=>classifyMapRegion(e.map)==='Emerald') : RAW_ENCOUNTERS;
   const SLOT_KEYS=['land_mons','water_mons','rock_smash_mons','fishing_mons','hidden_mons'];
   encounters.forEach(e=>{
@@ -2381,12 +2397,17 @@ function recomputeLockedSpecies(poolEmeraldOnly){
         block.mons.forEach(m=>{
           if(!m.species) return;
           const mon=SPECIES_INDEX?SPECIES_INDEX(m.species):null;
-          if(mon) set.add(mon.name);
+          if(mon){
+            set.add(mon.name);
+            if(!routes.has(mon.name)) routes.set(mon.name,new Set());
+            routes.get(mon.name).add(mapKeyToName(e.map));
+          }
         });
       }
     });
   });
   LOCKED_SPECIES=set;
+  LOCKED_ROUTES=routes;
   // Build the related-species set (same evolution family as a locked mon)
   const related=new Set();
   set.forEach(lockedName=>{
@@ -2642,7 +2663,8 @@ function initPoolBrowser(){
       // Lock badge — species already occupies a wild-encounter slot somewhere
       if(locked){
         const lockBadge=document.createElement('span');lockBadge.className='lock-badge';lockBadge.textContent='🔒';
-        lockBadge.title='Already placed in a wild encounter slot';
+        const routeNames=LOCKED_ROUTES&&LOCKED_ROUTES.get(m.name);
+        lockBadge.title=routeNames&&routeNames.size ? 'Locked on: '+[...routeNames].sort().join(', ') : 'Already placed in a wild encounter slot';
         tile.appendChild(lockBadge);
       }
       tile.addEventListener('click',()=>showPokedex(m));
@@ -2916,12 +2938,14 @@ function initEncEditor(){
   // ── Blank/Current draft system ────────────────────────────────────────────
   // Each encounter group (one map+time-of-day entry, e.g. Route101/Morning) can
   // be switched to a "blank" scratch copy for experimenting without touching the
-  // real (current) data. draftStore/groupMode are keyed by the entry object
-  // itself (stable reference — entries come from a single encData fetch and are
-  // only ever filtered, never cloned, so identity is preserved across renders).
-  const draftStore=new WeakMap(); // entry -> blank draft structure
-  const groupMode=new WeakMap();  // entry -> 'current' | 'blank'
+  // real (current) data. Keyed by a string (map+base_label) rather than object
+  // identity so drafts survive re-renders AND can be persisted to localStorage —
+  // an accidental reload/tab close won't lose in-progress drafts.
+  const LS_DRAFT_KEY='wonniland_wiki_enc_editor_drafts_v1';
+  const draftStore=new Map(); // entryKey -> blank draft structure
+  const groupMode=new Map();  // entryKey -> 'current' | 'blank'
   const DIRECT_METHOD_KEYS=['land_mons','water_mons','rock_smash_mons','fishing_mons','hidden_mons'];
+  function entryKey(entry){ return entry.map+'::'+entry.base_label; }
   function makeBlankDraft(entry){
     const draft={};
     DIRECT_METHOD_KEYS.forEach(key=>{
@@ -2933,30 +2957,32 @@ function initEncEditor(){
     return draft;
   }
   function getDraft(entry){
-    if(!draftStore.has(entry)) draftStore.set(entry, makeBlankDraft(entry));
-    return draftStore.get(entry);
+    const k=entryKey(entry);
+    if(!draftStore.has(k)) draftStore.set(k, makeBlankDraft(entry));
+    return draftStore.get(k);
   }
   function getActiveEntry(entry){
-    return (groupMode.get(entry)==='blank') ? getDraft(entry) : entry;
+    return (groupMode.get(entryKey(entry))==='blank') ? getDraft(entry) : entry;
   }
   function overwriteWithDraft(entry){
-    const draft=draftStore.get(entry);
+    const draft=draftStore.get(entryKey(entry));
     if(!draft) return;
     DIRECT_METHOD_KEYS.forEach(key=>{
       if(draft[key]&&entry[key]){
         draft[key].mons.forEach((m,i)=>{ if(entry[key].mons[i]) entry[key].mons[i].species=m.species; });
       }
     });
-    groupMode.set(entry,'current');
-    draftStore.delete(entry);
+    groupMode.set(entryKey(entry),'current');
+    draftStore.delete(entryKey(entry));
+    saveDraftsToStorage();
   }
   // Builds a full, schema-valid entry for export: the real entry as-is if this
   // group is in "current" mode, or a deep clone with the draft's species values
   // substituted in if it's in "blank" mode (everything else — rates, levels,
   // map, base_label — stays exactly as in the real data).
   function buildExportEntry(entry){
-    if((groupMode.get(entry)||'current')!=='blank') return entry;
-    const draft=draftStore.get(entry);
+    if((groupMode.get(entryKey(entry))||'current')!=='blank') return entry;
+    const draft=draftStore.get(entryKey(entry));
     if(!draft) return entry;
     const merged=JSON.parse(JSON.stringify(entry));
     DIRECT_METHOD_KEYS.forEach(key=>{
@@ -2965,6 +2991,21 @@ function initEncEditor(){
       }
     });
     return merged;
+  }
+  function saveDraftsToStorage(){
+    try{
+      const obj={mode:Object.fromEntries(groupMode), draft:Object.fromEntries(draftStore)};
+      localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(obj));
+    }catch(err){ console.warn('Could not save Wild Encounter Editor drafts to localStorage', err); }
+  }
+  function loadDraftsFromStorage(){
+    try{
+      const raw=localStorage.getItem(LS_DRAFT_KEY);
+      if(!raw) return;
+      const obj=JSON.parse(raw);
+      Object.entries(obj.mode||{}).forEach(([k,v])=>groupMode.set(k,v));
+      Object.entries(obj.draft||{}).forEach(([k,v])=>draftStore.set(k,v));
+    }catch(err){ console.warn('Could not load saved Wild Encounter Editor drafts', err); }
   }
   const RATES_LAND=[15,10,10,10,10,10,10,5,5,5,5,5];
   const RATES_WATER=[50,20,15,10,5];
@@ -3069,7 +3110,8 @@ function initEncEditor(){
   clearAllBtn.textContent='🗑️ Clear All';
   clearAllBtn.addEventListener('click',()=>{
     if(!currentMap||!encData){ alert('Select a route first.'); return; }
-    if(!confirm(`Clear ALL encounter slots for ${mapToName(currentMap)}? (session only — cannot be undone)`)) return;
+    if(!confirm(`Clear ALL encounter slots for ${mapToName(currentMap)}? You can Undo this afterwards.`)) return;
+    pushUndoSnapshot();
     const DIRECT_KEYS=['land_mons','water_mons','rock_smash_mons','fishing_mons','hidden_mons'];
     encData.filter(e=>e.map===currentMap).forEach(entry=>{
       DIRECT_KEYS.forEach(key=>{
@@ -3112,6 +3154,23 @@ function initEncEditor(){
     downloadJSON(payload, emeraldOnly ? 'wild_encounters_emerald_only.json' : 'wild_encounters_export.json');
   });
   toolsBar.appendChild(exportAllBtn);
+  const clearDraftsBtn=document.createElement('button');clearDraftsBtn.type='button';
+  clearDraftsBtn.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--gray);cursor:pointer;font-family:"Press Start 2P",monospace;';
+  clearDraftsBtn.textContent='🗑️ Clear Saved Drafts';
+  clearDraftsBtn.title='Drafts are saved automatically (localStorage) so a reload won\'t lose them — this wipes all of them';
+  clearDraftsBtn.addEventListener('click',()=>{
+    if(!confirm('Clear ALL saved Blank drafts across every route? This cannot be undone.')) return;
+    draftStore.clear(); groupMode.clear();
+    try{ localStorage.removeItem(LS_DRAFT_KEY); }catch(err){}
+    if(currentMap) refreshCurrentDetail(); else if(encData) buildMapList(encData);
+  });
+  toolsBar.appendChild(clearDraftsBtn);
+  undoBtn=document.createElement('button');undoBtn.type='button';
+  undoBtn.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;border:1px solid rgba(100,181,246,.4);background:rgba(100,181,246,.1);color:#64b5f6;cursor:pointer;font-family:"Press Start 2P",monospace;';
+  undoBtn.textContent='↩️ Undo';
+  undoBtn.disabled=true;
+  undoBtn.addEventListener('click',()=>undoLastChange());
+  toolsBar.appendChild(undoBtn);
   panel.insertBefore(toolsBar, document.getElementById('enc-editor-body'));
 
   async function loadEncData(){
@@ -3122,6 +3181,7 @@ function initEncEditor(){
       const grp=d.wild_encounter_groups[0];
       encData=grp.encounters;
       encGroupMeta={label:grp.label,for_maps:grp.for_maps,fields:grp.fields};
+      loadDraftsFromStorage();
       buildMapList(encData);
     }catch(e){
       mapList.innerHTML='<div style="padding:20px;color:#e57373;font-size:11px;">Failed to load encounters.</div>';
@@ -3130,6 +3190,27 @@ function initEncEditor(){
 
   function mapToName(m){ return m.replace('MAP_','').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
+  function mapHasActiveDraft(mapKey){
+    return encData.some(e=>e.map===mapKey && groupMode.get(entryKey(e))==='blank');
+  }
+  function getRouteUsedNames(excludeRef){
+    const names=new Set();
+    if(!currentMap||!encData) return names;
+    encData.filter(e=>e.map===currentMap).forEach(e=>{
+      const active=getActiveEntry(e);
+      DIRECT_METHOD_KEYS.forEach(key=>{
+        const block=active[key];
+        if(block&&Array.isArray(block.mons)){
+          block.mons.forEach(m=>{
+            if(m===excludeRef) return;
+            const mon=SPECIES_INDEX?SPECIES_INDEX(m.species):null;
+            if(mon) names.add(mon.name);
+          });
+        }
+      });
+    });
+    return names;
+  }
   function buildMapList(enc){
     const seen=new Map();
     enc.filter(e=>!emeraldOnly || classifyMapRegion(e.map)==='Emerald').forEach(e=>{ if(!seen.has(e.map)) seen.set(e.map,e); });
@@ -3153,7 +3234,16 @@ function initEncEditor(){
       inSection.forEach(([k])=>{
         assigned.add(k);
         const item=document.createElement('div');item.className='enc-map-item';
-        item.textContent=mapToName(k);item.dataset.map=k;
+        item.dataset.map=k;
+        const nameSpan=document.createElement('span');nameSpan.textContent=mapToName(k);
+        item.appendChild(nameSpan);
+        if(mapHasActiveDraft(k)){
+          const draftDot=document.createElement('span');
+          draftDot.textContent=' ⚪';
+          draftDot.title='Has an active Blank draft';
+          draftDot.style.cssText='opacity:.85;';
+          item.appendChild(draftDot);
+        }
         item.addEventListener('click',()=>{
           mapList.querySelectorAll('.enc-map-item').forEach(i=>i.classList.remove('active'));
           item.classList.add('active'); currentMap=k; currentTime='Morning';
@@ -3324,8 +3414,26 @@ function initEncEditor(){
       return;
     }
     // Time tabs
+    const tabsRow=document.createElement('div');tabsRow.style.cssText='display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;';
     const tabs=document.createElement('div');tabs.className='enc-time-tabs';
-    const methods=document.createElement('div');detail.append(tabs,methods);
+    const copyTimeBtn=document.createElement('button');copyTimeBtn.type='button';
+    copyTimeBtn.textContent='📋 Copy to other times';
+    copyTimeBtn.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;border:1px solid rgba(100,181,246,.4);background:rgba(100,181,246,.1);color:#64b5f6;cursor:pointer;font-family:"Press Start 2P",monospace;';
+    copyTimeBtn.addEventListener('click',()=>{
+      const idx=availTimes.indexOf(currentTime); const sourceEntry=timeEntries[idx]||timeEntries[0];
+      openCopyTimePopup(sourceEntry,currentTime,uniqueTimes.filter(t=>t!==currentTime),(targetTimes)=>{
+        pushUndoSnapshot();
+        targetTimes.forEach(t=>{
+          const tIdx=availTimes.indexOf(t); const tgt=timeEntries[tIdx];
+          if(tgt) copyEncounterData(sourceEntry,tgt);
+        });
+        saveDraftsToStorage();
+        const idx2=availTimes.indexOf(currentTime); const entry2=timeEntries[idx2]||timeEntries[0];
+        renderGroupToolbarAndSlots(entry2,methods);
+      });
+    });
+    tabsRow.append(tabs,copyTimeBtn);
+    const methods=document.createElement('div');detail.append(tabsRow,methods);
     uniqueTimes.forEach(t=>{
       const tab=document.createElement('button');tab.type='button';tab.className='enc-time-tab';
       const tabIcon=document.createElement('div');tabIcon.style.cssText='font-size:24px;line-height:1;';tabIcon.textContent=TIME_ICONS[t]||'🕐';
@@ -3357,7 +3465,8 @@ function initEncEditor(){
     overwriteBtn.textContent='⬆️ Use Draft as Current';
     overwriteBtn.style.cssText='font-size:10px;padding:5px 11px;border-radius:6px;border:1px solid rgba(129,199,132,.4);background:rgba(129,199,132,.1);color:#81c784;cursor:pointer;font-family:"Press Start 2P",monospace;';
     overwriteBtn.addEventListener('click',()=>{
-      if(!confirm('Overwrite the current (live) data for this group with your draft? This replaces the real encounter data in memory — you can still Export Route (Current) afterwards to save it.')) return;
+      if(!confirm('Overwrite the current (live) data for this group with your draft? You can Undo this afterwards.')) return;
+      pushUndoSnapshot();
       overwriteWithDraft(realEntry);
       paintModeToggle();
       slotsContainer.innerHTML='';
@@ -3365,7 +3474,7 @@ function initEncEditor(){
     });
 
     function paintModeToggle(){
-      const m=groupMode.get(realEntry)||'current';
+      const m=groupMode.get(entryKey(realEntry))||'current';
       modeToggle.textContent = m==='blank' ? '⚪ Blank (draft)' : '🔵 Current (live data)';
       modeToggle.style.cssText='font-size:10px;padding:5px 11px;border-radius:6px;cursor:pointer;font-family:"Press Start 2P",monospace;'
         + (m==='blank' ? 'border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.06);color:#ccc;' : 'border:1px solid rgba(100,181,246,.4);background:rgba(100,181,246,.1);color:#64b5f6;');
@@ -3373,8 +3482,9 @@ function initEncEditor(){
     }
     paintModeToggle();
     modeToggle.addEventListener('click',()=>{
-      const cur=groupMode.get(realEntry)||'current';
-      groupMode.set(realEntry, cur==='current' ? 'blank' : 'current');
+      const cur=groupMode.get(entryKey(realEntry))||'current';
+      groupMode.set(entryKey(realEntry), cur==='current' ? 'blank' : 'current');
+      saveDraftsToStorage();
       paintModeToggle();
       slotsContainer.innerHTML='';
       buildMethodSections(getActiveEntry(realEntry),slotsContainer);
@@ -3384,7 +3494,82 @@ function initEncEditor(){
     buildMethodSections(getActiveEntry(realEntry),slotsContainer);
   }
 
+  function copyEncounterData(source,target){
+    DIRECT_METHOD_KEYS.forEach(key=>{
+      const srcBlock=source[key], tgtBlock=target[key];
+      if(srcBlock&&tgtBlock&&Array.isArray(srcBlock.mons)&&Array.isArray(tgtBlock.mons)){
+        srcBlock.mons.forEach((m,i)=>{ if(tgtBlock.mons[i]) tgtBlock.mons[i].species=m.species; });
+      }
+    });
+  }
+  function openCopyTimePopup(sourceEntry,sourceLabel,otherTimes,onConfirm){
+    const overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px;';
+    overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+    const box=document.createElement('div');
+    box.style.cssText='background:#13192a;border:2px solid rgba(100,181,246,.35);border-radius:14px;width:100%;max-width:340px;padding:18px;';
+    const title=document.createElement('div');title.style.cssText='font-size:12px;font-weight:700;margin-bottom:4px;';
+    title.textContent=`Copy ${sourceLabel} to:`;
+    const sub=document.createElement('div');sub.style.cssText='font-size:11px;color:var(--gray);margin-bottom:12px;';
+    sub.textContent='Overwrites the real (current) data for the selected times — independent of any Blank drafts.';
+    box.append(title,sub);
+    const checks=[];
+    otherTimes.forEach(t=>{
+      const row=document.createElement('label');row.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px;cursor:pointer;';
+      const cb=document.createElement('input');cb.type='checkbox';cb.value=t;
+      row.append(cb,document.createTextNode(t));
+      box.appendChild(row);
+      checks.push(cb);
+    });
+    const btnRow=document.createElement('div');btnRow.style.cssText='display:flex;gap:8px;margin-top:14px;justify-content:flex-end;';
+    const cancelBtn=document.createElement('button');cancelBtn.type='button';cancelBtn.textContent='Cancel';
+    cancelBtn.style.cssText='font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--gray);cursor:pointer;';
+    cancelBtn.addEventListener('click',()=>overlay.remove());
+    const confirmBtn=document.createElement('button');confirmBtn.type='button';confirmBtn.textContent='Copy';
+    confirmBtn.style.cssText='font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(100,181,246,.5);background:rgba(100,181,246,.15);color:#64b5f6;cursor:pointer;font-weight:700;';
+    confirmBtn.addEventListener('click',()=>{
+      const selected=checks.filter(c=>c.checked).map(c=>c.value);
+      if(!selected.length){ overlay.remove(); return; }
+      if(!confirm(`Overwrite ${selected.join(', ')} with ${sourceLabel}'s current data? This cannot be undone.`)) return;
+      onConfirm(selected);
+      overlay.remove();
+    });
+    btnRow.append(cancelBtn,confirmBtn);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  }
+  // ── Undo ─────────────────────────────────────────────────────────────────
+  // Snapshot-based: cheap enough at this data size, and correct-by-construction
+  // regardless of which of the several mutating actions (picker pick, X-clear,
+  // Clear All, Overwrite, Copy-Time) triggered the change.
+  const undoStack=[];
+  const MAX_UNDO=20;
+  function pushUndoSnapshot(){
+    try{
+      undoStack.push({
+        encData: JSON.parse(JSON.stringify(encData)),
+        draftStore: JSON.parse(JSON.stringify(Object.fromEntries(draftStore))),
+        groupMode: JSON.parse(JSON.stringify(Object.fromEntries(groupMode))),
+      });
+      if(undoStack.length>MAX_UNDO) undoStack.shift();
+      if(undoBtn) undoBtn.disabled=false;
+    }catch(err){ console.warn('Could not snapshot for undo', err); }
+  }
+  function undoLastChange(){
+    if(!undoStack.length) return;
+    const snap=undoStack.pop();
+    encData=snap.encData;
+    draftStore.clear(); Object.entries(snap.draftStore).forEach(([k,v])=>draftStore.set(k,v));
+    groupMode.clear(); Object.entries(snap.groupMode).forEach(([k,v])=>groupMode.set(k,v));
+    saveDraftsToStorage();
+    if(undoBtn) undoBtn.disabled=!undoStack.length;
+    buildMapList(encData);
+    if(currentMap) renderDetail(encData.filter(e=>e.map===currentMap));
+  }
+  let undoBtn=null;
   function refreshCurrentDetail(){
+    saveDraftsToStorage();
     if(currentMap && encData) renderDetail(encData.filter(e=>e.map===currentMap));
   }
 
@@ -3431,10 +3616,12 @@ function initEncEditor(){
         right.append(ratePill,editHint);
         info.append(name,sub,typeRow); chip.append(img,info,right);
         chip.addEventListener('click',()=>{
+          const used=getRouteUsedNames(slot.ref);
           openSpeciesPicker(monData,(newMon)=>{
+            pushUndoSnapshot();
             slot.ref.species=nameToSpeciesKey(newMon.name);
             refreshCurrentDetail();
-          });
+          }, used);
         });
         if(monData){
           chip.style.position='relative';
@@ -3443,6 +3630,7 @@ function initEncEditor(){
           clearBtn.style.cssText='position:absolute;top:4px;right:4px;width:16px;height:16px;line-height:14px;padding:0;border-radius:50%;border:1px solid rgba(229,115,115,.5);background:rgba(229,115,115,.15);color:#e57373;font-size:10px;cursor:pointer;z-index:2;';
           clearBtn.addEventListener('click',(e)=>{
             e.stopPropagation();
+            pushUndoSnapshot();
             slot.ref.species='SPECIES_NONE';
             refreshCurrentDetail();
           });
