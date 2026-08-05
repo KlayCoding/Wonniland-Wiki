@@ -2228,6 +2228,56 @@ function nameToSpeciesKey(name){
     .replace(/[^A-Z0-9]+/g,'_')
     .replace(/^_+|_+$/g,'');
 }
+// ── Map image lightbox (full-size view + zoom, for maps too tall/wide to show
+// sensibly as an inline thumbnail — e.g. some routes are 426×1197) ─────────────
+function openMapImageLightbox(mapKey, imgSrc){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px;';
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+
+  const topBar=document.createElement('div');
+  topBar.style.cssText='display:flex;align-items:center;gap:12px;background:#111827;border:1px solid var(--border);border-radius:10px;padding:8px 14px;flex-wrap:wrap;justify-content:center;max-width:100%;box-sizing:border-box;';
+  const title=document.createElement('div');
+  title.textContent=mapKey.replace('MAP_','').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  title.style.cssText='font-size:12px;color:var(--text);font-weight:700;';
+  const zoomLabel=document.createElement('span');
+  zoomLabel.style.cssText='font-size:11px;color:var(--gray);min-width:40px;text-align:right;font-family:"Consolas","Menlo","Courier New",monospace;';
+  const zoomSlider=document.createElement('input');
+  zoomSlider.type='range'; zoomSlider.min='25'; zoomSlider.max='400'; zoomSlider.value='100'; zoomSlider.step='5';
+  zoomSlider.style.cssText='width:180px;accent-color:#64b5f6;';
+  const resetBtn=document.createElement('button');resetBtn.type='button';resetBtn.textContent='Reset';
+  resetBtn.style.cssText='font-size:10px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--gray);cursor:pointer;';
+  const closeBtn=document.createElement('button');closeBtn.type='button';closeBtn.textContent='✕ Close';
+  closeBtn.style.cssText='font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--gray);cursor:pointer;';
+  closeBtn.addEventListener('click',()=>overlay.remove());
+  topBar.append(title,zoomLabel,zoomSlider,resetBtn,closeBtn);
+
+  const viewport=document.createElement('div');
+  viewport.style.cssText='flex:1;width:100%;max-width:1100px;overflow:auto;border:1px solid var(--border);border-radius:10px;background:#0a0e16;display:flex;justify-content:center;align-items:flex-start;';
+  const img=document.createElement('img');
+  img.src=imgSrc;
+  img.style.cssText='image-rendering:pixelated;display:block;';
+  viewport.appendChild(img);
+
+  function applyZoom(pct){
+    zoomLabel.textContent=pct+'%';
+    if(img.naturalWidth) img.style.width=(img.naturalWidth*pct/100)+'px';
+  }
+  img.addEventListener('load',()=>applyZoom(parseInt(zoomSlider.value,10)));
+  zoomSlider.addEventListener('input',()=>applyZoom(parseInt(zoomSlider.value,10)));
+  resetBtn.addEventListener('click',()=>{ zoomSlider.value='100'; applyZoom(100); });
+
+  const hint=document.createElement('div');
+  hint.textContent='Scroll inside the image to pan around when zoomed in · Esc to close';
+  hint.style.cssText='font-size:10px;color:var(--gray);opacity:.7;';
+
+  overlay.append(topBar,viewport,hint);
+  document.body.appendChild(overlay);
+
+  const escHandler=(e)=>{ if(e.key==='Escape'){ overlay.remove(); document.removeEventListener('keydown',escHandler); } };
+  document.addEventListener('keydown',escHandler);
+}
+
 function openSpeciesPicker(currentMon, onPick){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
@@ -3100,7 +3150,9 @@ function initEncEditor(){
     // Map image
     const mapImg=document.createElement('img');
     mapImg.src=mapImgUrl(mapKey);
-    mapImg.style.cssText='width:100%;max-height:280px;object-fit:contain;background:#0a0e16;border-radius:10px;margin-bottom:14px;display:block;';
+    mapImg.style.cssText='width:100%;max-height:280px;object-fit:contain;background:#0a0e16;border-radius:10px;margin-bottom:14px;display:block;cursor:zoom-in;';
+    mapImg.title='Click to view full size';
+    mapImg.addEventListener('click',()=>openMapImageLightbox(mapKey,mapImg.src));
     mapImg.onerror=()=>{
       if(!mapImg.dataset.triedAltCase){
         mapImg.dataset.triedAltCase='1';
@@ -3157,7 +3209,9 @@ function initEncEditor(){
     // Map image
     const mapImg=document.createElement('img');
     mapImg.src=mapImgUrl(mapKey);
-    mapImg.style.cssText='width:100%;max-height:280px;object-fit:contain;background:#0a0e16;border-radius:10px;margin-bottom:14px;display:block;';
+    mapImg.style.cssText='width:100%;max-height:280px;object-fit:contain;background:#0a0e16;border-radius:10px;margin-bottom:14px;display:block;cursor:zoom-in;';
+    mapImg.title='Click to view full size';
+    mapImg.addEventListener('click',()=>openMapImageLightbox(mapKey,mapImg.src));
     mapImg.onerror=()=>{
       if(!mapImg.dataset.triedAltCase){
         mapImg.dataset.triedAltCase='1';
@@ -3645,7 +3699,9 @@ function initEncBrowser(){
     // Map image
     const mapImg=document.createElement('img');
     mapImg.src=mapImgUrl(mapKey);
-    mapImg.style.cssText='width:100%;max-height:280px;object-fit:contain;background:#0a0e16;border-radius:10px;margin-bottom:14px;display:block;';
+    mapImg.style.cssText='width:100%;max-height:280px;object-fit:contain;background:#0a0e16;border-radius:10px;margin-bottom:14px;display:block;cursor:zoom-in;';
+    mapImg.title='Click to view full size';
+    mapImg.addEventListener('click',()=>openMapImageLightbox(mapKey,mapImg.src));
     mapImg.onerror=()=>{
       if(!mapImg.dataset.triedAltCase){
         mapImg.dataset.triedAltCase='1';
@@ -3702,7 +3758,9 @@ function initEncBrowser(){
     // Map image
     const mapImg=document.createElement('img');
     mapImg.src=mapImgUrl(mapKey);
-    mapImg.style.cssText='width:100%;max-height:280px;object-fit:contain;background:#0a0e16;border-radius:10px;margin-bottom:14px;display:block;';
+    mapImg.style.cssText='width:100%;max-height:280px;object-fit:contain;background:#0a0e16;border-radius:10px;margin-bottom:14px;display:block;cursor:zoom-in;';
+    mapImg.title='Click to view full size';
+    mapImg.addEventListener('click',()=>openMapImageLightbox(mapKey,mapImg.src));
     mapImg.onerror=()=>{
       if(!mapImg.dataset.triedAltCase){
         mapImg.dataset.triedAltCase='1';
