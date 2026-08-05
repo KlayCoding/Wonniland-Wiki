@@ -2201,6 +2201,27 @@ function downloadJSON(obj, filename){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
+// ── Map region classifier (Emerald/Hoenn vs FireRed-LeafGreen/Kanto+Sevii) ─────
+// wild_encounters.json has no explicit region field — only two maps carry an
+// explicit "_FRLG" disambiguation suffix (used where a Hoenn and Kanto location
+// would otherwise share the same name). Everything else is classified from the
+// map name itself using real Pokémon-world geography. Verified against all 240
+// maps in the current wild_encounters.json (119 Emerald / 121 FRLG, no leftovers).
+function classifyMapRegion(mapKey){
+  const name = mapKey.replace('MAP_','');
+  if (name.endsWith('_FRLG')) return 'FRLG';
+  const routeMatch = name.match(/^ROUTE(\d+)/);
+  if (routeMatch) return parseInt(routeMatch[1],10) >= 100 ? 'Emerald' : 'FRLG';
+  if (name.startsWith('UNDERWATER_ROUTE')) return 'Emerald';
+  const SEVII_PREFIXES = ['ONE_ISLAND','TWO_ISLAND','THREE_ISLAND','FOUR_ISLAND','FIVE_ISLAND','SIX_ISLAND','SEVEN_ISLAND','ARTISAN_CAVE'];
+  if (SEVII_PREFIXES.some(p => name.startsWith(p))) return 'FRLG';
+  const KANTO_PREFIXES = ['PALLET_TOWN','VIRIDIAN_CITY','VIRIDIAN_FOREST','CERULEAN_CITY','CERULEAN_CAVE',
+    'VERMILION_CITY','CELADON_CITY','FUCHSIA_CITY','CINNABAR_ISLAND','SEAFOAM_ISLANDS','MT_MOON',
+    'ROCK_TUNNEL','POWER_PLANT','DIGLETTS_CAVE','POKEMON_TOWER','POKEMON_MANSION','SSANNE_EXTERIOR','MT_EMBER'];
+  if (KANTO_PREFIXES.some(p => name.startsWith(p))) return 'FRLG';
+  return 'Emerald';
+}
+
 function nameToSpeciesKey(name){
   return 'SPECIES_'+(name||'').toUpperCase()
     .replace(/♀/g,'_F').replace(/♂/g,'_M')
@@ -2262,31 +2283,42 @@ function openSpeciesPicker(currentMon, onPick){
 // Browser/Editor (with its hand-tuned overrides), so this should be accurate for
 // the same cases that browser already gets right — still worth spot-checking
 // tricky regional/cosmetic forms once this is live.
+// Emerald-only by default: FRLG/Sevii encounter slots are excluded from the
+// locked/related computation entirely (not just hidden in the UI) unless the
+// Pool's region toggle is switched to "All Games".
+let RAW_ENCOUNTERS=null;   // full parsed encounters array, fetched once
 let LOCKED_SPECIES=null;   // Set of ALL_MON .name values that occupy a wild-encounter slot
 let RELATED_SPECIES=null;  // Set of ALL_MON .name values sharing an evolution_line with a locked mon (excludes the locked mons themselves)
-async function loadLockedSpeciesSet(){
-  if(LOCKED_SPECIES) return LOCKED_SPECIES;
-  const set=new Set();
-  try{
-    const r=await fetch('wild_encounters.json');
-    const d=await r.json();
-    const encounters=d.wild_encounter_groups[0].encounters;
-    const SLOT_KEYS=['land_mons','water_mons','rock_smash_mons','fishing_mons','hidden_mons'];
-    encounters.forEach(e=>{
-      SLOT_KEYS.forEach(key=>{
-        const block=e[key];
-        if(block&&Array.isArray(block.mons)){
-          block.mons.forEach(m=>{
-            if(!m.species) return;
-            const mon=SPECIES_INDEX?SPECIES_INDEX(m.species):null;
-            if(mon) set.add(mon.name);
-          });
-        }
-      });
-    });
-  }catch(err){
-    console.warn('Pokémon Pool: could not load wild_encounters.json for lock indicator', err);
+async function loadLockedSpeciesSet(poolEmeraldOnly){
+  if(!RAW_ENCOUNTERS){
+    try{
+      const r=await fetch('wild_encounters.json');
+      const d=await r.json();
+      RAW_ENCOUNTERS=d.wild_encounter_groups[0].encounters;
+    }catch(err){
+      console.warn('Pokémon Pool: could not load wild_encounters.json for lock indicator', err);
+      RAW_ENCOUNTERS=[];
+    }
   }
+  recomputeLockedSpecies(poolEmeraldOnly);
+  return LOCKED_SPECIES;
+}
+function recomputeLockedSpecies(poolEmeraldOnly){
+  const set=new Set();
+  const encounters = poolEmeraldOnly ? RAW_ENCOUNTERS.filter(e=>classifyMapRegion(e.map)==='Emerald') : RAW_ENCOUNTERS;
+  const SLOT_KEYS=['land_mons','water_mons','rock_smash_mons','fishing_mons','hidden_mons'];
+  encounters.forEach(e=>{
+    SLOT_KEYS.forEach(key=>{
+      const block=e[key];
+      if(block&&Array.isArray(block.mons)){
+        block.mons.forEach(m=>{
+          if(!m.species) return;
+          const mon=SPECIES_INDEX?SPECIES_INDEX(m.species):null;
+          if(mon) set.add(mon.name);
+        });
+      }
+    });
+  });
   LOCKED_SPECIES=set;
   // Build the related-species set (same evolution family as a locked mon)
   const related=new Set();
@@ -2299,7 +2331,6 @@ async function loadLockedSpeciesSet(){
     });
   });
   RELATED_SPECIES=related;
-  return set;
 }
 
 
@@ -2312,7 +2343,7 @@ function initPoolBrowser(){
   const typeFilter=document.getElementById('pool-type-filter');
   const groupFilter=document.getElementById('pool-group-filter');
   let open=false, activeTypes=new Set(), activeGroups=new Set();
-  let poolSort='id', poolShiny=false, lockedReady=false;
+  let poolSort='id', poolShiny=false, lockedReady=false, poolEmeraldOnly=true;
   // Locked-filter cycle: 'none' → 'first' → 'last' → 'hide' → 'none' …
   let lockMode='none';
   const LOCK_LABELS={none:'🔒 Locked: Off',first:'🔒 Locked First',last:'🔒 Locked Last',hide:'🚫 Hide Locked'};
@@ -2390,6 +2421,25 @@ function initPoolBrowser(){
     renderPool();
   });
   poolControls.appendChild(relatedToggle);
+  // Region filter — this one actually re-scopes the underlying locked/related
+  // computation (not just what's shown), per your "FRLG shouldn't flow into
+  // the data at all" requirement.
+  const regionToggle=document.createElement('button');regionToggle.type='button';
+  function paintPoolRegionToggle(){
+    regionToggle.textContent = poolEmeraldOnly ? '💎 Emerald Only' : '🌍 All Games (Emerald + FRLG)';
+    regionToggle.style.cssText='font-size:11px;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:"Press Start 2P",monospace;transition:all .15s;'
+      + (poolEmeraldOnly ? 'border:1px solid rgba(100,181,246,.5);background:rgba(100,181,246,.15);color:#64b5f6;' : 'border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--gray);');
+  }
+  paintPoolRegionToggle();
+  regionToggle.addEventListener('click',async ()=>{
+    poolEmeraldOnly=!poolEmeraldOnly;
+    paintPoolRegionToggle();
+    if(lockedReady){
+      recomputeLockedSpecies(poolEmeraldOnly);
+      renderPool();
+    }
+  });
+  poolControls.appendChild(regionToggle);
   poolHdr.after(poolControls);
 
   btn.addEventListener('click',async ()=>{
@@ -2397,7 +2447,7 @@ function initPoolBrowser(){
     btn.textContent=open?'🎒 POKÉMON POOL  ▲':'🎒 POKÉMON POOL  ▼';
     if(open&&!lockedReady){
       grid.innerHTML='<div style="padding:20px;color:var(--gray);font-size:11px;grid-column:1/-1;">Loading…</div>';
-      await loadLockedSpeciesSet();
+      await loadLockedSpeciesSet(poolEmeraldOnly);
       lockedReady=true;
       renderPool();
     } else if(open&&!grid.children.length){
@@ -2795,7 +2845,7 @@ function initEncEditor(){
   const mapSearch=document.getElementById('enc-editor-map-search');
   const mapList=document.getElementById('enc-editor-map-list');
   const detail=document.getElementById('enc-editor-detail');
-  let open=false, encData=null, encGroupMeta=null, currentMap=null, currentTime='Morning';
+  let open=false, encData=null, encGroupMeta=null, currentMap=null, currentTime='Morning', emeraldOnly=true;
   const RATES_LAND=[15,10,10,10,10,10,10,5,5,5,5,5];
   const RATES_WATER=[50,20,15,10,5];
   const RATES_FISH=[70,30,60,20,20];
@@ -2820,7 +2870,7 @@ function initEncEditor(){
   };
   const METHODS_ALL=Object.keys(METHOD_META);
   const activeMethods=new Set(METHODS_ALL); // all on by default
-  const MAP_IMG_BASE='https://raw.githubusercontent.com/KlayCoding/Wonniland/main/maps/';
+  const MAP_IMG_BASE='https://raw.githubusercontent.com/KlayCoding/Wonniland-Wiki/main/maps/';
 
   // Map key → PNG filename (try exact match first, then lowercase)
   function mapImgUrl(mapKey){ return MAP_IMG_BASE+mapKey+'.png'; }
@@ -2872,9 +2922,28 @@ function initEncEditor(){
   });
   panel.insertBefore(methodBar, document.getElementById('enc-editor-body'));
 
-  // ── Editor tools: Clear All + Export ────────────────────────────────────────
+  // ── Editor tools: Region filter + Clear All + Export ────────────────────────
   const toolsBar=document.createElement('div');
   toolsBar.style.cssText='display:flex;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;';
+  const regionToggle=document.createElement('button');regionToggle.type='button';
+  function paintRegionToggle(){
+    regionToggle.textContent = emeraldOnly ? '💎 Emerald Only' : '🌍 All Games (Emerald + FRLG)';
+    regionToggle.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;cursor:pointer;font-family:"Press Start 2P",monospace;'
+      + (emeraldOnly ? 'border:1px solid rgba(255,183,77,.5);background:rgba(255,183,77,.15);color:#ffb74d;' : 'border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--gray);');
+  }
+  paintRegionToggle();
+  regionToggle.addEventListener('click',()=>{
+    emeraldOnly=!emeraldOnly;
+    paintRegionToggle();
+    if(encData){
+      buildMapList(encData);
+      if(currentMap && classifyMapRegion(currentMap)!=='Emerald' && emeraldOnly){
+        currentMap=null;
+        document.getElementById('enc-editor-detail').innerHTML='<div style="color:var(--gray);font-size:12px;padding:40px;text-align:center;">← Select a location to edit its encounters</div>';
+      }
+    }
+  });
+  toolsBar.appendChild(regionToggle);
   const clearAllBtn=document.createElement('button');clearAllBtn.type='button';
   clearAllBtn.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;border:1px solid rgba(229,115,115,.4);background:rgba(229,115,115,.1);color:#e57373;cursor:pointer;font-family:"Press Start 2P",monospace;';
   clearAllBtn.textContent='🗑️ Clear All';
@@ -2905,8 +2974,9 @@ function initEncEditor(){
   exportAllBtn.textContent='📤 Export All';
   exportAllBtn.addEventListener('click',()=>{
     if(!encData){ alert('Open a route first so the data is loaded.'); return; }
-    const payload={wild_encounter_groups:[{...(encGroupMeta||{}),encounters:encData}]};
-    downloadJSON(payload,'wild_encounters_export.json');
+    const filtered = emeraldOnly ? encData.filter(e=>classifyMapRegion(e.map)==='Emerald') : encData;
+    const payload={wild_encounter_groups:[{...(encGroupMeta||{}),encounters:filtered}]};
+    downloadJSON(payload, emeraldOnly ? 'wild_encounters_emerald_only.json' : 'wild_encounters_export.json');
   });
   toolsBar.appendChild(exportAllBtn);
   panel.insertBefore(toolsBar, document.getElementById('enc-editor-body'));
@@ -2929,7 +2999,7 @@ function initEncEditor(){
 
   function buildMapList(enc){
     const seen=new Map();
-    enc.filter(e=>!e.map.includes('_FR_')&&!e.map.includes('_LG_')&&!e.map.includes('FRLG')&&!e.base_label.includes('_FR_')&&!e.base_label.includes('_LG_')).forEach(e=>{ if(!seen.has(e.map)) seen.set(e.map,e); });
+    enc.filter(e=>!emeraldOnly || classifyMapRegion(e.map)==='Emerald').forEach(e=>{ if(!seen.has(e.map)) seen.set(e.map,e); });
     const entries=[...seen.entries()];
     const sections=[
       {label:'ROUTES',filter:m=>m.includes('ROUTE')&&!m.includes('SAFARI')},
@@ -2969,7 +3039,7 @@ function initEncEditor(){
     const results=[]; // {mapKey, methods:[{method,time,level,rate}]}
     const seen=new Map();
     encData.forEach(e=>{
-      if(e.map.includes('_FR_')||e.map.includes('_LG_')) return;
+      if(emeraldOnly && classifyMapRegion(e.map)!=='Emerald') return;
       const timeLabel=e.base_label.split('_').pop(); // Morning/Day/Evening/Night
       METHODS_ALL.forEach(method=>{
         const meta=METHOD_META[method];
@@ -3339,7 +3409,7 @@ function initEncBrowser(){
   const mapSearch=document.getElementById('enc-map-search');
   const mapList=document.getElementById('enc-map-list');
   const detail=document.getElementById('enc-detail');
-  let open=false, encData=null, currentMap=null, currentTime='Morning';
+  let open=false, encData=null, currentMap=null, currentTime='Morning', emeraldOnly=true;
   const RATES_LAND=[15,10,10,10,10,10,10,5,5,5,5,5];
   const RATES_WATER=[50,20,15,10,5];
   const RATES_FISH=[70,30,60,20,20];
@@ -3364,7 +3434,7 @@ function initEncBrowser(){
   };
   const METHODS_ALL=Object.keys(METHOD_META);
   const activeMethods=new Set(METHODS_ALL); // all on by default
-  const MAP_IMG_BASE='https://raw.githubusercontent.com/KlayCoding/Wonniland/main/maps/';
+  const MAP_IMG_BASE='https://raw.githubusercontent.com/KlayCoding/Wonniland-Wiki/main/maps/';
 
   // Map key → PNG filename (try exact match first, then lowercase)
   function mapImgUrl(mapKey){ return MAP_IMG_BASE+mapKey+'.png'; }
@@ -3392,6 +3462,33 @@ function initEncBrowser(){
   let searchMode='location';
   locBtn.addEventListener('click',()=>{ searchMode='location'; locBtn.style.cssText='padding:7px 12px;font-size:11px;border:none;background:rgba(100,181,246,.15);color:#64b5f6;cursor:pointer;font-weight:700;'; monBtn.style.cssText='padding:7px 12px;font-size:11px;border:none;background:transparent;color:var(--gray);cursor:pointer;'; mapSearch.placeholder='Search location…'; if(encData) buildMapList(encData); });
   monBtn.addEventListener('click',()=>{ searchMode='pokemon'; monBtn.style.cssText='padding:7px 12px;font-size:11px;border:none;background:rgba(100,181,246,.15);color:#64b5f6;cursor:pointer;font-weight:700;'; locBtn.style.cssText='padding:7px 12px;font-size:11px;border:none;background:transparent;color:var(--gray);cursor:pointer;'; mapSearch.placeholder='Search Pokémon…'; if(encData&&mapSearch.value.trim()) buildPokemonSearch(mapSearch.value.trim()); });
+
+  // ── Region filter (Emerald vs FRLG) ──────────────────────────────────────────
+  const regionBar=document.createElement('div');
+  regionBar.style.cssText='display:flex;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);';
+  const regionToggle=document.createElement('button');regionToggle.type='button';
+  function paintRegionToggle(){
+    regionToggle.textContent = emeraldOnly ? '💎 Emerald Only' : '🌍 All Games (Emerald + FRLG)';
+    regionToggle.style.cssText='font-size:10px;padding:6px 12px;border-radius:7px;cursor:pointer;font-family:"Press Start 2P",monospace;'
+      + (emeraldOnly ? 'border:1px solid rgba(100,181,246,.5);background:rgba(100,181,246,.15);color:#64b5f6;' : 'border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--gray);');
+  }
+  paintRegionToggle();
+  regionToggle.addEventListener('click',()=>{
+    emeraldOnly=!emeraldOnly;
+    paintRegionToggle();
+    if(!encData) return;
+    if(searchMode==='location'){
+      buildMapList(encData);
+      if(currentMap && emeraldOnly && classifyMapRegion(currentMap)!=='Emerald'){
+        currentMap=null;
+        detail.innerHTML='<div style="color:var(--gray);font-size:12px;padding:40px;text-align:center;">← Select a location to see encounters</div>';
+      }
+    } else if(mapSearch.value.trim()){
+      buildPokemonSearch(mapSearch.value.trim());
+    }
+  });
+  regionBar.appendChild(regionToggle);
+  panel.insertBefore(regionBar, document.getElementById('enc-body'));
 
   // Method filter chips (below header, above body)
   const methodBar=document.createElement('div');
@@ -3433,7 +3530,7 @@ function initEncBrowser(){
 
   function buildMapList(enc){
     const seen=new Map();
-    enc.filter(e=>!e.map.includes('_FR_')&&!e.map.includes('_LG_')&&!e.map.includes('FRLG')&&!e.base_label.includes('_FR_')&&!e.base_label.includes('_LG_')).forEach(e=>{ if(!seen.has(e.map)) seen.set(e.map,e); });
+    enc.filter(e=>!emeraldOnly || classifyMapRegion(e.map)==='Emerald').forEach(e=>{ if(!seen.has(e.map)) seen.set(e.map,e); });
     const entries=[...seen.entries()];
     const sections=[
       {label:'ROUTES',filter:m=>m.includes('ROUTE')&&!m.includes('SAFARI')},
@@ -3473,7 +3570,7 @@ function initEncBrowser(){
     const results=[]; // {mapKey, methods:[{method,time,level,rate}]}
     const seen=new Map();
     encData.forEach(e=>{
-      if(e.map.includes('_FR_')||e.map.includes('_LG_')) return;
+      if(emeraldOnly && classifyMapRegion(e.map)!=='Emerald') return;
       const timeLabel=e.base_label.split('_').pop(); // Morning/Day/Evening/Night
       METHODS_ALL.forEach(method=>{
         const meta=METHOD_META[method];
