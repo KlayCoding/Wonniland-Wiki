@@ -3101,7 +3101,14 @@ function initEncEditor(){
     const mapImg=document.createElement('img');
     mapImg.src=mapImgUrl(mapKey);
     mapImg.style.cssText='width:100%;border-radius:10px;margin-bottom:14px;display:block;max-height:240px;object-fit:cover;';
-    mapImg.onerror=()=>mapImg.style.display='none';
+    mapImg.onerror=()=>{
+      if(!mapImg.dataset.triedAltCase){
+        mapImg.dataset.triedAltCase='1';
+        mapImg.src=MAP_IMG_BASE+mapKey+'.PNG'; // some uploads use an uppercase extension; GitHub raw URLs are case-sensitive
+      } else {
+        mapImg.style.display='none';
+      }
+    };
     detail.appendChild(mapImg);
     // Title
     const title=document.createElement('div');title.style.cssText='font-size:14px;font-weight:700;margin-bottom:12px;';title.textContent=mapToName(mapKey);detail.appendChild(title);
@@ -3151,7 +3158,14 @@ function initEncEditor(){
     const mapImg=document.createElement('img');
     mapImg.src=mapImgUrl(mapKey);
     mapImg.style.cssText='width:100%;border-radius:10px;margin-bottom:14px;display:block;max-height:240px;object-fit:cover;';
-    mapImg.onerror=()=>mapImg.style.display='none';
+    mapImg.onerror=()=>{
+      if(!mapImg.dataset.triedAltCase){
+        mapImg.dataset.triedAltCase='1';
+        mapImg.src=MAP_IMG_BASE+mapKey+'.PNG'; // some uploads use an uppercase extension; GitHub raw URLs are case-sensitive
+      } else {
+        mapImg.style.display='none';
+      }
+    };
     detail.appendChild(mapImg);
 
     // Header row: location name + chart button
@@ -3632,7 +3646,14 @@ function initEncBrowser(){
     const mapImg=document.createElement('img');
     mapImg.src=mapImgUrl(mapKey);
     mapImg.style.cssText='width:100%;border-radius:10px;margin-bottom:14px;display:block;max-height:240px;object-fit:cover;';
-    mapImg.onerror=()=>mapImg.style.display='none';
+    mapImg.onerror=()=>{
+      if(!mapImg.dataset.triedAltCase){
+        mapImg.dataset.triedAltCase='1';
+        mapImg.src=MAP_IMG_BASE+mapKey+'.PNG'; // some uploads use an uppercase extension; GitHub raw URLs are case-sensitive
+      } else {
+        mapImg.style.display='none';
+      }
+    };
     detail.appendChild(mapImg);
     // Title
     const title=document.createElement('div');title.style.cssText='font-size:14px;font-weight:700;margin-bottom:12px;';title.textContent=mapToName(mapKey);detail.appendChild(title);
@@ -3682,7 +3703,14 @@ function initEncBrowser(){
     const mapImg=document.createElement('img');
     mapImg.src=mapImgUrl(mapKey);
     mapImg.style.cssText='width:100%;border-radius:10px;margin-bottom:14px;display:block;max-height:240px;object-fit:cover;';
-    mapImg.onerror=()=>mapImg.style.display='none';
+    mapImg.onerror=()=>{
+      if(!mapImg.dataset.triedAltCase){
+        mapImg.dataset.triedAltCase='1';
+        mapImg.src=MAP_IMG_BASE+mapKey+'.PNG'; // some uploads use an uppercase extension; GitHub raw URLs are case-sensitive
+      } else {
+        mapImg.style.display='none';
+      }
+    };
     detail.appendChild(mapImg);
 
     // Header row: location name + chart button
