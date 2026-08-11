@@ -4559,6 +4559,15 @@ const ITEM_BG_COLORS = {"strange_ball":"#B4B4B4","poke_ball":"#B4B4B4","great_ba
     <div class="lbe-pool-name-row"><input id="lbe-pool-name-input" placeholder="Pool name…"/></div>
     <div class="lbe-thumbstrip" id="lbe-thumbstrip"></div>
 
+    <div class="lbe-battlecard">
+      <div class="lbe-mainmon">
+        <div class="lbe-art" id="lbe-overview-main-art"></div>
+        <div class="lbe-nm" id="lbe-overview-main-name">—</div>
+      </div>
+      <div class="lbe-vs">— PAIRED WITH —</div>
+      <div class="lbe-support-row" id="lbe-overview-support-row"></div>
+    </div>
+
     <div class="lbe-tabbar" id="lbe-tabbar"></div>
     <div class="lbe-panel" id="lbe-editor-panel">
       <div id="lbe-editor-panel-body"></div>
@@ -4635,7 +4644,7 @@ function lbePkmImgHtml(mon){
   if(!mon) return '?';
   const file = (typeof getSpriteFile==='function') ? getSpriteFile(mon) : (mon.sprite || (mon.id?String(mon.id).padStart(4,'0'):''));
   if(!file) return '?';
-  return `<img src="${PKM_BASE1}${file}.png" onerror="lbeImgErr(this,${JSON.stringify(mon.id||0)},${JSON.stringify(file)})"/>`;
+  return `<img src="${PKM_BASE1}${file}.png" onerror='lbeImgErr(this,${JSON.stringify(mon.id||0)},${JSON.stringify(file)})'/>`;
 }
 function lbePkmSpriteUrl(mon){
   if(!mon) return '';
@@ -4645,7 +4654,7 @@ function lbePkmSpriteUrl(mon){
 function lbeItemImgHtml(itemName){
   const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.name===itemName);
   if(!it || !it.slug) return '';
-  return `<img src="${ITEM_BASE}${it.slug}.png" onerror="lbeItemImgErr(this,${JSON.stringify(it.slug)})" onload="lbeItemImgLoad(this,${JSON.stringify(it.slug)})"/>`;
+  return `<img src="${ITEM_BASE}${it.slug}.png" onerror='lbeItemImgErr(this,${JSON.stringify(it.slug)})' onload='lbeItemImgLoad(this,${JSON.stringify(it.slug)})'/>`;
 }
 function lbeItemSpriteUrl(itemName){
   const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.name===itemName);
@@ -4653,61 +4662,90 @@ function lbeItemSpriteUrl(itemName){
 }
 function lbeFindMon(name){ return (typeof POKEMON!=='undefined'?POKEMON:[]).find(p=>p.name===name); }
 
-// Mirrors moveChip() from the Pokédex Browser move-learnset view — same CSS classes
-// (already loaded globally), same click-to-expand info popup, so a picked move here
-// looks and behaves identically to the rest of the site.
-function lbeMoveCard(moveName, monTypes){
+const LBE_MOVE_TYPE_COL={Normal:'#9099a1',Fire:'#e8622a',Water:'#4f90d3',Electric:'#f0c600',Grass:'#4caf50',Ice:'#5fd8d8',Fighting:'#d1425a',Poison:'#a040a0',Ground:'#d68b23',Flying:'#7d8bca',Psychic:'#db3c6c',Bug:'#8da12e',Rock:'#b29a3c',Ghost:'#5d5e9d',Dragon:'#5b61cf',Dark:'#5c4c3e',Steel:'#8e9bb3',Fairy:'#d980a0'};
+const LBE_MOVE_CAT_COL={Physical:'#e8622a',Special:'#4f90d3',Status:'#4caf50'};
+const LBE_MOVE_TYPE_IDS={Normal:1,Fighting:2,Flying:3,Poison:4,Ground:5,Rock:6,Bug:7,Ghost:8,Steel:9,Fire:10,Water:11,Grass:12,Electric:13,Psychic:14,Ice:15,Dragon:16,Dark:17,Fairy:18};
+
+// Mirrors refreshSlotBtnShared() from the Creation Mode move-slot picker: colored
+// left bar, ℹ info button (opens the same style of popup), type icon, two-line
+// description, and a BP/PP/Category stats column on the right.
+function lbeMoveCard(moveName){
   const allMoves = typeof MOVES!=='undefined' ? MOVES : [];
   const mnl = moveName.toLowerCase().replace(/[-\s]/g,'');
-  const found = allMoves.find(m=>m.name.toLowerCase()===moveName.toLowerCase())
-             || allMoves.find(m=>m.name.toLowerCase().replace(/[-\s]/g,'')===mnl);
-  const card=document.createElement('div'); card.className='pdx-move-card';
-  const hdr=document.createElement('div'); hdr.className='pdx-move-card-hdr';
-  if(found && typeof tb==='function'){
-    const tChip=tb(found.type); tChip.style.fontSize='8px'; tChip.style.padding='1px 6px';
-    hdr.appendChild(tChip);
-    const catIcon=document.createElement('span'); catIcon.className='pdx-move-cat-icon'; catIcon.textContent=LBE_CAT_ICON[found.cat]||'';
-    hdr.appendChild(catIcon);
+  const mv = allMoves.find(m=>m.name.toLowerCase()===moveName.toLowerCase())
+          || allMoves.find(m=>m.name.toLowerCase().replace(/[-\s]/g,'')===mnl);
+  const card=document.createElement('div');
+  if(!mv){
+    card.style.cssText='display:flex;overflow:hidden;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);min-height:60px;align-items:center;justify-content:center;color:#556;font-size:11px;';
+    card.textContent=moveName+' (not found in moves.json)';
+    return card;
   }
-  const nm=document.createElement('div'); nm.className='pdx-move-name'; nm.textContent=moveName;
-  hdr.appendChild(nm);
-  if(found){
-    const isSTAB = found.type && found.cat!=='Status' && monTypes && monTypes.map(t=>(t||'').toLowerCase()).includes(found.type.toLowerCase());
-    if(isSTAB){
-      const stabBadge=document.createElement('span'); stabBadge.className='stab-badge'; stabBadge.textContent='STAB';
-      hdr.appendChild(stabBadge);
-    }
-    const bp=document.createElement('div');
-    bp.style.cssText='font-size:11px;color:'+(typeof bpColor==='function'?bpColor(found.power):'var(--gray)')+';font-weight:700;min-width:30px;text-align:right;';
-    bp.textContent = found.power || '—';
-    hdr.appendChild(bp);
-  }
-  const expandIcon=document.createElement('span'); expandIcon.style.cssText='color:var(--gray);font-size:10px;transition:transform .2s;'; expandIcon.textContent='▾';
-  hdr.appendChild(expandIcon);
-  card.appendChild(hdr);
-
-  if(found){
-    const statsRow=document.createElement('div'); statsRow.className='pdx-move-stats-row'; statsRow.style.display='none';
-    const mk=(label,val)=>{const s=document.createElement('div');s.className='pdx-move-stat';const l=document.createElement('div');l.className='pdx-move-stat-label';l.textContent=label;const v=document.createElement('div');v.className='pdx-move-stat-val';v.textContent=val;s.append(l,v);return s;};
-    statsRow.appendChild(mk('POWER', found.power||'—'));
-    statsRow.appendChild(mk('ACC', found.acc?found.acc+'%':'—'));
-    statsRow.appendChild(mk('PP', found.pp||'—'));
-    statsRow.appendChild(mk('CATEGORY', found.cat||'—'));
-    card.appendChild(statsRow);
-
-    const descRow=document.createElement('div'); descRow.className='pdx-move-desc-row'; descRow.style.display='none';
-    descRow.textContent=found.desc||'No description available.';
-    card.appendChild(descRow);
-
-    let expanded=false;
-    hdr.addEventListener('click',()=>{
-      expanded=!expanded;
-      statsRow.style.display=expanded?'flex':'none';
-      descRow.style.display=expanded?'block':'none';
-      expandIcon.style.transform=expanded?'rotate(180deg)':'rotate(0deg)';
-    });
-  }
+  const col=LBE_MOVE_TYPE_COL[mv.type]||'#888';
+  const catCol=LBE_MOVE_CAT_COL[mv.cat]||'#888';
+  card.style.cssText=`display:flex;overflow:hidden;border-radius:10px;border:1px solid ${col}44;background:${col}0e;min-height:72px;`;
+  const bar=document.createElement('div'); bar.style.cssText=`width:4px;background:${col};flex-shrink:0;`;
+  const body=document.createElement('div'); body.style.cssText='padding:10px 11px;flex:1;min-width:0;display:flex;gap:10px;align-items:stretch;';
+  const main=document.createElement('div'); main.style.cssText='display:flex;flex-direction:column;gap:5px;flex:1;min-width:0;';
+  const topR=document.createElement('div'); topR.style.cssText='display:flex;align-items:center;gap:5px;min-width:0;';
+  const infoBtn=document.createElement('button'); infoBtn.type='button';
+  infoBtn.style.cssText='font-size:9px;padding:1px 6px;border-radius:3px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#556;cursor:pointer;flex-shrink:0;line-height:1.5;';
+  infoBtn.textContent='ℹ'; infoBtn.addEventListener('click',(e)=>{ e.stopPropagation(); lbeOpenMoveInfoPopup(mv); });
+  const nmEl=document.createElement('span'); nmEl.style.cssText='font-size:13px;font-weight:700;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;'; nmEl.textContent=mv.name;
+  topR.append(infoBtn,nmEl);
+  const typeR=document.createElement('div');
+  const tid=LBE_MOVE_TYPE_IDS[mv.type];
+  if(tid){ const ti=document.createElement('img'); ti.src=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${tid}.png`; ti.style.cssText='height:16px;image-rendering:pixelated;'; ti.onerror=()=>ti.style.display='none'; typeR.appendChild(ti); }
+  const descR=document.createElement('div'); descR.style.cssText='font-size:10px;color:#4a5568;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;flex:1;';
+  descR.textContent=mv.desc||mv.description||'';
+  main.append(topR,typeR,descR);
+  const stats=document.createElement('div'); stats.style.cssText='display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;flex-shrink:0;border-left:1px solid rgba(255,255,255,.07);padding-left:10px;min-width:54px;';
+  const bpEl=document.createElement('span'); bpEl.style.cssText=`font-size:16px;font-weight:700;color:${col};line-height:1;letter-spacing:-.5px;`; bpEl.textContent=mv.power||'—';
+  const ppEl=document.createElement('span'); ppEl.style.cssText='font-size:9px;color:#334155;line-height:1;'; ppEl.textContent=(mv.pp||'—')+' PP';
+  const catEl=document.createElement('span'); catEl.style.cssText=`font-size:9px;font-weight:700;color:${catCol};line-height:1;`; catEl.textContent=mv.cat||'';
+  stats.append(bpEl,ppEl,catEl);
+  body.append(main,stats); card.append(bar,body);
   return card;
+}
+
+// Simplified version of openMoveInfoPopup() — Info tab content only (type, category,
+// power, accuracy, PP, priority, description). Contest/Pokémon tabs from the original
+// aren't relevant for a boss-pool moveset editor, so left out.
+function lbeOpenMoveInfoPopup(mv){
+  const typeCol=LBE_MOVE_TYPE_COL[mv.type]||'#888';
+  const popup=document.createElement('div');
+  popup.style.cssText='position:fixed;inset:0;z-index:6500;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);padding:16px;';
+  popup.addEventListener('click',e=>{ if(e.target===popup) popup.remove(); });
+  const box=document.createElement('div');
+  box.style.cssText=`background:#13192a;border:2px solid ${typeCol}66;border-radius:14px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden;`;
+  const hdr=document.createElement('div');
+  hdr.style.cssText=`display:flex;align-items:flex-start;gap:10px;padding:14px 16px;background:${typeCol}22;border-bottom:1px solid ${typeCol}33;`;
+  const hdrLeft=document.createElement('div'); hdrLeft.style.cssText='flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;';
+  const title=document.createElement('div'); title.style.cssText='font-weight:700;font-size:15px;color:#fff;'; title.textContent=mv.name;
+  hdrLeft.appendChild(title);
+  if(mv.desc||mv.description){ const d=document.createElement('div'); d.style.cssText='font-size:11px;color:var(--gray);line-height:1.4;font-style:italic;'; d.textContent=mv.desc||mv.description; hdrLeft.appendChild(d); }
+  const closeBtn=document.createElement('button'); closeBtn.type='button';
+  closeBtn.style.cssText='background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:var(--gray);font-size:14px;padding:3px 9px;cursor:pointer;flex-shrink:0;';
+  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>popup.remove());
+  hdr.append(hdrLeft,closeBtn);
+  const bodyEl=document.createElement('div'); bodyEl.style.cssText='padding:14px 16px;';
+  const mkR=(label,val,col)=>{
+    if(!val&&val!==0) return null;
+    const row=document.createElement('div'); row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);';
+    const l=document.createElement('span'); l.style.cssText='font-size:11px;color:var(--gray);'; l.textContent=label;
+    const v=document.createElement('span'); v.style.cssText='font-size:12px;font-weight:600;color:'+(col||'#fff')+';text-align:right;'; v.textContent=val;
+    row.append(l,v); return row;
+  };
+  [
+    mkR('Type', mv.type, typeCol),
+    mkR('Category', mv.cat, LBE_MOVE_CAT_COL[mv.cat]),
+    mkR('Base Power', mv.power||'—', typeof bpColor==='function'?bpColor(mv.power||0):null),
+    mkR('Accuracy', (mv.acc||'—')+(mv.acc?'%':'')),
+    mkR('PP', mv.pp||'—'),
+    mkR('Priority', mv.priority!=null ? ((mv.priority>0?'+':'')+mv.priority) : '—'),
+  ].filter(Boolean).forEach(r=>bodyEl.appendChild(r));
+  box.append(hdr,bodyEl);
+  popup.appendChild(box);
+  document.body.appendChild(popup);
 }
 function lbeAbilitiesList(){ return typeof ABILITIES_DB!=='undefined' ? Object.values(ABILITIES_DB) : []; }
 
@@ -4859,6 +4897,22 @@ function lbeRenderDetail(){
     t.innerHTML = p.main.species ? lbePkmImgHtml(lbeFindMon(p.main.species)) : '?';
     t.addEventListener('click',()=>{ lbeSavePools(); lbeOpenDetail(i); });
     strip.appendChild(t);
+  });
+
+  // Static overview (not tab-driven) — always shows all 4 slots at a glance
+  const ovMainArt=document.getElementById('lbe-overview-main-art');
+  ovMainArt.innerHTML = pool.main.species ? lbePkmImgHtml(lbeFindMon(pool.main.species)) : '?';
+  document.getElementById('lbe-overview-main-name').textContent = pool.main.species || '—';
+  const ovRow=document.getElementById('lbe-overview-support-row');
+  ovRow.innerHTML='';
+  pool.support.forEach((s)=>{
+    const div=document.createElement('div');
+    div.className='lbe-supportmon';
+    div.innerHTML=`
+      <div class="lbe-art ${s.species?'':'lbe-empty'}">${s.species?lbePkmImgHtml(lbeFindMon(s.species)):'+'}</div>
+      <div class="lbe-nm">${lbeEscapeHtml(s.species||'—')}</div>
+    `;
+    ovRow.appendChild(div);
   });
 
   const tabbar=document.getElementById('lbe-tabbar');
@@ -5050,7 +5104,7 @@ function lbeRenderEditorPanel(){
   });
   document.querySelectorAll('.lbe-move-preview').forEach(el=>{
     const mv=slot.moves[+el.dataset.i];
-    if(mv) el.appendChild(lbeMoveCard(mv, monTypes));
+    if(mv) el.appendChild(lbeMoveCard(mv));
   });
   document.querySelectorAll('.lbe-f-iv').forEach(inp=>{
     inp.addEventListener('input',()=>{ slot.ivs[inp.dataset.k]=Math.max(0,Math.min(31,+inp.value||0)); lbeSavePools(); });
