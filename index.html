@@ -4572,7 +4572,9 @@ const ITEM_BG_COLORS = {"strange_ball":"#B4B4B4","poke_ball":"#B4B4B4","great_ba
 <script>
 (function(){
 const LBE_WEATHERS=["None","Sun","Rain","Sandstorm","Hail"];
-const LBE_STATUSES=["None","Trick Room","Magic Room","Wonder Room","Tailwind","Rainbow","Sea of Fire","Swamp"];
+const LBE_STATUSES=["None","Electric Terrain","Misty Terrain","Grassy Terrain","Psychic Terrain",
+  "Trick Room","Magic Room","Wonder Room",
+  "Tailwind (Opponent)","Rainbow (Opponent)","Sea of Fire (Opponent)","Swamp (Opponent)"];
 const LBE_TOTEM_STATS=["None","Atk +1","Def +1","Spe +1","SpA +1","SpD +1","Acc +1","Evas +1"];
 const LBE_STAT_KEYS=["hp","atk","def","spa","spd","spe"];
 const LBE_STAT_LABELS=["HP","Atk","Def","SpA","SpD","Spe"];
@@ -4597,18 +4599,84 @@ let lbePools=[];
 let lbeCurrentPoolIdx=null;
 let lbeCurrentSlot=null;
 
-function lbeItemSprite(itemName){
-  const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.name===itemName);
-  if(it && it.slug) return `${ITEM_BASE}${it.slug}.png`;
-  return '';
+// Inline onerror/onload callbacks (exposed on window since they're referenced
+// from HTML strings built via innerHTML) reuse the site's own proven sprite
+// pipeline instead of guessing at file-naming rules ourselves.
+window.lbeImgErr = function(img, id, file){
+  if(typeof iconUrlFallback==='function') iconUrlFallback(img, id, file);
+  else img.style.opacity='.2';
+};
+window.lbeItemImgErr = function(img, slug){ img.src=`${IF}${slug}.png`; img.onerror=null; };
+window.lbeItemImgLoad = function(img, slug){
+  if(typeof removeItemBg==='function') removeItemBg(img, slug);
+  const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.slug===slug);
+  if(typeof applyItemTint==='function' && it) applyItemTint(img, it);
+};
+function lbePkmImgHtml(mon){
+  if(!mon) return '?';
+  const file = (typeof getSpriteFile==='function') ? getSpriteFile(mon) : (mon.sprite || (mon.id?String(mon.id).padStart(4,'0'):''));
+  if(!file) return '?';
+  return `<img src="${PKM_BASE1}${file}.png" onerror="lbeImgErr(this,${JSON.stringify(mon.id||0)},${JSON.stringify(file)})"/>`;
 }
-function lbePkmSprite(mon){
+function lbePkmSpriteUrl(mon){
   if(!mon) return '';
-  const file=mon.sprite || (mon.id?String(mon.id).padStart(4,'0'):'');
+  const file = (typeof getSpriteFile==='function') ? getSpriteFile(mon) : (mon.sprite || (mon.id?String(mon.id).padStart(4,'0'):''));
   return file ? `${PKM_BASE1}${file}.png` : '';
+}
+function lbeItemImgHtml(itemName){
+  const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.name===itemName);
+  if(!it || !it.slug) return '';
+  return `<img src="${ITEM_BASE}${it.slug}.png" onerror="lbeItemImgErr(this,${JSON.stringify(it.slug)})" onload="lbeItemImgLoad(this,${JSON.stringify(it.slug)})"/>`;
+}
+function lbeItemSpriteUrl(itemName){
+  const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.name===itemName);
+  return (it && it.slug) ? `${ITEM_BASE}${it.slug}.png` : '';
 }
 function lbeFindMon(name){ return (typeof POKEMON!=='undefined'?POKEMON:[]).find(p=>p.name===name); }
 function lbeAbilitiesList(){ return typeof ABILITIES_DB!=='undefined' ? Object.values(ABILITIES_DB) : []; }
+
+// Species-aware pre-selection: mirrors the Pokedex Browser's own resolution logic
+// (multiple candidate keys, since learnset refs/species names don't always match
+// 1:1) so "learnable movepool" here means the same thing it means on that page.
+function lbeAbilitiesForSpecies(mon){
+  if(!mon) return lbeAbilitiesList();
+  const full = mon._full || mon;
+  const names = (full.abilities||[]).map(a=>a.name).filter(Boolean);
+  if(!names.length) return lbeAbilitiesList();
+  const all = lbeAbilitiesList();
+  return names.map(n=>all.find(a=>a.name.toLowerCase()===n.toLowerCase())||{name:n});
+}
+function lbeResolveLearnsetKey(ref){
+  if(!ref) return null;
+  return ref.replace(/^s/, '').replace(/(LevelUp|Teachable|EggMove)Learnset$/, '');
+}
+function lbeLearnsetForSpecies(mon){
+  if(!mon || typeof LEARNSETS_DB==='undefined') return null;
+  const full = mon._full || mon;
+  const baseName = mon.name.replace(/\s*\([^)]*\)\s*/g,'').replace(/[^a-zA-Z]/g,'');
+  const plainName = mon.name.replace(/[^a-zA-Z]/g,'');
+  const candidates = [
+    lbeResolveLearnsetKey(full.learnset_ref),
+    lbeResolveLearnsetKey(full.teachable_ref),
+    lbeResolveLearnsetKey(full.egg_moves_ref),
+    plainName, baseName,
+  ].filter(Boolean);
+  for(const key of candidates){ if(LEARNSETS_DB[key]) return LEARNSETS_DB[key]; }
+  return null;
+}
+function lbeMovesForSpecies(mon){
+  const allMoves = typeof MOVES!=='undefined' ? MOVES : [];
+  const learnset = lbeLearnsetForSpecies(mon);
+  if(!learnset) return allMoves;
+  const names = new Set([
+    ...((learnset.level_up||[]).map(m=>m.move)),
+    ...((learnset.teachable||[]).filter(m=>m!=='???')),
+    ...((learnset.egg_moves||[]).filter(m=>m!=='???')),
+  ]);
+  if(!names.size) return allMoves;
+  const filtered = allMoves.filter(m=>names.has(m.name));
+  return filtered.length ? filtered : allMoves;
+}
 function lbeNaturesList(){ return typeof NATURES!=='undefined' ? NATURES : LBE_FALLBACK_NATURES; }
 
 function lbeLoadPools(){
@@ -4700,13 +4768,13 @@ function lbeRenderDetail(){
   lbePools.forEach((p,i)=>{
     const t=document.createElement('div');
     t.className='lbe-thumb'+(i===lbeCurrentPoolIdx?' lbe-act':'');
-    t.innerHTML = p.main.species ? `<img src="${lbePkmSprite(lbeFindMon(p.main.species))}"/>` : '?';
+    t.innerHTML = p.main.species ? lbePkmImgHtml(lbeFindMon(p.main.species)) : '?';
     t.addEventListener('click',()=>{ lbeSavePools(); lbeOpenDetail(i); });
     strip.appendChild(t);
   });
 
   const mainArt=document.getElementById('lbe-main-art');
-  mainArt.innerHTML = pool.main.species ? `<img src="${lbePkmSprite(lbeFindMon(pool.main.species))}"/>` : '?';
+  mainArt.innerHTML = pool.main.species ? lbePkmImgHtml(lbeFindMon(pool.main.species)) : '?';
   mainArt.onclick=()=>lbeSelectSlotSpecies('main');
   const mainName=document.getElementById('lbe-main-name');
   mainName.textContent = pool.main.species || 'Click to choose main Pokemon';
@@ -4718,7 +4786,7 @@ function lbeRenderDetail(){
     const div=document.createElement('div');
     div.className='lbe-supportmon';
     div.innerHTML=`
-      <div class="lbe-art ${s.species?'':'lbe-empty'}">${s.species?`<img src="${lbePkmSprite(lbeFindMon(s.species))}"/>`:'+'}</div>
+      <div class="lbe-art ${s.species?'':'lbe-empty'}">${s.species?lbePkmImgHtml(lbeFindMon(s.species)):'+'}</div>
       <div class="lbe-nm">${lbeEscapeHtml(s.species||'Add support')}</div>
       <div class="lbe-rw ${s.rewardItem?'lbe-set':''}">${s.rewardItem?('reward: '+lbeEscapeHtml(s.rewardItem)):'+ reward item'}</div>
     `;
@@ -4754,7 +4822,7 @@ function lbeSelectSlotSpecies(slotKey){
   lbeCurrentSlot=slotKey;
   const anchor = slotKey==='main'?document.getElementById('lbe-main-art'):document.querySelectorAll('.lbe-supportmon .lbe-art')[slotKey];
   lbeOpenAutocomplete({
-    anchor, items:(typeof POKEMON!=='undefined'?POKEMON:[]), getLabel:p=>p.name, getIcon:p=>lbePkmSprite(p),
+    anchor, items:(typeof POKEMON!=='undefined'?POKEMON:[]), getLabel:p=>p.name, getIcon:p=>lbePkmSpriteUrl(p),
     onPick:(p)=>{
       const slot = slotKey==='main' ? lbeCurrentPool().main : lbeCurrentPool().support[slotKey];
       slot.species=p.name;
@@ -4765,7 +4833,7 @@ function lbeSelectSlotSpecies(slotKey){
 function lbeSelectRewardItem(slotIdx){
   const anchor=document.querySelectorAll('.lbe-supportmon .lbe-rw')[slotIdx];
   lbeOpenAutocomplete({
-    anchor, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name, getIcon:it=>lbeItemSprite(it.name),
+    anchor, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name, getIcon:it=>lbeItemSpriteUrl(it.name),
     onPick:(it)=>{ lbeCurrentPool().support[slotIdx].rewardItem=it.name; lbeSavePools(); lbeRenderDetail(); }
   });
 }
@@ -4789,23 +4857,24 @@ function lbeOpenAutocomplete({anchor, items, getLabel, getIcon, onPick}){
     filtered.forEach(it=>{
       const row=document.createElement('div'); row.className='lbe-dd-item';
       const icon=getIcon(it);
-      row.innerHTML=`${icon?`<img src="${icon}" onerror="this.style.visibility='hidden'"/>`:''}<span>${lbeEscapeHtml(getLabel(it))}</span>`;
-      row.addEventListener('click',()=>{ onPick(it); lbeCloseAutocomplete(); });
+      const img = icon ? `<img src="${icon}" onerror="this.style.visibility='hidden'"/>` : '';
+      row.innerHTML=`${img}<span>${lbeEscapeHtml(getLabel(it))}</span>`;
+      // mousedown+preventDefault (not click): stops the browser from blurring the
+      // search input before the pick registers — same pattern the rest of the site
+      // uses for its own dropdowns. A plain 'click' handler here is what caused
+      // every search field to appear to "close instantly" without picking anything.
+      row.addEventListener('mousedown',(e)=>{ e.preventDefault(); onPick(it); lbeCloseAutocomplete(); });
       dd.appendChild(row);
     });
   }
   input.addEventListener('input',()=>renderOptions(input.value));
+  input.addEventListener('blur',()=>{ setTimeout(()=>lbeCloseAutocomplete(), 160); });
   renderOptions('');
   input.focus();
   lbeOpenDD={input,dd};
-  setTimeout(()=>{ document.addEventListener('click', lbeOutsideClick); },0);
-}
-function lbeOutsideClick(e){
-  if(!lbeOpenDD) return;
-  if(e.target!==lbeOpenDD.input && !lbeOpenDD.dd.contains(e.target)){ lbeCloseAutocomplete(); }
 }
 function lbeCloseAutocomplete(){
-  if(lbeOpenDD){ lbeOpenDD.input.remove(); lbeOpenDD.dd.remove(); lbeOpenDD=null; document.removeEventListener('click', lbeOutsideClick); }
+  if(lbeOpenDD){ lbeOpenDD.input.remove(); lbeOpenDD.dd.remove(); lbeOpenDD=null; }
 }
 
 function lbeRenderEditorPanel(){
@@ -4846,17 +4915,17 @@ function lbeRenderEditorPanel(){
 
   const abilityInput=document.getElementById('lbe-f-ability');
   abilityInput.addEventListener('focus',()=>lbeOpenAutocomplete({
-    anchor:abilityInput, items:lbeAbilitiesList(), getLabel:a=>a.name, getIcon:()=>'',
+    anchor:abilityInput, items:lbeAbilitiesForSpecies(lbeFindMon(slot.species)), getLabel:a=>a.name, getIcon:()=>'',
     onPick:(a)=>{ slot.ability=a.name; abilityInput.value=a.name; lbeSavePools(); }
   }));
   const itemInput=document.getElementById('lbe-f-item');
   itemInput.addEventListener('focus',()=>lbeOpenAutocomplete({
-    anchor:itemInput, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name, getIcon:it=>lbeItemSprite(it.name),
+    anchor:itemInput, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name, getIcon:it=>lbeItemSpriteUrl(it.name),
     onPick:(it)=>{ slot.heldItem=it.name; itemInput.value=it.name; lbeSavePools(); }
   }));
   document.querySelectorAll('.lbe-f-move').forEach(inp=>{
     inp.addEventListener('focus',()=>lbeOpenAutocomplete({
-      anchor:inp, items:(typeof MOVES!=='undefined'?MOVES:[]), getLabel:m=>m.name, getIcon:()=>'',
+      anchor:inp, items:lbeMovesForSpecies(lbeFindMon(slot.species)), getLabel:m=>m.name, getIcon:()=>'',
       onPick:(m)=>{ slot.moves[+inp.dataset.i]=m.name; inp.value=m.name; lbeSavePools(); }
     }));
   });
