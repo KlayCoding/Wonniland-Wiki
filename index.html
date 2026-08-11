@@ -584,6 +584,85 @@
     
     .info-btn{background:transparent;border:1px solid var(--pl);color:var(--pl);border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer;transition:all .2s;margin-left:0;}
     .info-btn:hover{background:rgba(206,147,216,.1);}
+  
+/* ══════════ Legendary Battle Editor (LBE) ══════════ */
+#lbe-toggle{position:fixed;top:14px;right:14px;z-index:5000;font-family:'Press Start 2P',monospace;font-size:9px;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:10px 14px;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 16px rgba(0,0,0,.4);}
+#lbe-toggle:hover{filter:brightness(1.1);}
+#lbe-root{display:none;position:fixed;inset:0;z-index:4000;background:var(--dark);overflow-y:auto;padding:24px 32px;}
+#lbe-root.open{display:block;}
+.lbe-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.lbe-h1{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--yellow);text-shadow:2px 2px 0 var(--purple);}
+.lbe-actions{display:flex;gap:10px;}
+.lbe-btn{font-family:'Press Start 2P',monospace;font-size:9px;border:none;border-radius:6px;padding:10px 14px;cursor:pointer;letter-spacing:.5px;}
+.lbe-btn-add{background:var(--purple);color:#fff;}
+.lbe-btn-save{background:var(--green);color:#fff;}
+.lbe-btn-export{background:var(--yellow);color:#1a1a2e;}
+.lbe-btn-back{background:transparent;border:1px solid var(--border);color:var(--gray);}
+.lbe-btn-close{background:transparent;border:1px solid var(--border);color:var(--gray);}
+.lbe-btn:hover{filter:brightness(1.1);}
+#lbe-status-msg{font-size:11px;color:var(--green);margin-left:10px;}
+.lbe-tablewrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.lbe-table{width:100%;border-collapse:collapse;font-size:12px;}
+.lbe-table th{background:#0d1b2a;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--pl);text-align:left;padding:10px 8px;letter-spacing:.5px;border-bottom:1px solid var(--border);}
+.lbe-table td{padding:8px;border-bottom:1px solid rgba(15,52,96,.4);vertical-align:middle;}
+.lbe-poolrow{cursor:pointer;}
+.lbe-poolrow:hover td{background:rgba(255,255,255,.03);}
+.lbe-chip{display:inline-flex;align-items:center;gap:4px;background:var(--dark);border:1px solid var(--border);border-radius:14px;padding:3px 9px;font-size:11px;}
+.lbe-chip.lbe-empty{color:var(--gray);border-style:dashed;}
+.lbe-support-cell{display:flex;flex-wrap:wrap;gap:4px;}
+.lbe-row-del{background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;}
+.lbe-row-del:hover{color:var(--red);}
+.lbe-emptystate{padding:40px;text-align:center;color:var(--gray);font-size:13px;}
+#lbe-detail{display:none;}
+.lbe-pool-name-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;max-width:640px;}
+.lbe-pool-name-row input{background:var(--card);border:2px solid var(--border);border-radius:8px;color:var(--white);font-size:16px;font-weight:600;padding:8px 12px;flex:1;font-family:inherit;}
+.lbe-thumbstrip{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;}
+.lbe-thumb{width:56px;height:56px;border-radius:10px;background:var(--card);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;}
+.lbe-thumb img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
+.lbe-thumb.lbe-act{border-color:var(--yellow);}
+.lbe-battlecard{max-width:660px;margin:0 auto 18px;background:linear-gradient(180deg,#1e2a4a,var(--card));border:2px solid var(--yellow);border-radius:20px;padding:26px;position:relative;}
+.lbe-badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.lbe-badge{font-size:10px;font-family:'Press Start 2P',monospace;padding:5px 9px;border-radius:6px;background:rgba(0,0,0,.35);border:1px solid var(--border);}
+.lbe-badge.lbe-weather{color:#FFD54F;} .lbe-badge.lbe-status{color:var(--pl);} .lbe-badge.lbe-totem{color:#FF8A65;}
+.lbe-mainmon{display:flex;flex-direction:column;align-items:center;margin-bottom:10px;}
+.lbe-mainmon .lbe-art{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#2a2a4a,#151528);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px rgba(255,215,0,.25);cursor:pointer;overflow:hidden;}
+.lbe-mainmon .lbe-art img{width:90%;height:90%;object-fit:contain;image-rendering:pixelated;}
+.lbe-mainmon .lbe-nm{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--yellow);margin-top:12px;cursor:pointer;}
+.lbe-vs{text-align:center;font-family:'Press Start 2P',monospace;color:var(--gray);font-size:10px;margin:10px 0;}
+.lbe-support-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.lbe-supportmon{display:flex;flex-direction:column;align-items:center;width:120px;}
+.lbe-supportmon .lbe-art{width:64px;height:64px;border-radius:14px;background:var(--dark);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;}
+.lbe-supportmon .lbe-art img{width:90%;height:90%;object-fit:contain;image-rendering:pixelated;}
+.lbe-supportmon .lbe-art:hover{border-color:var(--pl);}
+.lbe-supportmon .lbe-art.lbe-empty{color:var(--gray);border-style:dashed;font-size:22px;}
+.lbe-supportmon .lbe-nm{font-size:11px;margin-top:6px;text-align:center;cursor:pointer;}
+.lbe-supportmon .lbe-rw{font-size:9px;color:var(--gray);margin-top:2px;cursor:pointer;text-align:center;}
+.lbe-supportmon .lbe-rw.lbe-set{color:var(--yellow);}
+.lbe-panel{max-width:660px;margin:0 auto 16px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;}
+.lbe-panel-title{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--pl);margin-bottom:14px;}
+.lbe-field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.lbe-field{display:flex;flex-direction:column;gap:5px;}
+.lbe-field label{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;}
+.lbe-field input[type=text],.lbe-field input[type=number],.lbe-field select{background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:13px;padding:7px 9px;font-family:inherit;width:100%;}
+.lbe-field input:focus{outline:none;border-color:var(--yellow);}
+.lbe-iv-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.lbe-iv-grid .lbe-field{align-items:center;}
+.lbe-iv-grid input{width:100%;text-align:center;}
+.lbe-moves-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.lbe-section-lbl{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--pl);letter-spacing:1px;margin:18px 0 10px;}
+.lbe-pill-row{display:flex;flex-wrap:wrap;gap:8px;}
+.lbe-pill{background:var(--dark);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--gray);}
+.lbe-pill:hover{border-color:var(--pl);color:var(--white);}
+.lbe-pill.lbe-sel{background:var(--purple);border-color:var(--purple);color:#fff;}
+.lbe-checkbox-row{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:6px;}
+.lbe-checkbox-row input{width:15px;height:15px;accent-color:var(--yellow);}
+.lbe-ac-wrap{position:relative;}
+.lbe-dd{position:fixed;background:#0d1b2a;border:1px solid var(--border);border-radius:8px;max-height:280px;overflow-y:auto;z-index:6000;box-shadow:0 12px 40px rgba(0,0,0,.7);width:260px;}
+.lbe-dd-item{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid rgba(15,52,96,.4);}
+.lbe-dd-item:hover{background:rgba(255,215,0,.08);}
+.lbe-dd-item img{width:28px;height:28px;object-fit:contain;image-rendering:pixelated;flex-shrink:0;}
+.lbe-dd-empty{padding:10px;font-size:11px;color:var(--gray);}
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
 
@@ -4427,5 +4506,431 @@ const ITEM_BG_COLORS = {"strange_ball":"#B4B4B4","poke_ball":"#B4B4B4","great_ba
   Data via <a href="https://pokeapi.co" target="_blank" style="color:var(--pl);text-decoration:none;">PokéAPI</a> · 
   Pokémon © Nintendo / Game Freak · Fan project, not affiliated with Nintendo
 </div>
+
+<button id="lbe-toggle">⚔ BOSS EDITOR</button>
+<div id="lbe-root">
+  <div id="lbe-list">
+    <div class="lbe-topbar" style="margin-top:14px;">
+      <div class="lbe-h1">LEGENDARY BATTLE EDITOR</div>
+      <div class="lbe-actions">
+        <button class="lbe-btn lbe-btn-close" id="lbe-btn-closeapp">✕ CLOSE</button>
+        <button class="lbe-btn lbe-btn-add" id="lbe-btn-add">+ ADD POOL</button>
+        <button class="lbe-btn lbe-btn-save" id="lbe-btn-save-list">SAVE</button>
+        <button class="lbe-btn lbe-btn-export" id="lbe-btn-export">EXPORT JSON</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--gray);margin-bottom:12px;" id="lbe-load-status">Loading data…</div>
+    <div class="lbe-tablewrap">
+      <table class="lbe-table">
+        <thead>
+          <tr><th>Pool</th><th>Main</th><th>Lvl</th><th>No Catch</th><th>Support</th><th>Weather</th><th>Status</th><th>Totem</th><th></th></tr>
+        </thead>
+        <tbody id="lbe-pool-tbody"></tbody>
+      </table>
+      <div class="lbe-emptystate" id="lbe-empty-msg" style="display:none;">No pools yet — click + ADD POOL to start.</div>
+    </div>
+  </div>
+
+  <div id="lbe-detail">
+    <div class="lbe-topbar">
+      <button class="lbe-btn lbe-btn-back" id="lbe-btn-back">← BACK TO LIST</button>
+      <div class="lbe-actions">
+        <button class="lbe-btn lbe-btn-save" id="lbe-btn-save-detail">SAVE &amp; RETURN</button>
+      </div>
+    </div>
+    <div class="lbe-pool-name-row"><input id="lbe-pool-name-input" placeholder="Pool name…"/></div>
+    <div class="lbe-thumbstrip" id="lbe-thumbstrip"></div>
+    <div class="lbe-battlecard">
+      <div class="lbe-badges">
+        <div class="lbe-badge lbe-weather" id="lbe-badge-weather">WEATHER: —</div>
+        <div class="lbe-badge lbe-status" id="lbe-badge-status">STATUS: —</div>
+        <div class="lbe-badge lbe-totem" id="lbe-badge-totem">TOTEM: —</div>
+      </div>
+      <div class="lbe-mainmon">
+        <div class="lbe-art" id="lbe-main-art"></div>
+        <div class="lbe-nm" id="lbe-main-name">Click to choose main Pokemon</div>
+      </div>
+      <div class="lbe-vs">— PAIRED WITH —</div>
+      <div class="lbe-support-row" id="lbe-support-row"></div>
+    </div>
+    <div class="lbe-panel" id="lbe-editor-panel">
+      <div class="lbe-panel-title" id="lbe-editor-panel-title">SELECT A POKEMON ABOVE TO EDIT IT</div>
+      <div id="lbe-editor-panel-body"></div>
+    </div>
+    <div class="lbe-panel">
+      <div class="lbe-section-lbl" style="margin-top:0;">WEATHER</div>
+      <div class="lbe-pill-row" id="lbe-weather-pills"></div>
+      <div class="lbe-section-lbl">STARTING STATUS</div>
+      <div class="lbe-pill-row" id="lbe-status-pills"></div>
+      <div class="lbe-section-lbl">TOTEM BOOST</div>
+      <div class="lbe-pill-row" id="lbe-totem-pills"></div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+const LBE_WEATHERS=["None","Sun","Rain","Sandstorm","Hail"];
+const LBE_STATUSES=["None","Trick Room","Magic Room","Wonder Room","Tailwind","Rainbow","Sea of Fire","Swamp"];
+const LBE_TOTEM_STATS=["None","Atk +1","Def +1","Spe +1","SpA +1","SpD +1","Acc +1","Evas +1"];
+const LBE_STAT_KEYS=["hp","atk","def","spa","spd","spe"];
+const LBE_STAT_LABELS=["HP","Atk","Def","SpA","SpD","Spe"];
+const LBE_LS_KEY='legendaryBattleEditor_pools';
+const LBE_FALLBACK_NATURES=[
+  {name:"Hardy",up:null,dn:null},{name:"Lonely",up:"Atk",dn:"Def"},
+  {name:"Brave",up:"Atk",dn:"Spe"},{name:"Adamant",up:"Atk",dn:"SpA"},
+  {name:"Naughty",up:"Atk",dn:"SpD"},{name:"Bold",up:"Def",dn:"Atk"},
+  {name:"Docile",up:null,dn:null},{name:"Relaxed",up:"Def",dn:"Spe"},
+  {name:"Impish",up:"Def",dn:"SpA"},{name:"Lax",up:"Def",dn:"SpD"},
+  {name:"Timid",up:"Spe",dn:"Atk"},{name:"Hasty",up:"Spe",dn:"Def"},
+  {name:"Serious",up:null,dn:null},{name:"Jolly",up:"Spe",dn:"SpA"},
+  {name:"Naive",up:"Spe",dn:"SpD"},{name:"Modest",up:"SpA",dn:"Atk"},
+  {name:"Mild",up:"SpA",dn:"Def"},{name:"Quiet",up:"SpA",dn:"Spe"},
+  {name:"Bashful",up:null,dn:null},{name:"Rash",up:"SpA",dn:"SpD"},
+  {name:"Calm",up:"SpD",dn:"Atk"},{name:"Gentle",up:"SpD",dn:"Def"},
+  {name:"Sassy",up:"SpD",dn:"Spe"},{name:"Careful",up:"SpD",dn:"SpA"},
+  {name:"Quirky",up:null,dn:null},
+];
+
+let lbePools=[];
+let lbeCurrentPoolIdx=null;
+let lbeCurrentSlot=null;
+
+function lbeItemSprite(itemName){
+  const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.name===itemName);
+  if(it && it.slug) return `${ITEM_BASE}${it.slug}.png`;
+  return '';
+}
+function lbePkmSprite(mon){
+  if(!mon) return '';
+  const file=mon.sprite || (mon.id?String(mon.id).padStart(4,'0'):'');
+  return file ? `${PKM_BASE1}${file}.png` : '';
+}
+function lbeFindMon(name){ return (typeof POKEMON!=='undefined'?POKEMON:[]).find(p=>p.name===name); }
+function lbeAbilitiesList(){ return typeof ABILITIES_DB!=='undefined' ? Object.values(ABILITIES_DB) : []; }
+function lbeNaturesList(){ return typeof NATURES!=='undefined' ? NATURES : LBE_FALLBACK_NATURES; }
+
+function lbeLoadPools(){
+  try{ const raw=localStorage.getItem(LBE_LS_KEY); if(raw) lbePools=JSON.parse(raw); }catch(e){ lbePools=[]; }
+}
+function lbeSavePools(){
+  localStorage.setItem(LBE_LS_KEY, JSON.stringify(lbePools));
+  lbeFlashStatus();
+}
+function lbeFlashStatus(){
+  const el=document.getElementById('lbe-load-status');
+  if(!el) return;
+  const marker=document.getElementById('lbe-status-msg');
+  if(marker) marker.remove();
+  const span=document.createElement('span');
+  span.id='lbe-status-msg'; span.textContent=' ✓ saved';
+  el.appendChild(span);
+  setTimeout(()=>{ const m=document.getElementById('lbe-status-msg'); if(m) m.remove(); }, 1800);
+}
+function lbeEmptySlot(){
+  return {species:null, level:50, ability:null, moves:[null,null,null,null], nature:null,
+          heldItem:null, ivs:{hp:31,atk:31,def:31,spa:31,spd:31,spe:31}, dynamaxLevel:0,
+          gigantamaxFactor:false, rewardItem:null};
+}
+function lbeNewPool(){
+  return {id:'pool_'+Date.now(), name:'New Pool', main:{...lbeEmptySlot(),notCatchable:true},
+          support:[lbeEmptySlot(),lbeEmptySlot(),lbeEmptySlot()], weather:'None', startingStatus:'None',
+          totemBoost:'None'};
+}
+function lbeEscapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function lbeRenderList(){
+  const tbody=document.getElementById('lbe-pool-tbody');
+  tbody.innerHTML='';
+  document.getElementById('lbe-empty-msg').style.display = lbePools.length?'none':'block';
+  lbePools.forEach((pool,idx)=>{
+    const tr=document.createElement('tr');
+    tr.className='lbe-poolrow';
+    tr.innerHTML=`
+      <td>${lbeEscapeHtml(pool.name)}</td>
+      <td>${lbeSlotChip(pool.main)}</td>
+      <td>${pool.main.level}</td>
+      <td style="text-align:center;">${pool.main.notCatchable?'🔒':'—'}</td>
+      <td><div class="lbe-support-cell">${pool.support.map(s=>lbeSlotChip(s)).join('')}</div></td>
+      <td>${pool.weather}</td>
+      <td>${pool.startingStatus}</td>
+      <td>${pool.totemBoost}</td>
+      <td><button class="lbe-row-del" data-idx="${idx}">✕</button></td>
+    `;
+    tr.addEventListener('click',(e)=>{ if(e.target.closest('.lbe-row-del')) return; lbeOpenDetail(idx); });
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('.lbe-row-del').forEach(btn=>{
+    btn.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      const i=+btn.dataset.idx;
+      if(confirm(`Delete "${lbePools[i].name}"?`)){ lbePools.splice(i,1); lbeSavePools(); lbeRenderList(); }
+    });
+  });
+}
+function lbeSlotChip(slot){
+  if(!slot.species) return `<div class="lbe-chip lbe-empty">+ empty</div>`;
+  return `<div class="lbe-chip">${lbeEscapeHtml(slot.species)}</div>`;
+}
+
+function lbeOpenDetail(idx){
+  lbeCurrentPoolIdx=idx; lbeCurrentSlot='main';
+  document.getElementById('lbe-list').style.display='none';
+  document.getElementById('lbe-detail').style.display='block';
+  lbeRenderDetail();
+}
+function lbeCloseDetail(){
+  document.getElementById('lbe-detail').style.display='none';
+  document.getElementById('lbe-list').style.display='block';
+  lbeRenderList();
+}
+function lbeCurrentPool(){ return lbePools[lbeCurrentPoolIdx]; }
+function lbeCurrentSlotObj(){
+  const p=lbeCurrentPool();
+  return lbeCurrentSlot==='main' ? p.main : p.support[lbeCurrentSlot];
+}
+
+function lbeRenderDetail(){
+  const pool=lbeCurrentPool();
+  document.getElementById('lbe-pool-name-input').value=pool.name;
+
+  const strip=document.getElementById('lbe-thumbstrip');
+  strip.innerHTML='';
+  lbePools.forEach((p,i)=>{
+    const t=document.createElement('div');
+    t.className='lbe-thumb'+(i===lbeCurrentPoolIdx?' lbe-act':'');
+    t.innerHTML = p.main.species ? `<img src="${lbePkmSprite(lbeFindMon(p.main.species))}"/>` : '?';
+    t.addEventListener('click',()=>{ lbeSavePools(); lbeOpenDetail(i); });
+    strip.appendChild(t);
+  });
+
+  const mainArt=document.getElementById('lbe-main-art');
+  mainArt.innerHTML = pool.main.species ? `<img src="${lbePkmSprite(lbeFindMon(pool.main.species))}"/>` : '?';
+  mainArt.onclick=()=>lbeSelectSlotSpecies('main');
+  const mainName=document.getElementById('lbe-main-name');
+  mainName.textContent = pool.main.species || 'Click to choose main Pokemon';
+  mainName.onclick=()=>{ lbeCurrentSlot='main'; lbeRenderEditorPanel(); };
+
+  const row=document.getElementById('lbe-support-row');
+  row.innerHTML='';
+  pool.support.forEach((s,i)=>{
+    const div=document.createElement('div');
+    div.className='lbe-supportmon';
+    div.innerHTML=`
+      <div class="lbe-art ${s.species?'':'lbe-empty'}">${s.species?`<img src="${lbePkmSprite(lbeFindMon(s.species))}"/>`:'+'}</div>
+      <div class="lbe-nm">${lbeEscapeHtml(s.species||'Add support')}</div>
+      <div class="lbe-rw ${s.rewardItem?'lbe-set':''}">${s.rewardItem?('reward: '+lbeEscapeHtml(s.rewardItem)):'+ reward item'}</div>
+    `;
+    div.querySelector('.lbe-art').addEventListener('click',()=>lbeSelectSlotSpecies(i));
+    div.querySelector('.lbe-nm').addEventListener('click',()=>{ lbeCurrentSlot=i; lbeRenderEditorPanel(); });
+    div.querySelector('.lbe-rw').addEventListener('click',()=>lbeSelectRewardItem(i));
+    row.appendChild(div);
+  });
+
+  document.getElementById('lbe-badge-weather').textContent='WEATHER: '+pool.weather.toUpperCase();
+  document.getElementById('lbe-badge-status').textContent='STATUS: '+pool.startingStatus.toUpperCase();
+  document.getElementById('lbe-badge-totem').textContent='TOTEM: '+pool.totemBoost.toUpperCase();
+
+  lbeRenderPillRow('lbe-weather-pills', LBE_WEATHERS, pool.weather, v=>{ pool.weather=v; lbeRenderDetail(); });
+  lbeRenderPillRow('lbe-status-pills', LBE_STATUSES, pool.startingStatus, v=>{ pool.startingStatus=v; lbeRenderDetail(); });
+  lbeRenderPillRow('lbe-totem-pills', LBE_TOTEM_STATS, pool.totemBoost, v=>{ pool.totemBoost=v; lbeRenderDetail(); });
+
+  lbeRenderEditorPanel();
+}
+function lbeRenderPillRow(id, options, current, onSelect){
+  const wrap=document.getElementById(id);
+  wrap.innerHTML='';
+  options.forEach(opt=>{
+    const p=document.createElement('div');
+    p.className='lbe-pill'+(opt===current?' lbe-sel':'');
+    p.textContent=opt;
+    p.addEventListener('click',()=>onSelect(opt));
+    wrap.appendChild(p);
+  });
+}
+
+function lbeSelectSlotSpecies(slotKey){
+  lbeCurrentSlot=slotKey;
+  const anchor = slotKey==='main'?document.getElementById('lbe-main-art'):document.querySelectorAll('.lbe-supportmon .lbe-art')[slotKey];
+  lbeOpenAutocomplete({
+    anchor, items:(typeof POKEMON!=='undefined'?POKEMON:[]), getLabel:p=>p.name, getIcon:p=>lbePkmSprite(p),
+    onPick:(p)=>{
+      const slot = slotKey==='main' ? lbeCurrentPool().main : lbeCurrentPool().support[slotKey];
+      slot.species=p.name;
+      lbeSavePools(); lbeRenderDetail();
+    }
+  });
+}
+function lbeSelectRewardItem(slotIdx){
+  const anchor=document.querySelectorAll('.lbe-supportmon .lbe-rw')[slotIdx];
+  lbeOpenAutocomplete({
+    anchor, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name, getIcon:it=>lbeItemSprite(it.name),
+    onPick:(it)=>{ lbeCurrentPool().support[slotIdx].rewardItem=it.name; lbeSavePools(); lbeRenderDetail(); }
+  });
+}
+
+let lbeOpenDD=null;
+function lbeOpenAutocomplete({anchor, items, getLabel, getIcon, onPick}){
+  lbeCloseAutocomplete();
+  const input=document.createElement('input');
+  input.type='text'; input.placeholder='Search…';
+  input.style.cssText='width:220px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:#fff;padding:6px 9px;font-size:12px;position:fixed;z-index:6001;';
+  const dd=document.createElement('div'); dd.className='lbe-dd';
+  document.body.appendChild(input);
+  document.body.appendChild(dd);
+  const rect=anchor.getBoundingClientRect();
+  input.style.top=(rect.bottom+6)+'px'; input.style.left=Math.max(8,rect.left)+'px';
+  dd.style.top=(rect.bottom+38)+'px'; dd.style.left=Math.max(8,rect.left)+'px';
+  function renderOptions(q){
+    const filtered = items.filter(it=>getLabel(it).toLowerCase().includes(q.toLowerCase())).slice(0,60);
+    dd.innerHTML='';
+    if(!filtered.length){ dd.innerHTML='<div class="lbe-dd-empty">No matches / data not loaded yet</div>'; return; }
+    filtered.forEach(it=>{
+      const row=document.createElement('div'); row.className='lbe-dd-item';
+      const icon=getIcon(it);
+      row.innerHTML=`${icon?`<img src="${icon}" onerror="this.style.visibility='hidden'"/>`:''}<span>${lbeEscapeHtml(getLabel(it))}</span>`;
+      row.addEventListener('click',()=>{ onPick(it); lbeCloseAutocomplete(); });
+      dd.appendChild(row);
+    });
+  }
+  input.addEventListener('input',()=>renderOptions(input.value));
+  renderOptions('');
+  input.focus();
+  lbeOpenDD={input,dd};
+  setTimeout(()=>{ document.addEventListener('click', lbeOutsideClick); },0);
+}
+function lbeOutsideClick(e){
+  if(!lbeOpenDD) return;
+  if(e.target!==lbeOpenDD.input && !lbeOpenDD.dd.contains(e.target)){ lbeCloseAutocomplete(); }
+}
+function lbeCloseAutocomplete(){
+  if(lbeOpenDD){ lbeOpenDD.input.remove(); lbeOpenDD.dd.remove(); lbeOpenDD=null; document.removeEventListener('click', lbeOutsideClick); }
+}
+
+function lbeRenderEditorPanel(){
+  const slot=lbeCurrentSlotObj();
+  const title=document.getElementById('lbe-editor-panel-title');
+  const body=document.getElementById('lbe-editor-panel-body');
+  const label = lbeCurrentSlot==='main' ? 'MAIN: '+(slot.species||'—') : 'SUPPORT '+(lbeCurrentSlot+1)+': '+(slot.species||'—');
+  title.textContent=label;
+
+  const natOpts = lbeNaturesList().map(n=>`<option value="${n.name}" ${slot.nature===n.name?'selected':''}>${n.name}${n.up?` (+${n.up}/-${n.dn})`:''}</option>`).join('');
+
+  body.innerHTML=`
+    <div class="lbe-field-grid">
+      <div class="lbe-field"><label>Level</label><input type="number" id="lbe-f-level" min="1" max="100" value="${slot.level}"/></div>
+      <div class="lbe-field"><label>Ability</label><div class="lbe-ac-wrap"><input type="text" id="lbe-f-ability" placeholder="Search ability…" value="${slot.ability||''}"/></div></div>
+      <div class="lbe-field"><label>Nature</label><select id="lbe-f-nature"><option value="">— random —</option>${natOpts}</select></div>
+      <div class="lbe-field"><label>Held Item</label><div class="lbe-ac-wrap"><input type="text" id="lbe-f-item" placeholder="Search item…" value="${slot.heldItem||''}"/></div></div>
+      <div class="lbe-field"><label>Dynamax Level (0-10)</label><input type="number" id="lbe-f-dmax" min="0" max="10" value="${slot.dynamaxLevel}"/></div>
+      <div class="lbe-field"><label>Gigantamax Factor</label><div class="lbe-checkbox-row"><input type="checkbox" id="lbe-f-gmax" ${slot.gigantamaxFactor?'checked':''}/> <span>enabled</span></div></div>
+    </div>
+    ${lbeCurrentSlot==='main' ? `<div class="lbe-checkbox-row"><input type="checkbox" id="lbe-f-notcatch" ${slot.notCatchable?'checked':''}/> <span>Not catchable (support Pokemon in this pool can still be caught)</span></div>` : ''}
+    <div class="lbe-section-lbl">MOVES</div>
+    <div class="lbe-moves-grid" id="lbe-moves-grid">
+      ${[0,1,2,3].map(i=>`<div class="lbe-ac-wrap"><input type="text" class="lbe-f-move" data-i="${i}" placeholder="Move ${i+1}…" value="${slot.moves[i]||''}"/></div>`).join('')}
+    </div>
+    <div class="lbe-section-lbl">IVs <span style="color:var(--gray);font-size:9px;text-transform:none;letter-spacing:0;cursor:pointer;text-decoration:underline;" id="lbe-iv-max-all">(set all to 31)</span></div>
+    <div class="lbe-iv-grid">
+      ${LBE_STAT_KEYS.map((k,i)=>`<div class="lbe-field"><label>${LBE_STAT_LABELS[i]}</label><input type="number" class="lbe-f-iv" data-k="${k}" min="0" max="31" value="${slot.ivs[k]}"/></div>`).join('')}
+    </div>
+  `;
+
+  document.getElementById('lbe-f-level').addEventListener('input',e=>{ slot.level=+e.target.value||1; lbeSavePools(); lbeRenderDetail(); });
+  document.getElementById('lbe-f-dmax').addEventListener('input',e=>{ slot.dynamaxLevel=Math.max(0,Math.min(10,+e.target.value||0)); lbeSavePools(); });
+  document.getElementById('lbe-f-gmax').addEventListener('change',e=>{ slot.gigantamaxFactor=e.target.checked; lbeSavePools(); });
+  document.getElementById('lbe-f-nature').addEventListener('change',e=>{ slot.nature=e.target.value||null; lbeSavePools(); });
+  const notcatch=document.getElementById('lbe-f-notcatch');
+  if(notcatch) notcatch.addEventListener('change',e=>{ slot.notCatchable=e.target.checked; lbeSavePools(); lbeRenderList(); });
+
+  const abilityInput=document.getElementById('lbe-f-ability');
+  abilityInput.addEventListener('focus',()=>lbeOpenAutocomplete({
+    anchor:abilityInput, items:lbeAbilitiesList(), getLabel:a=>a.name, getIcon:()=>'',
+    onPick:(a)=>{ slot.ability=a.name; abilityInput.value=a.name; lbeSavePools(); }
+  }));
+  const itemInput=document.getElementById('lbe-f-item');
+  itemInput.addEventListener('focus',()=>lbeOpenAutocomplete({
+    anchor:itemInput, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name, getIcon:it=>lbeItemSprite(it.name),
+    onPick:(it)=>{ slot.heldItem=it.name; itemInput.value=it.name; lbeSavePools(); }
+  }));
+  document.querySelectorAll('.lbe-f-move').forEach(inp=>{
+    inp.addEventListener('focus',()=>lbeOpenAutocomplete({
+      anchor:inp, items:(typeof MOVES!=='undefined'?MOVES:[]), getLabel:m=>m.name, getIcon:()=>'',
+      onPick:(m)=>{ slot.moves[+inp.dataset.i]=m.name; inp.value=m.name; lbeSavePools(); }
+    }));
+  });
+  document.querySelectorAll('.lbe-f-iv').forEach(inp=>{
+    inp.addEventListener('input',()=>{ slot.ivs[inp.dataset.k]=Math.max(0,Math.min(31,+inp.value||0)); lbeSavePools(); });
+  });
+  document.getElementById('lbe-iv-max-all').addEventListener('click',()=>{
+    LBE_STAT_KEYS.forEach(k=>slot.ivs[k]=31); lbeSavePools(); lbeRenderEditorPanel();
+  });
+}
+
+// Export field order, fixed: species, level, ability, moves[4], nature, heldItem,
+// ivs{hp,atk,def,spa,spd,spe}, dynamaxLevel, gigantamaxFactor — same for every slot.
+function lbeSlotToExport(slot, extra){
+  return {
+    species: slot.species, level: slot.level, ability: slot.ability, moves: slot.moves,
+    nature: slot.nature, heldItem: slot.heldItem,
+    ivs: {hp:slot.ivs.hp, atk:slot.ivs.atk, def:slot.ivs.def, spa:slot.ivs.spa, spd:slot.ivs.spd, spe:slot.ivs.spe},
+    dynamaxLevel: slot.dynamaxLevel, gigantamaxFactor: slot.gigantamaxFactor, ...extra
+  };
+}
+function lbeExportJson(){
+  const out = lbePools.map(p=>({
+    poolId: p.id, poolName: p.name,
+    main: lbeSlotToExport(p.main, {notCatchable:p.main.notCatchable}),
+    support: p.support.map(s=>lbeSlotToExport(s, {rewardItem:s.rewardItem})),
+    weather: p.weather, startingStatus: p.startingStatus, totemBoost: p.totemBoost,
+  }));
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='legendary_battle_pools.json';
+  a.click();
+}
+
+function lbeUpdateLoadStatus(){
+  const el=document.getElementById('lbe-load-status');
+  if(!el) return;
+  const pCount=(typeof POKEMON!=='undefined')?POKEMON.length:0;
+  if(pCount>0){
+    el.textContent = `Using ${pCount} Pokemon, ${lbeAbilitiesList().length} abilities, ${(typeof ITEMS!=='undefined'?ITEMS.length:0)} items, ${(typeof MOVES!=='undefined'?MOVES.length:0)} moves (already loaded by the site)`;
+  }else{
+    el.textContent = 'Waiting for the site\u2019s Pokemon data to finish loading…';
+    setTimeout(lbeUpdateLoadStatus, 500);
+  }
+}
+
+function lbeInit(){
+  lbeLoadPools();
+  lbeRenderList();
+  lbeUpdateLoadStatus();
+  document.getElementById('lbe-toggle').addEventListener('click',()=>{
+    document.getElementById('lbe-root').classList.add('open');
+    lbeRenderList();
+  });
+  document.getElementById('lbe-btn-closeapp').addEventListener('click',()=>{
+    lbeSavePools();
+    document.getElementById('lbe-root').classList.remove('open');
+  });
+  document.getElementById('lbe-btn-add').addEventListener('click',()=>{ lbePools.push(lbeNewPool()); lbeSavePools(); lbeOpenDetail(lbePools.length-1); });
+  document.getElementById('lbe-btn-save-list').addEventListener('click',lbeSavePools);
+  document.getElementById('lbe-btn-export').addEventListener('click',lbeExportJson);
+  document.getElementById('lbe-btn-back').addEventListener('click',()=>{ lbeSavePools(); lbeCloseDetail(); });
+  document.getElementById('lbe-btn-save-detail').addEventListener('click',()=>{ lbeSavePools(); lbeCloseDetail(); });
+  document.getElementById('lbe-pool-name-input').addEventListener('input',e=>{ lbeCurrentPool().name=e.target.value; });
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', lbeInit);
+}else{
+  lbeInit();
+}
+})();
+</script>
+
 </body>
 </html>
