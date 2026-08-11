@@ -621,6 +621,24 @@
 .lbe-thumb img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
 .lbe-thumb.lbe-act{border-color:var(--yellow);}
 .lbe-battlecard{max-width:660px;margin:0 auto 18px;background:linear-gradient(180deg,#1e2a4a,var(--card));border:2px solid var(--yellow);border-radius:20px;padding:26px;position:relative;}
+.lbe-tabbar{max-width:660px;margin:0 auto 14px;display:flex;gap:8px;flex-wrap:wrap;}
+.lbe-tab{flex:1;min-width:130px;background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;}
+.lbe-tab:hover{border-color:var(--pl);}
+.lbe-tab.lbe-act{border-color:var(--yellow);background:rgba(255,215,0,.06);}
+.lbe-tab .lbe-tab-icon{width:32px;height:32px;border-radius:6px;background:var(--dark);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+.lbe-tab .lbe-tab-icon img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
+.lbe-tab .lbe-tab-text{min-width:0;}
+.lbe-tab .lbe-tab-role{font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;}
+.lbe-tab .lbe-tab-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lbe-slot-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.lbe-slot-header .lbe-art{width:64px;height:64px;border-radius:14px;background:var(--dark);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0;}
+.lbe-slot-header .lbe-art img{width:90%;height:90%;object-fit:contain;image-rendering:pixelated;}
+.lbe-slot-header .lbe-art:hover{border-color:var(--pl);}
+.lbe-slot-header .lbe-nm{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--yellow);}
+.lbe-slot-header .lbe-sub{font-size:11px;color:var(--gray);margin-top:4px;cursor:pointer;text-decoration:underline;}
+.lbe-status-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.lbe-status-grid .lbe-section-lbl{margin-top:0;}
+.lbe-move-slot{margin-bottom:10px;}
 .lbe-badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
 .lbe-badge{font-size:10px;font-family:'Press Start 2P',monospace;padding:5px 9px;border-radius:6px;background:rgba(0,0,0,.35);border:1px solid var(--border);}
 .lbe-badge.lbe-weather{color:#FFD54F;} .lbe-badge.lbe-status{color:var(--pl);} .lbe-badge.lbe-totem{color:#FF8A65;}
@@ -4523,7 +4541,7 @@ const ITEM_BG_COLORS = {"strange_ball":"#B4B4B4","poke_ball":"#B4B4B4","great_ba
     <div class="lbe-tablewrap">
       <table class="lbe-table">
         <thead>
-          <tr><th>Pool</th><th>Main</th><th>Lvl</th><th>No Catch</th><th>Support</th><th>Weather</th><th>Status</th><th>Totem</th><th></th></tr>
+          <tr><th>Pool</th><th>Main</th><th>Lvl</th><th>No Catch</th><th>Support</th><th>Totem (Main)</th><th></th></tr>
         </thead>
         <tbody id="lbe-pool-tbody"></tbody>
       </table>
@@ -4540,30 +4558,10 @@ const ITEM_BG_COLORS = {"strange_ball":"#B4B4B4","poke_ball":"#B4B4B4","great_ba
     </div>
     <div class="lbe-pool-name-row"><input id="lbe-pool-name-input" placeholder="Pool name…"/></div>
     <div class="lbe-thumbstrip" id="lbe-thumbstrip"></div>
-    <div class="lbe-battlecard">
-      <div class="lbe-badges">
-        <div class="lbe-badge lbe-weather" id="lbe-badge-weather">WEATHER: —</div>
-        <div class="lbe-badge lbe-status" id="lbe-badge-status">STATUS: —</div>
-        <div class="lbe-badge lbe-totem" id="lbe-badge-totem">TOTEM: —</div>
-      </div>
-      <div class="lbe-mainmon">
-        <div class="lbe-art" id="lbe-main-art"></div>
-        <div class="lbe-nm" id="lbe-main-name">Click to choose main Pokemon</div>
-      </div>
-      <div class="lbe-vs">— PAIRED WITH —</div>
-      <div class="lbe-support-row" id="lbe-support-row"></div>
-    </div>
+
+    <div class="lbe-tabbar" id="lbe-tabbar"></div>
     <div class="lbe-panel" id="lbe-editor-panel">
-      <div class="lbe-panel-title" id="lbe-editor-panel-title">SELECT A POKEMON ABOVE TO EDIT IT</div>
       <div id="lbe-editor-panel-body"></div>
-    </div>
-    <div class="lbe-panel">
-      <div class="lbe-section-lbl" style="margin-top:0;">WEATHER</div>
-      <div class="lbe-pill-row" id="lbe-weather-pills"></div>
-      <div class="lbe-section-lbl">STARTING STATUS</div>
-      <div class="lbe-pill-row" id="lbe-status-pills"></div>
-      <div class="lbe-section-lbl">TOTEM BOOST</div>
-      <div class="lbe-pill-row" id="lbe-totem-pills"></div>
     </div>
   </div>
 </div>
@@ -4572,9 +4570,20 @@ const ITEM_BG_COLORS = {"strange_ball":"#B4B4B4","poke_ball":"#B4B4B4","great_ba
 <script>
 (function(){
 const LBE_WEATHERS=["None","Sun","Rain","Sandstorm","Hail"];
-const LBE_STATUSES=["None","Electric Terrain","Misty Terrain","Grassy Terrain","Psychic Terrain",
+const LBE_STATUSES=[
+  "None",
+  "Electric Terrain","Misty Terrain","Grassy Terrain","Psychic Terrain",
   "Trick Room","Magic Room","Wonder Room",
-  "Tailwind (Opponent)","Rainbow (Opponent)","Sea of Fire (Opponent)","Swamp (Opponent)"];
+  "Tailwind (Player)","Tailwind (Opponent)",
+  "Rainbow (Player)","Rainbow (Opponent)",
+  "Sea of Fire (Player)","Sea of Fire (Opponent)",
+  "Swamp (Player)","Swamp (Opponent)",
+  "Spikes (Player) L1","Spikes (Player) L2","Spikes (Player) L3",
+  "Spikes (Opponent) L1","Spikes (Opponent) L2","Spikes (Opponent) L3",
+  "Toxic Spikes (Player) L1","Toxic Spikes (Player) L2",
+  "Toxic Spikes (Opponent) L1","Toxic Spikes (Opponent) L2",
+];
+const LBE_CAT_ICON={Physical:'⚔️',Special:'✨',Status:'🔄'};
 const LBE_TOTEM_STATS=["None","Atk +1","Def +1","Spe +1","SpA +1","SpD +1","Acc +1","Evas +1"];
 const LBE_STAT_KEYS=["hp","atk","def","spa","spd","spe"];
 const LBE_STAT_LABELS=["HP","Atk","Def","SpA","SpD","Spe"];
@@ -4606,7 +4615,17 @@ window.lbeImgErr = function(img, id, file){
   if(typeof iconUrlFallback==='function') iconUrlFallback(img, id, file);
   else img.style.opacity='.2';
 };
-window.lbeItemImgErr = function(img, slug){ img.src=`${IF}${slug}.png`; img.onerror=null; };
+window.lbeItemImgErr = function(img, slug){
+  // Matches the documented 4-step chain: exact slug → same slug with hyphens instead
+  // of underscores (the actual root cause of most "missing" item icons — several
+  // files in the repo are hyphenated, not underscored) → PokeAPI fallback (also
+  // hyphenated) → question_mark.png placeholder as the final, always-present fallback.
+  const step = (img.dataset.lbeStep = String((+(img.dataset.lbeStep||0)) + 1));
+  const hyphenSlug = slug.replace(/_/g,'-');
+  if(step==='1'){ img.src = `${ITEM_BASE}${hyphenSlug}.png`; }
+  else if(step==='2'){ img.src = `${IF}${hyphenSlug}.png`; }
+  else { img.src = `${ITEM_BASE}question_mark.png`; img.onerror=null; }
+};
 window.lbeItemImgLoad = function(img, slug){
   if(typeof removeItemBg==='function') removeItemBg(img, slug);
   const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.slug===slug);
@@ -4633,6 +4652,63 @@ function lbeItemSpriteUrl(itemName){
   return (it && it.slug) ? `${ITEM_BASE}${it.slug}.png` : '';
 }
 function lbeFindMon(name){ return (typeof POKEMON!=='undefined'?POKEMON:[]).find(p=>p.name===name); }
+
+// Mirrors moveChip() from the Pokédex Browser move-learnset view — same CSS classes
+// (already loaded globally), same click-to-expand info popup, so a picked move here
+// looks and behaves identically to the rest of the site.
+function lbeMoveCard(moveName, monTypes){
+  const allMoves = typeof MOVES!=='undefined' ? MOVES : [];
+  const mnl = moveName.toLowerCase().replace(/[-\s]/g,'');
+  const found = allMoves.find(m=>m.name.toLowerCase()===moveName.toLowerCase())
+             || allMoves.find(m=>m.name.toLowerCase().replace(/[-\s]/g,'')===mnl);
+  const card=document.createElement('div'); card.className='pdx-move-card';
+  const hdr=document.createElement('div'); hdr.className='pdx-move-card-hdr';
+  if(found && typeof tb==='function'){
+    const tChip=tb(found.type); tChip.style.fontSize='8px'; tChip.style.padding='1px 6px';
+    hdr.appendChild(tChip);
+    const catIcon=document.createElement('span'); catIcon.className='pdx-move-cat-icon'; catIcon.textContent=LBE_CAT_ICON[found.cat]||'';
+    hdr.appendChild(catIcon);
+  }
+  const nm=document.createElement('div'); nm.className='pdx-move-name'; nm.textContent=moveName;
+  hdr.appendChild(nm);
+  if(found){
+    const isSTAB = found.type && found.cat!=='Status' && monTypes && monTypes.map(t=>(t||'').toLowerCase()).includes(found.type.toLowerCase());
+    if(isSTAB){
+      const stabBadge=document.createElement('span'); stabBadge.className='stab-badge'; stabBadge.textContent='STAB';
+      hdr.appendChild(stabBadge);
+    }
+    const bp=document.createElement('div');
+    bp.style.cssText='font-size:11px;color:'+(typeof bpColor==='function'?bpColor(found.power):'var(--gray)')+';font-weight:700;min-width:30px;text-align:right;';
+    bp.textContent = found.power || '—';
+    hdr.appendChild(bp);
+  }
+  const expandIcon=document.createElement('span'); expandIcon.style.cssText='color:var(--gray);font-size:10px;transition:transform .2s;'; expandIcon.textContent='▾';
+  hdr.appendChild(expandIcon);
+  card.appendChild(hdr);
+
+  if(found){
+    const statsRow=document.createElement('div'); statsRow.className='pdx-move-stats-row'; statsRow.style.display='none';
+    const mk=(label,val)=>{const s=document.createElement('div');s.className='pdx-move-stat';const l=document.createElement('div');l.className='pdx-move-stat-label';l.textContent=label;const v=document.createElement('div');v.className='pdx-move-stat-val';v.textContent=val;s.append(l,v);return s;};
+    statsRow.appendChild(mk('POWER', found.power||'—'));
+    statsRow.appendChild(mk('ACC', found.acc?found.acc+'%':'—'));
+    statsRow.appendChild(mk('PP', found.pp||'—'));
+    statsRow.appendChild(mk('CATEGORY', found.cat||'—'));
+    card.appendChild(statsRow);
+
+    const descRow=document.createElement('div'); descRow.className='pdx-move-desc-row'; descRow.style.display='none';
+    descRow.textContent=found.desc||'No description available.';
+    card.appendChild(descRow);
+
+    let expanded=false;
+    hdr.addEventListener('click',()=>{
+      expanded=!expanded;
+      statsRow.style.display=expanded?'flex':'none';
+      descRow.style.display=expanded?'block':'none';
+      expandIcon.style.transform=expanded?'rotate(180deg)':'rotate(0deg)';
+    });
+  }
+  return card;
+}
 function lbeAbilitiesList(){ return typeof ABILITIES_DB!=='undefined' ? Object.values(ABILITIES_DB) : []; }
 
 // Species-aware pre-selection: mirrors the Pokedex Browser's own resolution logic
@@ -4681,6 +4757,20 @@ function lbeNaturesList(){ return typeof NATURES!=='undefined' ? NATURES : LBE_F
 
 function lbeLoadPools(){
   try{ const raw=localStorage.getItem(LBE_LS_KEY); if(raw) lbePools=JSON.parse(raw); }catch(e){ lbePools=[]; }
+  // Migration: older saves had weather/startingStatus/totemBoost on the pool itself.
+  // Move them onto each slot (support gets weather+status+totem, main gets totem only).
+  lbePools.forEach(p=>{
+    const legacyWeather = p.weather;
+    const legacyStatus = p.startingStatus;
+    const legacyTotem = p.totemBoost;
+    if(p.main && p.main.totemBoost===undefined) p.main.totemBoost = legacyTotem || 'None';
+    (p.support||[]).forEach(s=>{
+      if(s.weather===undefined) s.weather = legacyWeather || 'None';
+      if(s.startingStatus===undefined) s.startingStatus = legacyStatus || 'None';
+      if(s.totemBoost===undefined) s.totemBoost = 'None';
+    });
+    delete p.weather; delete p.startingStatus; delete p.totemBoost;
+  });
 }
 function lbeSavePools(){
   localStorage.setItem(LBE_LS_KEY, JSON.stringify(lbePools));
@@ -4699,12 +4789,12 @@ function lbeFlashStatus(){
 function lbeEmptySlot(){
   return {species:null, level:50, ability:null, moves:[null,null,null,null], nature:null,
           heldItem:null, ivs:{hp:31,atk:31,def:31,spa:31,spd:31,spe:31}, dynamaxLevel:0,
-          gigantamaxFactor:false, rewardItem:null};
+          gigantamaxFactor:false, rewardItem:null, totemBoost:'None',
+          weather:'None', startingStatus:'None'};
 }
 function lbeNewPool(){
   return {id:'pool_'+Date.now(), name:'New Pool', main:{...lbeEmptySlot(),notCatchable:true},
-          support:[lbeEmptySlot(),lbeEmptySlot(),lbeEmptySlot()], weather:'None', startingStatus:'None',
-          totemBoost:'None'};
+          support:[lbeEmptySlot(),lbeEmptySlot(),lbeEmptySlot()]};
 }
 function lbeEscapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
@@ -4721,9 +4811,7 @@ function lbeRenderList(){
       <td>${pool.main.level}</td>
       <td style="text-align:center;">${pool.main.notCatchable?'🔒':'—'}</td>
       <td><div class="lbe-support-cell">${pool.support.map(s=>lbeSlotChip(s)).join('')}</div></td>
-      <td>${pool.weather}</td>
-      <td>${pool.startingStatus}</td>
-      <td>${pool.totemBoost}</td>
+      <td>${pool.main.totemBoost||'None'}</td>
       <td><button class="lbe-row-del" data-idx="${idx}">✕</button></td>
     `;
     tr.addEventListener('click',(e)=>{ if(e.target.closest('.lbe-row-del')) return; lbeOpenDetail(idx); });
@@ -4773,36 +4861,28 @@ function lbeRenderDetail(){
     strip.appendChild(t);
   });
 
-  const mainArt=document.getElementById('lbe-main-art');
-  mainArt.innerHTML = pool.main.species ? lbePkmImgHtml(lbeFindMon(pool.main.species)) : '?';
-  mainArt.onclick=()=>lbeSelectSlotSpecies('main');
-  const mainName=document.getElementById('lbe-main-name');
-  mainName.textContent = pool.main.species || 'Click to choose main Pokemon';
-  mainName.onclick=()=>{ lbeCurrentSlot='main'; lbeRenderEditorPanel(); };
-
-  const row=document.getElementById('lbe-support-row');
-  row.innerHTML='';
-  pool.support.forEach((s,i)=>{
-    const div=document.createElement('div');
-    div.className='lbe-supportmon';
-    div.innerHTML=`
-      <div class="lbe-art ${s.species?'':'lbe-empty'}">${s.species?lbePkmImgHtml(lbeFindMon(s.species)):'+'}</div>
-      <div class="lbe-nm">${lbeEscapeHtml(s.species||'Add support')}</div>
-      <div class="lbe-rw ${s.rewardItem?'lbe-set':''}">${s.rewardItem?('reward: '+lbeEscapeHtml(s.rewardItem)):'+ reward item'}</div>
+  const tabbar=document.getElementById('lbe-tabbar');
+  tabbar.innerHTML='';
+  const tabDefs=[
+    {key:'main', label:'Main', slot:pool.main},
+    {key:0, label:'Support 1', slot:pool.support[0]},
+    {key:1, label:'Support 2', slot:pool.support[1]},
+    {key:2, label:'Support 3', slot:pool.support[2]},
+  ];
+  tabDefs.forEach(td=>{
+    const tab=document.createElement('div');
+    tab.className='lbe-tab'+(lbeCurrentSlot===td.key?' lbe-act':'');
+    const mon=td.slot.species?lbeFindMon(td.slot.species):null;
+    tab.innerHTML=`
+      <div class="lbe-tab-icon">${mon?lbePkmImgHtml(mon):'?'}</div>
+      <div class="lbe-tab-text">
+        <div class="lbe-tab-role">${td.label}</div>
+        <div class="lbe-tab-name">${lbeEscapeHtml(td.slot.species||'empty')}</div>
+      </div>
     `;
-    div.querySelector('.lbe-art').addEventListener('click',()=>lbeSelectSlotSpecies(i));
-    div.querySelector('.lbe-nm').addEventListener('click',()=>{ lbeCurrentSlot=i; lbeRenderEditorPanel(); });
-    div.querySelector('.lbe-rw').addEventListener('click',()=>lbeSelectRewardItem(i));
-    row.appendChild(div);
+    tab.addEventListener('click',()=>{ lbeCurrentSlot=td.key; lbeRenderDetail(); });
+    tabbar.appendChild(tab);
   });
-
-  document.getElementById('lbe-badge-weather').textContent='WEATHER: '+pool.weather.toUpperCase();
-  document.getElementById('lbe-badge-status').textContent='STATUS: '+pool.startingStatus.toUpperCase();
-  document.getElementById('lbe-badge-totem').textContent='TOTEM: '+pool.totemBoost.toUpperCase();
-
-  lbeRenderPillRow('lbe-weather-pills', LBE_WEATHERS, pool.weather, v=>{ pool.weather=v; lbeRenderDetail(); });
-  lbeRenderPillRow('lbe-status-pills', LBE_STATUSES, pool.startingStatus, v=>{ pool.startingStatus=v; lbeRenderDetail(); });
-  lbeRenderPillRow('lbe-totem-pills', LBE_TOTEM_STATS, pool.totemBoost, v=>{ pool.totemBoost=v; lbeRenderDetail(); });
 
   lbeRenderEditorPanel();
 }
@@ -4818,23 +4898,19 @@ function lbeRenderPillRow(id, options, current, onSelect){
   });
 }
 
-function lbeSelectSlotSpecies(slotKey){
-  lbeCurrentSlot=slotKey;
-  const anchor = slotKey==='main'?document.getElementById('lbe-main-art'):document.querySelectorAll('.lbe-supportmon .lbe-art')[slotKey];
+function lbeSelectSlotSpecies(anchor){
   lbeOpenAutocomplete({
     anchor, items:(typeof POKEMON!=='undefined'?POKEMON:[]), getLabel:p=>p.name, getIcon:p=>lbePkmSpriteUrl(p),
     onPick:(p)=>{
-      const slot = slotKey==='main' ? lbeCurrentPool().main : lbeCurrentPool().support[slotKey];
-      slot.species=p.name;
+      lbeCurrentSlotObj().species=p.name;
       lbeSavePools(); lbeRenderDetail();
     }
   });
 }
-function lbeSelectRewardItem(slotIdx){
-  const anchor=document.querySelectorAll('.lbe-supportmon .lbe-rw')[slotIdx];
+function lbeSelectRewardItem(anchor){
   lbeOpenAutocomplete({
     anchor, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name, getIcon:it=>lbeItemSpriteUrl(it.name),
-    onPick:(it)=>{ lbeCurrentPool().support[slotIdx].rewardItem=it.name; lbeSavePools(); lbeRenderDetail(); }
+    onPick:(it)=>{ lbeCurrentSlotObj().rewardItem=it.name; lbeSavePools(); lbeRenderEditorPanel(); }
   });
 }
 
@@ -4879,14 +4955,25 @@ function lbeCloseAutocomplete(){
 
 function lbeRenderEditorPanel(){
   const slot=lbeCurrentSlotObj();
-  const title=document.getElementById('lbe-editor-panel-title');
+  const isMain=lbeCurrentSlot==='main';
   const body=document.getElementById('lbe-editor-panel-body');
-  const label = lbeCurrentSlot==='main' ? 'MAIN: '+(slot.species||'—') : 'SUPPORT '+(lbeCurrentSlot+1)+': '+(slot.species||'—');
-  title.textContent=label;
+  const mon=slot.species?lbeFindMon(slot.species):null;
+  const monTypes=mon&&mon._full?[mon._full.type1,mon._full.type2]:[];
 
   const natOpts = lbeNaturesList().map(n=>`<option value="${n.name}" ${slot.nature===n.name?'selected':''}>${n.name}${n.up?` (+${n.up}/-${n.dn})`:''}</option>`).join('');
+  const weatherOpts = LBE_WEATHERS.map(w=>`<option value="${w}" ${slot.weather===w?'selected':''}>${w}</option>`).join('');
+  const statusOpts = LBE_STATUSES.map(s=>`<option value="${s}" ${slot.startingStatus===s?'selected':''}>${s}</option>`).join('');
+  const totemOpts = LBE_TOTEM_STATS.map(t=>`<option value="${t}" ${slot.totemBoost===t?'selected':''}>${t}</option>`).join('');
 
   body.innerHTML=`
+    <div class="lbe-slot-header">
+      <div class="lbe-art" id="lbe-slot-art">${mon?lbePkmImgHtml(mon):'?'}</div>
+      <div>
+        <div class="lbe-nm">${lbeEscapeHtml(slot.species||(isMain?'Choose main Pokemon':'Choose support Pokemon'))}</div>
+        <div class="lbe-sub" id="lbe-slot-change">${slot.species?'change Pokemon':'click to choose'}</div>
+      </div>
+    </div>
+
     <div class="lbe-field-grid">
       <div class="lbe-field"><label>Level</label><input type="number" id="lbe-f-level" min="1" max="100" value="${slot.level}"/></div>
       <div class="lbe-field"><label>Ability</label><div class="lbe-ac-wrap"><input type="text" id="lbe-f-ability" placeholder="Search ability…" value="${slot.ability||''}"/></div></div>
@@ -4895,27 +4982,59 @@ function lbeRenderEditorPanel(){
       <div class="lbe-field"><label>Dynamax Level (0-10)</label><input type="number" id="lbe-f-dmax" min="0" max="10" value="${slot.dynamaxLevel}"/></div>
       <div class="lbe-field"><label>Gigantamax Factor</label><div class="lbe-checkbox-row"><input type="checkbox" id="lbe-f-gmax" ${slot.gigantamaxFactor?'checked':''}/> <span>enabled</span></div></div>
     </div>
-    ${lbeCurrentSlot==='main' ? `<div class="lbe-checkbox-row"><input type="checkbox" id="lbe-f-notcatch" ${slot.notCatchable?'checked':''}/> <span>Not catchable (support Pokemon in this pool can still be caught)</span></div>` : ''}
+    ${isMain ? `<div class="lbe-checkbox-row"><input type="checkbox" id="lbe-f-notcatch" ${slot.notCatchable?'checked':''}/> <span>Not catchable (support Pokemon in this pool can still be caught)</span></div>` : ''}
+
     <div class="lbe-section-lbl">MOVES</div>
-    <div class="lbe-moves-grid" id="lbe-moves-grid">
-      ${[0,1,2,3].map(i=>`<div class="lbe-ac-wrap"><input type="text" class="lbe-f-move" data-i="${i}" placeholder="Move ${i+1}…" value="${slot.moves[i]||''}"/></div>`).join('')}
-    </div>
+    ${[0,1,2,3].map(i=>`
+      <div class="lbe-move-slot">
+        <div class="lbe-ac-wrap"><input type="text" class="lbe-f-move" data-i="${i}" placeholder="Move ${i+1}…" value="${slot.moves[i]||''}"/></div>
+        <div class="lbe-move-preview" data-i="${i}"></div>
+      </div>
+    `).join('')}
+
     <div class="lbe-section-lbl">IVs <span style="color:var(--gray);font-size:9px;text-transform:none;letter-spacing:0;cursor:pointer;text-decoration:underline;" id="lbe-iv-max-all">(set all to 31)</span></div>
     <div class="lbe-iv-grid">
       ${LBE_STAT_KEYS.map((k,i)=>`<div class="lbe-field"><label>${LBE_STAT_LABELS[i]}</label><input type="number" class="lbe-f-iv" data-k="${k}" min="0" max="31" value="${slot.ivs[k]}"/></div>`).join('')}
     </div>
+
+    ${isMain ? `
+      <div class="lbe-section-lbl">TOTEM BOOST</div>
+      <select id="lbe-f-totem">${totemOpts}</select>
+    ` : `
+      <div class="lbe-section-lbl">BATTLE SETUP (this support Pokemon only)</div>
+      <div class="lbe-status-grid">
+        <div><div class="lbe-field-grid" style="grid-template-columns:1fr;"><div class="lbe-field"><label>Weather</label><select id="lbe-f-weather">${weatherOpts}</select></div></div></div>
+        <div><div class="lbe-field-grid" style="grid-template-columns:1fr;"><div class="lbe-field"><label>Starting Status</label><select id="lbe-f-status">${statusOpts}</select></div></div></div>
+        <div><div class="lbe-field-grid" style="grid-template-columns:1fr;"><div class="lbe-field"><label>Totem Boost</label><select id="lbe-f-totem">${totemOpts}</select></div></div></div>
+      </div>
+      <div class="lbe-section-lbl">REWARD ITEM <span style="color:var(--gray);font-size:9px;text-transform:none;letter-spacing:0;">(given if this Pokemon is caught/defeated)</span></div>
+      <div class="lbe-ac-wrap"><input type="text" id="lbe-f-reward" placeholder="Search item…" value="${slot.rewardItem||''}"/></div>
+    `}
   `;
+
+  document.getElementById('lbe-slot-art').addEventListener('click',(e)=>lbeSelectSlotSpecies(e.currentTarget));
+  document.getElementById('lbe-slot-change').addEventListener('click',()=>lbeSelectSlotSpecies(document.getElementById('lbe-slot-art')));
 
   document.getElementById('lbe-f-level').addEventListener('input',e=>{ slot.level=+e.target.value||1; lbeSavePools(); lbeRenderDetail(); });
   document.getElementById('lbe-f-dmax').addEventListener('input',e=>{ slot.dynamaxLevel=Math.max(0,Math.min(10,+e.target.value||0)); lbeSavePools(); });
   document.getElementById('lbe-f-gmax').addEventListener('change',e=>{ slot.gigantamaxFactor=e.target.checked; lbeSavePools(); });
   document.getElementById('lbe-f-nature').addEventListener('change',e=>{ slot.nature=e.target.value||null; lbeSavePools(); });
+  document.getElementById('lbe-f-totem').addEventListener('change',e=>{ slot.totemBoost=e.target.value; lbeSavePools(); });
   const notcatch=document.getElementById('lbe-f-notcatch');
   if(notcatch) notcatch.addEventListener('change',e=>{ slot.notCatchable=e.target.checked; lbeSavePools(); lbeRenderList(); });
+  const weatherSel=document.getElementById('lbe-f-weather');
+  if(weatherSel) weatherSel.addEventListener('change',e=>{ slot.weather=e.target.value; lbeSavePools(); });
+  const statusSel=document.getElementById('lbe-f-status');
+  if(statusSel) statusSel.addEventListener('change',e=>{ slot.startingStatus=e.target.value; lbeSavePools(); });
+  const rewardInput=document.getElementById('lbe-f-reward');
+  if(rewardInput) rewardInput.addEventListener('focus',()=>lbeOpenAutocomplete({
+    anchor:rewardInput, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name, getIcon:it=>lbeItemSpriteUrl(it.name),
+    onPick:(it)=>{ slot.rewardItem=it.name; rewardInput.value=it.name; lbeSavePools(); }
+  }));
 
   const abilityInput=document.getElementById('lbe-f-ability');
   abilityInput.addEventListener('focus',()=>lbeOpenAutocomplete({
-    anchor:abilityInput, items:lbeAbilitiesForSpecies(lbeFindMon(slot.species)), getLabel:a=>a.name, getIcon:()=>'',
+    anchor:abilityInput, items:lbeAbilitiesForSpecies(mon), getLabel:a=>a.name, getIcon:()=>'',
     onPick:(a)=>{ slot.ability=a.name; abilityInput.value=a.name; lbeSavePools(); }
   }));
   const itemInput=document.getElementById('lbe-f-item');
@@ -4925,9 +5044,13 @@ function lbeRenderEditorPanel(){
   }));
   document.querySelectorAll('.lbe-f-move').forEach(inp=>{
     inp.addEventListener('focus',()=>lbeOpenAutocomplete({
-      anchor:inp, items:lbeMovesForSpecies(lbeFindMon(slot.species)), getLabel:m=>m.name, getIcon:()=>'',
-      onPick:(m)=>{ slot.moves[+inp.dataset.i]=m.name; inp.value=m.name; lbeSavePools(); }
+      anchor:inp, items:lbeMovesForSpecies(mon), getLabel:m=>m.name, getIcon:()=>'',
+      onPick:(m)=>{ slot.moves[+inp.dataset.i]=m.name; inp.value=m.name; lbeSavePools(); lbeRenderEditorPanel(); }
     }));
+  });
+  document.querySelectorAll('.lbe-move-preview').forEach(el=>{
+    const mv=slot.moves[+el.dataset.i];
+    if(mv) el.appendChild(lbeMoveCard(mv, monTypes));
   });
   document.querySelectorAll('.lbe-f-iv').forEach(inp=>{
     inp.addEventListener('input',()=>{ slot.ivs[inp.dataset.k]=Math.max(0,Math.min(31,+inp.value||0)); lbeSavePools(); });
@@ -4938,21 +5061,23 @@ function lbeRenderEditorPanel(){
 }
 
 // Export field order, fixed: species, level, ability, moves[4], nature, heldItem,
-// ivs{hp,atk,def,spa,spd,spe}, dynamaxLevel, gigantamaxFactor — same for every slot.
+// ivs{hp,atk,def,spa,spd,spe}, dynamaxLevel, gigantamaxFactor, totemBoost — then any
+// slot-specific extras (main: notCatchable | support: weather, startingStatus, rewardItem).
+// Same order for every slot, every pool, every export — no field ever moves position.
 function lbeSlotToExport(slot, extra){
   return {
     species: slot.species, level: slot.level, ability: slot.ability, moves: slot.moves,
     nature: slot.nature, heldItem: slot.heldItem,
     ivs: {hp:slot.ivs.hp, atk:slot.ivs.atk, def:slot.ivs.def, spa:slot.ivs.spa, spd:slot.ivs.spd, spe:slot.ivs.spe},
-    dynamaxLevel: slot.dynamaxLevel, gigantamaxFactor: slot.gigantamaxFactor, ...extra
+    dynamaxLevel: slot.dynamaxLevel, gigantamaxFactor: slot.gigantamaxFactor,
+    totemBoost: slot.totemBoost, ...extra
   };
 }
 function lbeExportJson(){
   const out = lbePools.map(p=>({
     poolId: p.id, poolName: p.name,
     main: lbeSlotToExport(p.main, {notCatchable:p.main.notCatchable}),
-    support: p.support.map(s=>lbeSlotToExport(s, {rewardItem:s.rewardItem})),
-    weather: p.weather, startingStatus: p.startingStatus, totemBoost: p.totemBoost,
+    support: p.support.map(s=>lbeSlotToExport(s, {weather:s.weather, startingStatus:s.startingStatus, rewardItem:s.rewardItem})),
   }));
   const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
   const a=document.createElement('a');
