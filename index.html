@@ -678,13 +678,20 @@
 .lbe-tabbar{max-width:660px;margin:0 auto 14px;display:flex;gap:8px;flex-wrap:wrap;}
 .lbe-tab{flex:1;min-width:130px;background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;}
 .lbe-tab:hover{border-color:var(--pl);}
+.lbe-tab.lbe-tab-main{background:linear-gradient(135deg,rgba(255,215,0,.10),var(--card));}
+.lbe-tab.lbe-tab-support{background:linear-gradient(135deg,rgba(123,31,162,.12),var(--card));}
 .lbe-tab.lbe-act{border-color:var(--yellow);background:rgba(255,215,0,.06);}
+.lbe-tab.lbe-tab-support.lbe-act{border-color:var(--pl);background:rgba(206,147,216,.10);}
+.lbe-tab .lbe-tab-role{font-size:9px;text-transform:uppercase;letter-spacing:.5px;}
+.lbe-tab-main .lbe-tab-role{color:var(--yellow);}
+.lbe-tab-support .lbe-tab-role{color:var(--pl);}
 .lbe-tab .lbe-tab-icon{width:32px;height:32px;border-radius:6px;background:var(--dark);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
 .lbe-tab .lbe-tab-icon img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
 .lbe-tab .lbe-tab-text{min-width:0;}
-.lbe-tab .lbe-tab-role{font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;}
 .lbe-tab .lbe-tab-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .lbe-slot-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.lbe-art{overflow:hidden;}
+.lbe-art img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
 .lbe-slot-header .lbe-art{width:64px;height:64px;border-radius:14px;background:var(--dark);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0;}
 .lbe-slot-header .lbe-art img{width:90%;height:90%;object-fit:contain;image-rendering:pixelated;}
 .lbe-slot-header .lbe-art:hover{border-color:var(--pl);}
@@ -4763,7 +4770,10 @@ function lbePkmSpriteUrl(mon){
 function lbeItemImgHtml(itemName){
   const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.name===itemName);
   if(!it || !it.slug) return '';
-  return `<img src="${ITEM_BASE}${it.slug}.png" onerror='lbeItemImgErr(this,${JSON.stringify(it.slug)})' onload='lbeItemImgLoad(this,${JSON.stringify(it.slug)})'/>`;
+  // crossorigin="anonymous" is required — without it, the canvas used for background
+  // removal is "tainted" by the cross-origin image and getImageData() throws, silently
+  // swallowed by the try/catch, leaving the raw (white-background) sprite untouched.
+  return `<img crossorigin="anonymous" src="${ITEM_BASE}${it.slug}.png" onerror='lbeItemImgErr(this,${JSON.stringify(it.slug)})' onload='lbeItemImgLoad(this,${JSON.stringify(it.slug)})'/>`;
 }
 function lbeItemSpriteUrl(itemName){
   const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.name===itemName);
@@ -4893,18 +4903,46 @@ function lbeOpenMovePicker(mon, slotIndex, onPick){
   overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
 
   const box=document.createElement('div');
-  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:520px;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
+  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:560px;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
 
   const hdr=document.createElement('div');
   hdr.style.cssText='display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;';
   const title=document.createElement('span'); title.style.cssText='font-size:13px;font-weight:700;flex:1;'; title.textContent='Move '+(slotIndex+1);
-  const learnableToggleWrap=document.createElement('label'); learnableToggleWrap.style.cssText='display:flex;align-items:center;gap:5px;font-size:10px;color:var(--gray);cursor:pointer;';
-  const learnableToggle=document.createElement('input'); learnableToggle.type='checkbox'; learnableToggle.checked=true; learnableToggle.style.cssText='width:13px;height:13px;';
-  learnableToggleWrap.append(learnableToggle, document.createTextNode('Learnable only'));
   const closeBtn=document.createElement('button'); closeBtn.type='button';
   closeBtn.style.cssText='background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#556;font-size:14px;padding:2px 9px;cursor:pointer;';
   closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>overlay.remove());
-  hdr.append(title, learnableToggleWrap, closeBtn);
+  hdr.append(title, closeBtn);
+
+  // Category tabs: All / Level Up / Teachable / Egg — Level Up/Teachable/Egg use the
+  // species' actual learnset (level_up/teachable/egg_moves), same breakdown the
+  // Pokedex Browser's learnset view uses.
+  const learnset = lbeLearnsetForSpecies(mon);
+  const tabsWrap=document.createElement('div');
+  tabsWrap.style.cssText='display:flex;gap:6px;padding:0 14px 10px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;flex-wrap:wrap;';
+  const CATS=[
+    ['all','All Moves'],
+    ['level','Level Up'],
+    ['teach','Teachable'],
+    ['egg','Egg'],
+  ];
+  let activeCat='all';
+  const catBtns={};
+  CATS.forEach(([key,lbl])=>{
+    const b=document.createElement('button'); b.type='button';
+    b.style.cssText='padding:5px 11px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#8892a4;cursor:pointer;font-size:10.5px;';
+    b.textContent=lbl;
+    if(key!=='all' && !learnset) b.disabled=true, b.style.opacity='.35', b.style.cursor='not-allowed';
+    b.addEventListener('click',()=>{ activeCat=key; updateTabs(); buildList(); });
+    catBtns[key]=b;
+    tabsWrap.appendChild(b);
+  });
+  function updateTabs(){
+    Object.entries(catBtns).forEach(([k,b])=>{
+      b.style.background = k===activeCat ? 'var(--purple)' : 'transparent';
+      b.style.color = k===activeCat ? '#fff' : '#8892a4';
+    });
+  }
+  updateTabs();
 
   const searchWrap=document.createElement('div');
   searchWrap.style.cssText='padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
@@ -4915,23 +4953,39 @@ function lbeOpenMovePicker(mon, slotIndex, onPick){
   const listWrap=document.createElement('div');
   listWrap.style.cssText='flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px;min-height:0;';
 
+  function categoryPool(){
+    const allMoves = typeof MOVES!=='undefined' ? MOVES : [];
+    if(activeCat==='all' || !learnset) return allMoves.map(m=>[m.name,null]);
+    if(activeCat==='level') return (learnset.level_up||[]).map(e=>[e.move,e.level]);
+    if(activeCat==='teach') return (learnset.teachable||[]).filter(m=>m!=='???').map(m=>[m,null]);
+    if(activeCat==='egg') return (learnset.egg_moves||[]).filter(m=>m!=='???').map(m=>[m,null]);
+    return [];
+  }
   function buildList(){
     const q=searchInp.value.toLowerCase();
-    const pool = learnableToggle.checked ? lbeMovesForSpecies(mon) : (typeof MOVES!=='undefined'?MOVES:[]);
-    const filtered = pool.filter(m=>m.name.toLowerCase().includes(q)).slice(0,150);
+    const pool = categoryPool().filter(([n])=>n.toLowerCase().includes(q)).slice(0,150);
     listWrap.innerHTML='';
-    if(!filtered.length){ listWrap.innerHTML='<div style="color:var(--gray);font-size:12px;padding:10px;text-align:center;">No matches.</div>'; return; }
-    filtered.forEach(m=>{
-      const card=lbeMoveCard(m.name);
+    if(!pool.length){ listWrap.innerHTML='<div style="color:var(--gray);font-size:12px;padding:10px;text-align:center;">No matches in this category.</div>'; return; }
+    pool.forEach(([name,level])=>{
+      const wrap=document.createElement('div');
+      wrap.style.cssText='display:flex;align-items:center;gap:8px;';
+      if(activeCat==='level' && level!=null){
+        const lvlTag=document.createElement('div');
+        lvlTag.style.cssText='flex-shrink:0;width:34px;text-align:center;font-size:10px;font-weight:700;color:var(--yellow);background:rgba(255,215,0,.08);border-radius:6px;padding:4px 0;';
+        lvlTag.textContent='Lv'+level;
+        wrap.appendChild(lvlTag);
+      }
+      const card=lbeMoveCard(name);
       card.style.cursor='pointer';
-      card.addEventListener('click',()=>{ onPick(m.name); overlay.remove(); });
-      listWrap.appendChild(card);
+      card.style.flex='1';
+      card.addEventListener('click',()=>{ onPick(name); overlay.remove(); });
+      wrap.appendChild(card);
+      listWrap.appendChild(wrap);
     });
   }
   searchInp.addEventListener('input', buildList);
-  learnableToggle.addEventListener('change', buildList);
 
-  box.append(hdr, searchWrap, listWrap);
+  box.append(hdr, tabsWrap, searchWrap, listWrap);
   overlay.appendChild(box);
   document.body.appendChild(overlay);
   buildList();
@@ -5115,7 +5169,7 @@ function lbeRenderDetail(){
   ];
   tabDefs.forEach(td=>{
     const tab=document.createElement('div');
-    tab.className='lbe-tab'+(lbeCurrentSlot===td.key?' lbe-act':'');
+    tab.className='lbe-tab '+(td.key==='main'?'lbe-tab-main':'lbe-tab-support')+(lbeCurrentSlot===td.key?' lbe-act':'');
     const mon=td.slot.species?lbeFindMon(td.slot.species):null;
     tab.innerHTML=`
       <div class="lbe-tab-icon">${mon?lbePkmImgHtml(mon):'?'}</div>
@@ -5182,6 +5236,31 @@ function lbeCloseAutocomplete(){
   if(lbeOpenDD){ lbeOpenDD.input.remove(); lbeOpenDD.dd.remove(); lbeOpenDD=null; }
 }
 
+// Standard Gen3+ stat formula. EVs aren't a field in this editor, so they're
+// treated as 0 — flagged in the UI caption so it's not mistaken for the true
+// in-game value once EVs are eventually trained.
+const LBE_NATURE_STAT_KEY={Atk:'atk',Def:'def',Spe:'spe',SpA:'spa',SpD:'spd'};
+function lbeCalcStat(base, iv, level, natureName, statKey){
+  if(statKey==='hp'){
+    if(base<=1) return base; // Shedinja-style 1HP mons
+    return Math.floor((2*base+iv)*level/100) + level + 10;
+  }
+  let val = Math.floor((2*base+iv)*level/100) + 5;
+  const nature = lbeNaturesList().find(n=>n.name===natureName);
+  if(nature && nature.up && nature.dn){
+    if(LBE_NATURE_STAT_KEY[nature.up]===statKey) val = Math.floor(val*1.1);
+    else if(LBE_NATURE_STAT_KEY[nature.dn]===statKey) val = Math.floor(val*0.9);
+  }
+  return val;
+}
+function lbeStatColorByValue(val, statKey){
+  // Rough banding per stat (HP/Atk/SpA use a higher ceiling than the others)
+  const ceiling = statKey==='hp' ? 200 : 150;
+  const pct = val/ceiling;
+  if(pct>=0.55) return '#4caf50';
+  if(pct>=0.32) return '#f0c600';
+  return '#e3350d';
+}
 function lbeStatBarColor(iv){
   if(iv>=25) return '#4caf50';
   if(iv>=15) return '#f0c600';
@@ -5225,9 +5304,19 @@ function lbeRenderSummaryCol(){
     </div>
 
     <div>
-      <div class="lbe-mini-lbl">IVs (0–31)</div>
+      <div class="lbe-mini-lbl">Stats <span style="text-transform:none;font-size:8.5px;">(base + IVs + Level, EVs assumed 0)</span></div>
       <div class="lbe-statbars">
-        ${LBE_STAT_KEYS.map((k,i)=>`<div class="lbe-statbar-row"><span class="lbl">${LBE_STAT_LABELS[i]}</span><div class="lbe-statbar-track"><div class="lbe-statbar-fill" style="width:${Math.round(slot.ivs[k]/31*100)}%;background:${lbeStatBarColor(slot.ivs[k])};"></div></div><span class="val" style="color:${lbeStatBarColor(slot.ivs[k])};">${slot.ivs[k]}</span></div>`).join('')}
+        ${(()=>{
+          const base = (mon && typeof getBaseStats==='function') ? getBaseStats(mon) : null;
+          if(!base) return `<div style="color:var(--gray);font-size:10.5px;">Choose a Pokemon to see calculated stats.</div>`;
+          return LBE_STAT_KEYS.map((k,i)=>{
+            const val = lbeCalcStat(base[i], slot.ivs[k], slot.level, slot.nature, k);
+            const col = lbeStatColorByValue(val, k);
+            const ceiling = k==='hp' ? 200 : 150;
+            const pct = Math.min(100, Math.round(val/ceiling*100));
+            return `<div class="lbe-statbar-row"><span class="lbl">${LBE_STAT_LABELS[i]}</span><div class="lbe-statbar-track"><div class="lbe-statbar-fill" style="width:${pct}%;background:${col};"></div></div><span class="val" style="color:${col};">${val}</span></div>`;
+          }).join('');
+        })()}
       </div>
     </div>
 
@@ -5255,10 +5344,10 @@ function lbeRenderSummaryCol(){
     <div class="lbe-dcard-mini">
       <div class="lbe-section-lbl">TERA TYPE</div>
       <div class="lbe-tera-row">
-        <select class="lbe-dd-select" id="lbe-f-tera" style="flex:1;" ${slot.teraType.useDefault?'disabled':''}>
-          <option value="">— choose type —</option>
-          ${LBE_TYPE_LIST.map(([n])=>`<option value="${n}" ${slot.teraType.type===n?'selected':''}>${n}</option>`).join('')}
-        </select>
+        <div class="lbe-mini-pcard${slot.teraType.useDefault?' lbe-disabled':''}" id="lbe-f-tera-card" style="flex:1;">
+          ${slot.teraType.type ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${LBE_TYPE_LIST.find(([n])=>n===slot.teraType.type)?.[1]}.png" onerror="this.style.display='none'"/><div class="t">${slot.teraType.type}</div>`
+          : `<div style="color:var(--gray);font-size:11px;">Click to choose a type…</div>`}
+        </div>
         <label class="lbe-tera-default"><input type="checkbox" id="lbe-f-tera-default" ${slot.teraType.useDefault?'checked':''}/> Use default type</label>
       </div>
     </div>
@@ -5269,7 +5358,7 @@ function lbeRenderSummaryCol(){
   document.getElementById('lbe-slot-art').addEventListener('click',(e)=>lbeSelectSlotSpecies(e.currentTarget));
   document.getElementById('lbe-slot-change').addEventListener('click',()=>lbeSelectSlotSpecies(document.getElementById('lbe-slot-art')));
   document.getElementById('lbe-f-level').addEventListener('input',e=>{ slot.level=+e.target.value||1; lbeSavePools(); lbeRenderDetail(); });
-  document.getElementById('lbe-f-nature').addEventListener('change',e=>{ slot.nature=e.target.value||null; lbeSavePools(); });
+  document.getElementById('lbe-f-nature').addEventListener('change',e=>{ slot.nature=e.target.value||null; lbeSavePools(); lbeRenderSummaryCol(); });
 
   const dmaxSlider=document.getElementById('lbe-f-dmax');
   function updateDmax(){
@@ -5283,10 +5372,17 @@ function lbeRenderSummaryCol(){
   updateDmax();
   document.getElementById('lbe-f-gmax').addEventListener('change',e=>{ slot.gigantamaxFactor=e.target.checked; lbeSavePools(); });
 
-  const teraSel=document.getElementById('lbe-f-tera');
+  const teraCard=document.getElementById('lbe-f-tera-card');
   const teraDefault=document.getElementById('lbe-f-tera-default');
-  teraSel.addEventListener('change',e=>{ slot.teraType.type=e.target.value||null; lbeSavePools(); });
-  teraDefault.addEventListener('change',e=>{ slot.teraType.useDefault=e.target.checked; teraSel.disabled=e.target.checked; lbeSavePools(); });
+  teraCard.addEventListener('click',()=>{
+    if(slot.teraType.useDefault) return;
+    lbeOpenAutocomplete({
+      anchor:teraCard, items:LBE_TYPE_LIST, getLabel:([n])=>n,
+      getIconHtml:([n,id])=>`<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${id}.png" onerror="this.style.display='none'"/>`,
+      onPick:([n])=>{ slot.teraType.type=n; lbeSavePools(); lbeRenderSummaryCol(); }
+    });
+  });
+  teraDefault.addEventListener('change',e=>{ slot.teraType.useDefault=e.target.checked; lbeSavePools(); lbeRenderSummaryCol(); });
 
   const notcatch=document.getElementById('lbe-f-notcatch');
   if(notcatch) notcatch.addEventListener('change',e=>{ slot.notCatchable=e.target.checked; lbeSavePools(); lbeRenderList(); });
