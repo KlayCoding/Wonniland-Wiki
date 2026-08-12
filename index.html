@@ -621,7 +621,60 @@
 .lbe-thumb{width:56px;height:56px;border-radius:10px;background:var(--card);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;}
 .lbe-thumb img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
 .lbe-thumb.lbe-act{border-color:var(--yellow);}
-.lbe-battlecard{max-width:660px;margin:0 auto 18px;background:linear-gradient(180deg,#1e2a4a,var(--card));border:2px solid var(--yellow);border-radius:20px;padding:26px;position:relative;}
+.lbe-split{display:grid;grid-template-columns:280px 1fr;gap:14px;align-items:start;}
+.lbe-summary-col{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;position:sticky;top:14px;display:flex;flex-direction:column;gap:12px;}
+.lbe-details-col{display:flex;flex-direction:column;gap:10px;}
+.lbe-dcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.lbe-dcard .lbe-section-lbl{margin-top:0;}
+.lbe-dcard.lbe-disabled{opacity:.4;pointer-events:none;}
+.lbe-dcard-mini{background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:12px 13px;}
+.lbe-dcard-mini .lbe-section-lbl{margin:0 0 9px;font-size:8px;}
+
+.lbe-mini-lbl{font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;}
+.lbe-mini-pcard{display:flex;align-items:center;gap:7px;background:var(--dark);border:1px solid var(--border);border-radius:7px;padding:7px 8px;cursor:pointer;}
+.lbe-mini-pcard:hover{border-color:var(--pl);}
+.lbe-mini-pcard img{width:22px;height:22px;flex-shrink:0;}
+.lbe-mini-pcard .t{font-size:10.5px;font-weight:600;}
+.lbe-mini-pcard .d{font-size:8.8px;color:var(--gray);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+
+.lbe-statbars{display:flex;flex-direction:column;gap:5px;}
+.lbe-statbar-row{display:grid;grid-template-columns:32px 1fr 26px;align-items:center;gap:6px;}
+.lbe-statbar-row .lbl{font-size:9px;color:var(--gray);}
+.lbe-statbar-track{height:8px;background:var(--dark);border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+.lbe-statbar-fill{height:100%;border-radius:4px;}
+.lbe-statbar-row .val{font-size:9.5px;text-align:right;font-weight:700;}
+
+.lbe-iv3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.lbe-iv3 .cell{background:var(--dark);border:1px solid var(--border);border-radius:6px;padding:5px;text-align:center;}
+.lbe-iv3 label{font-size:8px;color:var(--gray);display:block;margin-bottom:2px;}
+.lbe-iv3 input{width:100%;text-align:center;background:transparent;border:none;color:#fff;padding:2px;font-size:11px;font-weight:700;}
+
+.lbe-dd-select{width:100%;background:var(--dark);border:1px solid var(--border);border-radius:7px;color:#fff;font-size:12px;padding:8px 10px;font-family:inherit;cursor:pointer;}
+.lbe-dd-select:disabled{opacity:.5;cursor:not-allowed;}
+.lbe-status-stack{display:flex;flex-direction:column;gap:10px;}
+.lbe-status-stack label{font-size:9px;color:var(--gray);text-transform:uppercase;display:block;margin-bottom:5px;}
+.lbe-stepper{display:flex;align-items:center;gap:8px;background:var(--dark);border:1px solid var(--border);border-radius:7px;padding:6px 10px;width:fit-content;}
+.lbe-step-btn{background:var(--purple);border:none;color:#fff;width:20px;height:20px;border-radius:5px;cursor:pointer;font-size:13px;line-height:1;}
+.lbe-step-btn:disabled{background:var(--border);cursor:not-allowed;}
+
+.lbe-totem-sliders{display:flex;flex-direction:column;gap:8px;}
+.lbe-totem-slider-row{display:grid;grid-template-columns:34px 1fr 28px;align-items:center;gap:8px;}
+.lbe-totem-slider-row label{font-size:10px;color:var(--gray);}
+.lbe-totem-slider-row input{width:100%;accent-color:var(--purple);}
+.lbe-totem-slider-row span{font-size:11px;font-weight:700;color:var(--yellow);text-align:right;}
+
+.lbe-tera-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.lbe-tera-default{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--gray);white-space:nowrap;cursor:pointer;}
+
+.lbe-dmax-title{font-size:11px;font-weight:700;}
+.lbe-dmax-sub{font-size:9.5px;color:var(--gray);margin:2px 0 6px;}
+.lbe-dmax-slider{width:100%;accent-color:var(--purple);cursor:pointer;}
+.lbe-dmax-lbl{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+.lbe-dmax-lvl{font-family:'Press Start 2P',monospace;font-size:9.5px;color:var(--yellow);}
+.lbe-dmax-desc{font-size:9.5px;color:var(--gray);}
+.lbe-gmax-toggle{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:9px;border-top:1px solid var(--border);}
+.lbe-gmax-toggle img{width:20px;height:20px;}
+.lbe-gmax-toggle label{font-size:10px;display:flex;align-items:center;gap:7px;cursor:pointer;}
 .lbe-tabbar{max-width:660px;margin:0 auto 14px;display:flex;gap:8px;flex-wrap:wrap;}
 .lbe-tab{flex:1;min-width:130px;background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;}
 .lbe-tab:hover{border-color:var(--pl);}
@@ -4577,18 +4630,10 @@ const ITEM_BG_COLORS = {"strange_ball":"#B4B4B4","poke_ball":"#B4B4B4","great_ba
     <div class="lbe-pool-name-row"><input id="lbe-pool-name-input" placeholder="Pool name…"/></div>
     <div class="lbe-thumbstrip" id="lbe-thumbstrip"></div>
 
-    <div class="lbe-battlecard">
-      <div class="lbe-mainmon">
-        <div class="lbe-art" id="lbe-overview-main-art"></div>
-        <div class="lbe-nm" id="lbe-overview-main-name">—</div>
-      </div>
-      <div class="lbe-vs">— PAIRED WITH —</div>
-      <div class="lbe-support-row" id="lbe-overview-support-row"></div>
-    </div>
-
     <div class="lbe-tabbar" id="lbe-tabbar"></div>
-    <div class="lbe-panel" id="lbe-editor-panel">
-      <div id="lbe-editor-panel-body"></div>
+    <div class="lbe-split">
+      <div class="lbe-summary-col" id="lbe-summary-col"></div>
+      <div class="lbe-details-col" id="lbe-details-col"></div>
     </div>
   </div>
 </div>
@@ -4597,21 +4642,13 @@ const ITEM_BG_COLORS = {"strange_ball":"#B4B4B4","poke_ball":"#B4B4B4","great_ba
 <script>
 (function(){
 const LBE_WEATHERS=["None","Sun","Rain","Sandstorm","Hail"];
-const LBE_STATUSES=[
-  "None",
-  "Electric Terrain","Misty Terrain","Grassy Terrain","Psychic Terrain",
-  "Trick Room","Magic Room","Wonder Room",
-  "Tailwind (Player)","Tailwind (Opponent)",
-  "Rainbow (Player)","Rainbow (Opponent)",
-  "Sea of Fire (Player)","Sea of Fire (Opponent)",
-  "Swamp (Player)","Swamp (Opponent)",
-  "Spikes (Player) L1","Spikes (Player) L2","Spikes (Player) L3",
-  "Spikes (Opponent) L1","Spikes (Opponent) L2","Spikes (Opponent) L3",
-  "Toxic Spikes (Player) L1","Toxic Spikes (Player) L2",
-  "Toxic Spikes (Opponent) L1","Toxic Spikes (Opponent) L2",
-];
+const LBE_STATUS_SCOPES={
+  "Entire Battlefield": ["None","Electric Terrain","Misty Terrain","Grassy Terrain","Psychic Terrain","Trick Room","Magic Room","Wonder Room"],
+  "Player Side": ["None","Tailwind","Rainbow","Sea of Fire","Swamp","Spikes","Toxic Spikes"],
+  "Opponent Side": ["None","Tailwind","Rainbow","Sea of Fire","Swamp","Spikes","Toxic Spikes"],
+};
+const LBE_TYPE_LIST=[["Normal",1],["Fighting",2],["Flying",3],["Poison",4],["Ground",5],["Rock",6],["Bug",7],["Ghost",8],["Steel",9],["Fire",10],["Water",11],["Grass",12],["Electric",13],["Psychic",14],["Ice",15],["Dragon",16],["Dark",17],["Fairy",18],["Stellar",19]];
 const LBE_CAT_ICON={Physical:'⚔️',Special:'✨',Status:'🔄'};
-const LBE_TOTEM_STATS=["None","Atk +1","Def +1","Spe +1","SpA +1","SpD +1","Acc +1","Evas +1"];
 const LBE_STAT_KEYS=["hp","atk","def","spa","spd","spe"];
 const LBE_STAT_LABELS=["HP","Atk","Def","SpA","SpD","Spe"];
 const LBE_LS_KEY='legendaryBattleEditor_pools';
@@ -4949,19 +4986,27 @@ function lbeNaturesList(){ return typeof NATURES!=='undefined' ? NATURES : LBE_F
 
 function lbeLoadPools(){
   try{ const raw=localStorage.getItem(LBE_LS_KEY); if(raw) lbePools=JSON.parse(raw); }catch(e){ lbePools=[]; }
-  // Migration: older saves had weather/startingStatus/totemBoost on the pool itself.
-  // Move them onto each slot (support gets weather+status+totem, main gets totem only).
+  // Migration: older saves had weather/startingStatus/totemBoost on the pool itself,
+  // then later as a single string per slot. Both get normalized to the current shape
+  // (totem = 5 numeric sliders, startingStatus = {scope,status,level}).
   lbePools.forEach(p=>{
-    const legacyWeather = p.weather;
-    const legacyStatus = p.startingStatus;
-    const legacyTotem = p.totemBoost;
-    if(p.main && p.main.totemBoost===undefined) p.main.totemBoost = legacyTotem || 'None';
-    (p.support||[]).forEach(s=>{
-      if(s.weather===undefined) s.weather = legacyWeather || 'None';
-      if(s.startingStatus===undefined) s.startingStatus = legacyStatus || 'None';
-      if(s.totemBoost===undefined) s.totemBoost = 'None';
-    });
+    const legacyPoolWeather = p.weather, legacyPoolStatus = p.startingStatus, legacyPoolTotem = p.totemBoost;
     delete p.weather; delete p.startingStatus; delete p.totemBoost;
+    const fixSlot=(slot, fallbackWeather, fallbackStatus, fallbackTotem)=>{
+      if(!slot.totem){
+        slot.totem = {atk:0,def:0,spe:0,spa:0,spd:0};
+        const m = /^(Atk|Def|Spe|SpA|SpD) \+(\d+)$/.exec(fallbackTotem||'');
+        if(m) slot.totem[m[1].toLowerCase()] = +m[2];
+      }
+      if(!slot.teraType) slot.teraType = {type:null, useDefault:true};
+      if(typeof slot.startingStatus === 'string' || !slot.startingStatus){
+        const legacy = typeof slot.startingStatus==='string' ? slot.startingStatus : fallbackStatus;
+        slot.startingStatus = {scope:'Entire Battlefield', status: legacy && legacy!=='None' ? legacy : 'None', level:1};
+      }
+      if(slot.weather===undefined) slot.weather = fallbackWeather || 'None';
+    };
+    fixSlot(p.main, null, null, legacyPoolTotem);
+    (p.support||[]).forEach(s=>fixSlot(s, legacyPoolWeather, legacyPoolStatus, null));
   });
 }
 function lbeSavePools(){
@@ -4981,14 +5026,21 @@ function lbeFlashStatus(){
 function lbeEmptySlot(){
   return {species:null, level:50, ability:null, moves:[null,null,null,null], nature:null,
           heldItem:null, ivs:{hp:31,atk:31,def:31,spa:31,spd:31,spe:31}, dynamaxLevel:0,
-          gigantamaxFactor:false, rewardItem:null, totemBoost:'None',
-          weather:'None', startingStatus:'None'};
+          gigantamaxFactor:false, rewardItem:null,
+          totem:{atk:0,def:0,spe:0,spa:0,spd:0},
+          teraType:{type:null,useDefault:true},
+          weather:'None', startingStatus:{scope:'Entire Battlefield',status:'None',level:1}};
 }
 function lbeNewPool(){
   return {id:'pool_'+Date.now(), name:'New Pool', main:{...lbeEmptySlot(),notCatchable:true},
           support:[lbeEmptySlot(),lbeEmptySlot(),lbeEmptySlot()]};
 }
 function lbeEscapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function lbeTotemSummary(totem){
+  if(!totem) return 'None';
+  const parts=Object.entries(totem).filter(([k,v])=>v>0).map(([k,v])=>k.charAt(0).toUpperCase()+k.slice(1)+' +'+v);
+  return parts.length ? parts.join(', ') : 'None';
+}
 
 function lbeRenderList(){
   const tbody=document.getElementById('lbe-pool-tbody');
@@ -5003,7 +5055,7 @@ function lbeRenderList(){
       <td>${pool.main.level}</td>
       <td style="text-align:center;">${pool.main.notCatchable?'🔒':'—'}</td>
       <td><div class="lbe-support-cell">${pool.support.map(s=>lbeSlotChip(s)).join('')}</div></td>
-      <td>${pool.main.totemBoost||'None'}</td>
+      <td>${lbeTotemSummary(pool.main.totem)}</td>
       <td><button class="lbe-row-del" data-idx="${idx}">✕</button></td>
     `;
     tr.addEventListener('click',(e)=>{ if(e.target.closest('.lbe-row-del')) return; lbeOpenDetail(idx); });
@@ -5053,22 +5105,6 @@ function lbeRenderDetail(){
     strip.appendChild(t);
   });
 
-  // Static overview (not tab-driven) — always shows all 4 slots at a glance
-  const ovMainArt=document.getElementById('lbe-overview-main-art');
-  ovMainArt.innerHTML = pool.main.species ? lbePkmImgHtml(lbeFindMon(pool.main.species)) : '?';
-  document.getElementById('lbe-overview-main-name').textContent = pool.main.species || '—';
-  const ovRow=document.getElementById('lbe-overview-support-row');
-  ovRow.innerHTML='';
-  pool.support.forEach((s)=>{
-    const div=document.createElement('div');
-    div.className='lbe-supportmon';
-    div.innerHTML=`
-      <div class="lbe-art ${s.species?'':'lbe-empty'}">${s.species?lbePkmImgHtml(lbeFindMon(s.species)):'+'}</div>
-      <div class="lbe-nm">${lbeEscapeHtml(s.species||'—')}</div>
-    `;
-    ovRow.appendChild(div);
-  });
-
   const tabbar=document.getElementById('lbe-tabbar');
   tabbar.innerHTML='';
   const tabDefs=[
@@ -5093,17 +5129,6 @@ function lbeRenderDetail(){
   });
 
   lbeRenderEditorPanel();
-}
-function lbeRenderPillRow(id, options, current, onSelect){
-  const wrap=document.getElementById(id);
-  wrap.innerHTML='';
-  options.forEach(opt=>{
-    const p=document.createElement('div');
-    p.className='lbe-pill'+(opt===current?' lbe-sel':'');
-    p.textContent=opt;
-    p.addEventListener('click',()=>onSelect(opt));
-    wrap.appendChild(p);
-  });
 }
 
 function lbeSelectSlotSpecies(anchor){
@@ -5157,148 +5182,254 @@ function lbeCloseAutocomplete(){
   if(lbeOpenDD){ lbeOpenDD.input.remove(); lbeOpenDD.dd.remove(); lbeOpenDD=null; }
 }
 
+function lbeStatBarColor(iv){
+  if(iv>=25) return '#4caf50';
+  if(iv>=15) return '#f0c600';
+  return '#e3350d';
+}
+
 function lbeRenderEditorPanel(){
+  lbeRenderSummaryCol();
+  lbeRenderDetailsCol();
+}
+
+function lbeRenderSummaryCol(){
   const slot=lbeCurrentSlotObj();
   const isMain=lbeCurrentSlot==='main';
-  const body=document.getElementById('lbe-editor-panel-body');
+  const col=document.getElementById('lbe-summary-col');
   const mon=slot.species?lbeFindMon(slot.species):null;
-
-  const weatherOpts = LBE_WEATHERS.map(w=>`<option value="${w}" ${slot.weather===w?'selected':''}>${w}</option>`).join('');
-  const statusOpts = LBE_STATUSES.map(s=>`<option value="${s}" ${slot.startingStatus===s?'selected':''}>${s}</option>`).join('');
-  const totemOpts = LBE_TOTEM_STATS.map(t=>`<option value="${t}" ${slot.totemBoost===t?'selected':''}>${t}</option>`).join('');
   const abilityInfo = slot.ability ? (typeof ABILITIES_DB!=='undefined' ? ABILITIES_DB[slot.ability.toLowerCase()] : null) : null;
   const itemInfo = slot.heldItem ? (typeof ITEMS!=='undefined' ? ITEMS.find(i=>i.name===slot.heldItem) : null) : null;
-  const rewardInfo = slot.rewardItem ? (typeof ITEMS!=='undefined' ? ITEMS.find(i=>i.name===slot.rewardItem) : null) : null;
 
-  body.innerHTML=`
-    <div class="lbe-slot-header">
-      <div class="lbe-art" id="lbe-slot-art">${mon?lbePkmImgHtml(mon):'?'}</div>
-      <div>
-        <div class="lbe-nm">${lbeEscapeHtml(slot.species||(isMain?'Choose main Pokemon':'Choose support Pokemon'))}</div>
-        <div class="lbe-sub" id="lbe-slot-change">${slot.species?'change Pokemon':'click to choose'}</div>
+  col.innerHTML=`
+    <div class="lbe-art" id="lbe-slot-art" style="width:88px;height:88px;border-radius:50%;margin:0 auto;border:3px solid var(--yellow);">${mon?lbePkmImgHtml(mon):'?'}</div>
+    <div class="lbe-nm" id="lbe-slot-name" style="text-align:center;">${lbeEscapeHtml(slot.species||(isMain?'Choose main Pokemon':'Choose support Pokemon'))}</div>
+    <div class="lbe-sub" id="lbe-slot-change" style="text-align:center;">${slot.species?'change Pokemon':'click to choose'}</div>
+
+    <div class="lbe-field"><label>Level</label><input type="number" id="lbe-f-level" min="1" max="100" value="${slot.level}"/></div>
+
+    <div>
+      <div class="lbe-mini-lbl">Ability</div>
+      <div class="lbe-mini-pcard" id="lbe-f-ability-card">
+        ${slot.ability ? `<div><div class="t">${lbeEscapeHtml(slot.ability)}</div><div class="d">${lbeEscapeHtml(abilityInfo?.desc||abilityInfo?.description||'No description available.')}</div></div>`
+        : `<div style="color:var(--gray);font-size:11px;">Click to choose an ability…</div>`}
       </div>
     </div>
 
-    <div class="lbe-field-grid">
-      <div class="lbe-field"><label>Level</label><input type="number" id="lbe-f-level" min="1" max="100" value="${slot.level}"/></div>
-      <div class="lbe-field"><label>Nature</label><select id="lbe-f-nature"><option value="">— random —</option>${lbeNaturesList().map(n=>`<option value="${n.name}" ${slot.nature===n.name?'selected':''}>${n.name}${n.up?` (+${n.up}/-${n.dn})`:''}</option>`).join('')}</select></div>
-
-      <div class="lbe-field" style="grid-column:1/-1;">
-        <label>Ability</label>
-        <div class="lbe-picker-card" id="lbe-f-ability-card">
-          ${slot.ability ? `
-            <div class="lbe-picker-card-text" style="flex:1;">
-              <div class="lbe-picker-card-name">${lbeEscapeHtml(slot.ability)}</div>
-              <div class="lbe-picker-card-desc">${lbeEscapeHtml(abilityInfo?.desc||abilityInfo?.description||'No description available.')}</div>
-            </div>
-          ` : `<div class="lbe-picker-card-empty">Click to choose an ability…</div>`}
-        </div>
+    <div>
+      <div class="lbe-mini-lbl">Held Item</div>
+      <div class="lbe-mini-pcard" id="lbe-f-item-card">
+        ${slot.heldItem ? `${lbeItemImgHtml(slot.heldItem)}<div><div class="t">${lbeEscapeHtml(slot.heldItem)}</div><div class="d">${lbeEscapeHtml(itemInfo?.desc||'No description available.')}</div></div><button type="button" class="lbe-picker-info-btn" id="lbe-f-item-info" style="margin-left:auto;">ℹ</button>`
+        : `<div style="color:var(--gray);font-size:11px;">Click to choose an item…</div>`}
       </div>
-
-      <div class="lbe-field" style="grid-column:1/-1;">
-        <label>Held Item</label>
-        <div class="lbe-picker-card" id="lbe-f-item-card">
-          ${slot.heldItem ? `
-            <div class="lbe-picker-card-icon">${lbeItemImgHtml(slot.heldItem)}</div>
-            <div class="lbe-picker-card-text">
-              <div class="lbe-picker-card-name">${lbeEscapeHtml(slot.heldItem)}</div>
-              <div class="lbe-picker-card-desc">${lbeEscapeHtml(itemInfo?.desc||'No description available.')}</div>
-            </div>
-            <button type="button" class="lbe-picker-info-btn" id="lbe-f-item-info">ℹ</button>
-          ` : `<div class="lbe-picker-card-empty">Click to choose an item…</div>`}
-        </div>
-      </div>
-
-      <div class="lbe-field"><label>Dynamax Level: <span id="lbe-dmax-val">${slot.dynamaxLevel}</span>/10</label><input type="range" id="lbe-f-dmax" min="0" max="10" step="1" value="${slot.dynamaxLevel}"/></div>
-      <div class="lbe-field"><label>Gigantamax Factor</label><div class="lbe-checkbox-row"><input type="checkbox" id="lbe-f-gmax" ${slot.gigantamaxFactor?'checked':''}/> <span>enabled</span></div></div>
-    </div>
-    ${isMain ? `<div class="lbe-checkbox-row"><input type="checkbox" id="lbe-f-notcatch" ${slot.notCatchable?'checked':''}/> <span>Not catchable (support Pokemon in this pool can still be caught)</span></div>` : ''}
-
-    <div class="lbe-section-lbl">MOVES</div>
-    <div class="lbe-moves-grid">
-      ${[0,1,2,3].map(i=>`<div class="lbe-move-slot-btn" data-i="${i}"></div>`).join('')}
     </div>
 
-    <div class="lbe-section-lbl">IVs <span style="color:var(--gray);font-size:9px;text-transform:none;letter-spacing:0;cursor:pointer;text-decoration:underline;" id="lbe-iv-max-all">(set all to 31)</span></div>
-    <div class="lbe-iv-grid">
-      ${LBE_STAT_KEYS.map((k,i)=>`<div class="lbe-field"><label>${LBE_STAT_LABELS[i]}</label><input type="number" class="lbe-f-iv" data-k="${k}" min="0" max="31" value="${slot.ivs[k]}"/></div>`).join('')}
+    <div>
+      <div class="lbe-mini-lbl">IVs (0–31)</div>
+      <div class="lbe-statbars">
+        ${LBE_STAT_KEYS.map((k,i)=>`<div class="lbe-statbar-row"><span class="lbl">${LBE_STAT_LABELS[i]}</span><div class="lbe-statbar-track"><div class="lbe-statbar-fill" style="width:${Math.round(slot.ivs[k]/31*100)}%;background:${lbeStatBarColor(slot.ivs[k])};"></div></div><span class="val" style="color:${lbeStatBarColor(slot.ivs[k])};">${slot.ivs[k]}</span></div>`).join('')}
+      </div>
     </div>
 
-    ${isMain ? `
-      <div class="lbe-section-lbl">TOTEM BOOST</div>
-      <select id="lbe-f-totem">${totemOpts}</select>
-    ` : `
-      <div class="lbe-section-lbl">BATTLE SETUP (this support Pokemon only)</div>
-      <div class="lbe-status-grid">
-        <div class="lbe-field"><label>Weather</label><select id="lbe-f-weather">${weatherOpts}</select></div>
-        <div class="lbe-field"><label>Starting Status</label><select id="lbe-f-status">${statusOpts}</select></div>
-        <div class="lbe-field"><label>Totem Boost</label><select id="lbe-f-totem">${totemOpts}</select></div>
+    <div class="lbe-field"><label>Nature</label><select id="lbe-f-nature"><option value="">— random —</option>${lbeNaturesList().map(n=>`<option value="${n.name}" ${slot.nature===n.name?'selected':''}>${n.name}${n.up?` (+${n.up}/-${n.dn})`:''}</option>`).join('')}</select></div>
+
+    <div>
+      <div class="lbe-mini-lbl">IVs <span style="text-transform:none;cursor:pointer;text-decoration:underline;" id="lbe-iv-max-all">(set all to 31)</span></div>
+      <div class="lbe-iv3">
+        ${LBE_STAT_KEYS.map((k,i)=>`<div class="cell"><label>${LBE_STAT_LABELS[i]}</label><input type="number" class="lbe-f-iv" data-k="${k}" min="0" max="31" value="${slot.ivs[k]}"/></div>`).join('')}
       </div>
-      <div class="lbe-section-lbl">REWARD ITEM <span style="color:var(--gray);font-size:9px;text-transform:none;letter-spacing:0;">(given if this Pokemon is caught/defeated)</span></div>
-      <div class="lbe-picker-card" id="lbe-f-reward-card">
-        ${slot.rewardItem ? `
-          <div class="lbe-picker-card-icon">${lbeItemImgHtml(slot.rewardItem)}</div>
-          <div class="lbe-picker-card-text">
-            <div class="lbe-picker-card-name">${lbeEscapeHtml(slot.rewardItem)}</div>
-            <div class="lbe-picker-card-desc">${lbeEscapeHtml(rewardInfo?.desc||'No description available.')}</div>
-          </div>
-          <button type="button" class="lbe-picker-info-btn" id="lbe-f-reward-info">ℹ</button>
-        ` : `<div class="lbe-picker-card-empty">Click to choose a reward item (optional)…</div>`}
+    </div>
+
+    <div class="lbe-dcard-mini">
+      <div class="lbe-section-lbl">DYNAMAX &amp; GIGANTAMAX</div>
+      <div class="lbe-dmax-title">Choose your Dynamax Level:</div>
+      <div class="lbe-dmax-sub">Pick between a 50% and 100% HP boost</div>
+      <input type="range" class="lbe-dmax-slider" id="lbe-f-dmax" min="0" max="10" step="1" value="${slot.dynamaxLevel}"/>
+      <div class="lbe-dmax-lbl"><span class="lbe-dmax-lvl" id="lbe-dmax-lvl">Level ${slot.dynamaxLevel}</span><span class="lbe-dmax-desc" id="lbe-dmax-desc"></span></div>
+      <div class="lbe-gmax-toggle">
+        <img src="https://raw.githubusercontent.com/KlayCoding/Wonniland/main/icons/gmax_factor.png" onerror="this.style.display='none'"/>
+        <label><input type="checkbox" id="lbe-f-gmax" ${slot.gigantamaxFactor?'checked':''}/> Gigantamax Factor enabled</label>
       </div>
-    `}
+    </div>
+
+    <div class="lbe-dcard-mini">
+      <div class="lbe-section-lbl">TERA TYPE</div>
+      <div class="lbe-tera-row">
+        <select class="lbe-dd-select" id="lbe-f-tera" style="flex:1;" ${slot.teraType.useDefault?'disabled':''}>
+          <option value="">— choose type —</option>
+          ${LBE_TYPE_LIST.map(([n])=>`<option value="${n}" ${slot.teraType.type===n?'selected':''}>${n}</option>`).join('')}
+        </select>
+        <label class="lbe-tera-default"><input type="checkbox" id="lbe-f-tera-default" ${slot.teraType.useDefault?'checked':''}/> Use default type</label>
+      </div>
+    </div>
+
+    ${isMain ? `<div class="lbe-checkbox-row" id="lbe-f-notcatch-row"><input type="checkbox" id="lbe-f-notcatch" ${slot.notCatchable?'checked':''}/> <span>Not catchable (support Pokemon in this pool can still be caught)</span></div>` : ''}
   `;
 
   document.getElementById('lbe-slot-art').addEventListener('click',(e)=>lbeSelectSlotSpecies(e.currentTarget));
   document.getElementById('lbe-slot-change').addEventListener('click',()=>lbeSelectSlotSpecies(document.getElementById('lbe-slot-art')));
-
   document.getElementById('lbe-f-level').addEventListener('input',e=>{ slot.level=+e.target.value||1; lbeSavePools(); lbeRenderDetail(); });
-  const dmaxSlider=document.getElementById('lbe-f-dmax');
-  dmaxSlider.addEventListener('input',e=>{ slot.dynamaxLevel=+e.target.value; document.getElementById('lbe-dmax-val').textContent=slot.dynamaxLevel; lbeSavePools(); });
-  document.getElementById('lbe-f-gmax').addEventListener('change',e=>{ slot.gigantamaxFactor=e.target.checked; lbeSavePools(); });
   document.getElementById('lbe-f-nature').addEventListener('change',e=>{ slot.nature=e.target.value||null; lbeSavePools(); });
-  document.getElementById('lbe-f-totem').addEventListener('change',e=>{ slot.totemBoost=e.target.value; lbeSavePools(); });
+
+  const dmaxSlider=document.getElementById('lbe-f-dmax');
+  function updateDmax(){
+    const v=+dmaxSlider.value;
+    document.getElementById('lbe-dmax-lvl').textContent='Level '+v;
+    const mult=(1.5+v*0.05).toFixed(2).replace(/\.?0+$/,'');
+    const pct=Math.round(v*5+50);
+    document.getElementById('lbe-dmax-desc').textContent = v===0 ? '1.5× HP (50% boost)' : mult+'× HP ('+pct+'% boost)'+(v===10?' — Maximum!':'');
+  }
+  dmaxSlider.addEventListener('input',()=>{ slot.dynamaxLevel=+dmaxSlider.value; updateDmax(); lbeSavePools(); });
+  updateDmax();
+  document.getElementById('lbe-f-gmax').addEventListener('change',e=>{ slot.gigantamaxFactor=e.target.checked; lbeSavePools(); });
+
+  const teraSel=document.getElementById('lbe-f-tera');
+  const teraDefault=document.getElementById('lbe-f-tera-default');
+  teraSel.addEventListener('change',e=>{ slot.teraType.type=e.target.value||null; lbeSavePools(); });
+  teraDefault.addEventListener('change',e=>{ slot.teraType.useDefault=e.target.checked; teraSel.disabled=e.target.checked; lbeSavePools(); });
+
   const notcatch=document.getElementById('lbe-f-notcatch');
   if(notcatch) notcatch.addEventListener('change',e=>{ slot.notCatchable=e.target.checked; lbeSavePools(); lbeRenderList(); });
-  const weatherSel=document.getElementById('lbe-f-weather');
-  if(weatherSel) weatherSel.addEventListener('change',e=>{ slot.weather=e.target.value; lbeSavePools(); });
-  const statusSel=document.getElementById('lbe-f-status');
-  if(statusSel) statusSel.addEventListener('change',e=>{ slot.startingStatus=e.target.value; lbeSavePools(); });
 
-  // Ability picker card
   const abilityCard=document.getElementById('lbe-f-ability-card');
   abilityCard.addEventListener('click',()=>lbeOpenAutocomplete({
     anchor:abilityCard, items:lbeAbilitiesForSpecies(mon), getLabel:a=>a.name,
     getSubtitle:a=>a.desc||a.description||'', getIconHtml:()=>'',
-    onPick:(a)=>{ slot.ability=a.name; lbeSavePools(); lbeRenderEditorPanel(); }
+    onPick:(a)=>{ slot.ability=a.name; lbeSavePools(); lbeRenderSummaryCol(); }
   }));
 
-  // Held item picker card
   const itemCard=document.getElementById('lbe-f-item-card');
   itemCard.addEventListener('click',(e)=>{
     if(e.target.closest('.lbe-picker-info-btn')) return;
     lbeOpenAutocomplete({
       anchor:itemCard, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name,
       getSubtitle:it=>it.desc||'', getIconHtml:it=>lbeItemImgHtml(it.name),
-      onPick:(it)=>{ slot.heldItem=it.name; lbeSavePools(); lbeRenderEditorPanel(); }
+      onPick:(it)=>{ slot.heldItem=it.name; lbeSavePools(); lbeRenderSummaryCol(); }
     });
   });
   const itemInfoBtn=document.getElementById('lbe-f-item-info');
   if(itemInfoBtn) itemInfoBtn.addEventListener('click',(e)=>{ e.stopPropagation(); if(itemInfo) lbeOpenItemInfoPopup(itemInfo); });
 
-  // Reward item picker card (support only)
+  document.querySelectorAll('.lbe-f-iv').forEach(inp=>{
+    inp.addEventListener('input',()=>{ slot.ivs[inp.dataset.k]=Math.max(0,Math.min(31,+inp.value||0)); lbeSavePools(); lbeRenderSummaryCol(); });
+  });
+  document.getElementById('lbe-iv-max-all').addEventListener('click',()=>{
+    LBE_STAT_KEYS.forEach(k=>slot.ivs[k]=31); lbeSavePools(); lbeRenderSummaryCol();
+  });
+}
+
+function lbeRenderDetailsCol(){
+  const slot=lbeCurrentSlotObj();
+  const isMain=lbeCurrentSlot==='main';
+  const col=document.getElementById('lbe-details-col');
+  const mon=slot.species?lbeFindMon(slot.species):null;
+  const rewardInfo = slot.rewardItem ? (typeof ITEMS!=='undefined' ? ITEMS.find(i=>i.name===slot.rewardItem) : null) : null;
+  const disabledAttr = isMain ? 'disabled' : '';
+  const disabledClass = isMain ? ' lbe-disabled' : '';
+
+  col.innerHTML=`
+    ${!isMain ? `
+    <div class="lbe-dcard">
+      <div class="lbe-section-lbl">REWARD ITEM <span style="color:var(--gray);font-size:9px;text-transform:none;letter-spacing:0;">(given if this Pokemon is caught/defeated)</span></div>
+      <div class="lbe-mini-pcard" id="lbe-f-reward-card">
+        ${slot.rewardItem ? `${lbeItemImgHtml(slot.rewardItem)}<div><div class="t">${lbeEscapeHtml(slot.rewardItem)}</div><div class="d">${lbeEscapeHtml(rewardInfo?.desc||'No description available.')}</div></div><button type="button" class="lbe-picker-info-btn" id="lbe-f-reward-info" style="margin-left:auto;">ℹ</button>`
+        : `<div style="color:var(--gray);font-size:11px;">Click to choose a reward item (optional)…</div>`}
+      </div>
+    </div>` : ''}
+
+    <div class="lbe-dcard${disabledClass}" id="lbe-weather-card">
+      <div class="lbe-section-lbl">WEATHER${isMain?' <span style="color:var(--gray);font-size:8px;text-transform:none;">(depends on the support Pokemon — set per Support tab)</span>':''}</div>
+      <select class="lbe-dd-select" id="lbe-f-weather" ${disabledAttr}>
+        ${LBE_WEATHERS.map(w=>`<option value="${w}" ${slot.weather===w?'selected':''}>${w}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="lbe-dcard${disabledClass}" id="lbe-status-card">
+      <div class="lbe-section-lbl">STARTING STATUS${isMain?' <span style="color:var(--gray);font-size:8px;text-transform:none;">(depends on the support Pokemon — set per Support tab)</span>':''}</div>
+      <div class="lbe-status-stack">
+        <div>
+          <label>Scope</label>
+          <select class="lbe-dd-select" id="lbe-f-status-scope" ${disabledAttr}>
+            ${Object.keys(LBE_STATUS_SCOPES).map(sc=>`<option value="${sc}" ${slot.startingStatus.scope===sc?'selected':''}>${sc}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label>Status</label>
+          <select class="lbe-dd-select" id="lbe-f-status-value" ${disabledAttr}></select>
+        </div>
+        <div>
+          <label>Spikes Level</label>
+          <div class="lbe-stepper">
+            <button type="button" class="lbe-step-btn" id="lbe-status-lvl-down" ${disabledAttr}>−</button>
+            <span id="lbe-status-lvl-val">${slot.startingStatus.level}</span>
+            <button type="button" class="lbe-step-btn" id="lbe-status-lvl-up" ${disabledAttr}>+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lbe-dcard">
+      <div class="lbe-section-lbl">TOTEM BOOST <span style="text-transform:none;font-size:9px;color:var(--gray);letter-spacing:0;">(all default to +0 = no boost, no HP option — stat stages don't apply to HP)</span></div>
+      <div class="lbe-totem-sliders">
+        ${['atk','def','spe','spa','spd'].map(k=>`<div class="lbe-totem-slider-row"><label>${k.charAt(0).toUpperCase()+k.slice(1)}</label><input type="range" class="lbe-f-totem" data-k="${k}" min="0" max="6" value="${slot.totem[k]}"/><span>+${slot.totem[k]}</span></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="lbe-dcard">
+      <div class="lbe-section-lbl">MOVES</div>
+      <div class="lbe-moves-grid">
+        ${[0,1,2,3].map(i=>`<div class="lbe-move-slot-btn" data-i="${i}"></div>`).join('')}
+      </div>
+    </div>
+  `;
+
+  const weatherSel=document.getElementById('lbe-f-weather');
+  weatherSel.addEventListener('change',e=>{ slot.weather=e.target.value; lbeSavePools(); });
+
+  const scopeSel=document.getElementById('lbe-f-status-scope');
+  const valueSel=document.getElementById('lbe-f-status-value');
+  const lvlVal=document.getElementById('lbe-status-lvl-val');
+  const lvlUp=document.getElementById('lbe-status-lvl-up');
+  const lvlDown=document.getElementById('lbe-status-lvl-down');
+
+  function rebuildStatusValues(){
+    valueSel.innerHTML = LBE_STATUS_SCOPES[scopeSel.value].map(v=>`<option value="${v}" ${slot.startingStatus.status===v?'selected':''}>${v}</option>`).join('');
+    if(!LBE_STATUS_SCOPES[scopeSel.value].includes(slot.startingStatus.status)){
+      slot.startingStatus.status = 'None';
+      valueSel.value = 'None';
+    }
+    syncStatusLevel();
+  }
+  function syncStatusLevel(){
+    const v=valueSel.value;
+    const isSpikes = v==='Spikes' || v==='Toxic Spikes';
+    const max = v==='Spikes' ? 3 : 2;
+    lvlUp.disabled = isMain || !isSpikes || slot.startingStatus.level>=max;
+    lvlDown.disabled = isMain || !isSpikes || slot.startingStatus.level<=1;
+    lvlVal.style.opacity = isSpikes ? 1 : .35;
+  }
+  scopeSel.addEventListener('change',()=>{ slot.startingStatus.scope=scopeSel.value; lbeSavePools(); rebuildStatusValues(); });
+  valueSel.addEventListener('change',()=>{ slot.startingStatus.status=valueSel.value; slot.startingStatus.level=1; lvlVal.textContent=1; lbeSavePools(); syncStatusLevel(); });
+  lvlUp.addEventListener('click',()=>{ const max = valueSel.value==='Spikes'?3:2; if(slot.startingStatus.level<max){ slot.startingStatus.level++; lvlVal.textContent=slot.startingStatus.level; lbeSavePools(); syncStatusLevel(); } });
+  lvlDown.addEventListener('click',()=>{ if(slot.startingStatus.level>1){ slot.startingStatus.level--; lvlVal.textContent=slot.startingStatus.level; lbeSavePools(); syncStatusLevel(); } });
+  rebuildStatusValues();
+
   const rewardCard=document.getElementById('lbe-f-reward-card');
   if(rewardCard) rewardCard.addEventListener('click',(e)=>{
     if(e.target.closest('.lbe-picker-info-btn')) return;
     lbeOpenAutocomplete({
       anchor:rewardCard, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name,
       getSubtitle:it=>it.desc||'', getIconHtml:it=>lbeItemImgHtml(it.name),
-      onPick:(it)=>{ slot.rewardItem=it.name; lbeSavePools(); lbeRenderEditorPanel(); }
+      onPick:(it)=>{ slot.rewardItem=it.name; lbeSavePools(); lbeRenderDetailsCol(); }
     });
   });
   const rewardInfoBtn=document.getElementById('lbe-f-reward-info');
   if(rewardInfoBtn) rewardInfoBtn.addEventListener('click',(e)=>{ e.stopPropagation(); if(rewardInfo) lbeOpenItemInfoPopup(rewardInfo); });
 
-  // Move slots — click opens the full move-picker popup (not a scrollable search list)
+  document.querySelectorAll('.lbe-f-totem').forEach(inp=>{
+    inp.addEventListener('input',()=>{ slot.totem[inp.dataset.k]=+inp.value; inp.nextElementSibling.textContent='+'+inp.value; lbeSavePools(); });
+  });
+
   document.querySelectorAll('.lbe-move-slot-btn').forEach(el=>{
     const i=+el.dataset.i;
     const mv=slot.moves[i];
@@ -5311,38 +5442,37 @@ function lbeRenderEditorPanel(){
       empty.textContent=`+ Choose Move ${i+1}…`;
       el.appendChild(empty);
     }
-    el.addEventListener('click',(e)=>{
-      if(e.target.closest('.pdx-move-card-hdr') && mv){ return; } // let the ℹ inside the card handle its own click
-      lbeOpenMovePicker(mon, i, (chosenName)=>{ slot.moves[i]=chosenName; lbeSavePools(); lbeRenderEditorPanel(); });
+    el.addEventListener('click',()=>{
+      lbeOpenMovePicker(mon, i, (chosenName)=>{ slot.moves[i]=chosenName; lbeSavePools(); lbeRenderDetailsCol(); });
     });
-  });
-
-  document.querySelectorAll('.lbe-f-iv').forEach(inp=>{
-    inp.addEventListener('input',()=>{ slot.ivs[inp.dataset.k]=Math.max(0,Math.min(31,+inp.value||0)); lbeSavePools(); });
-  });
-  document.getElementById('lbe-iv-max-all').addEventListener('click',()=>{
-    LBE_STAT_KEYS.forEach(k=>slot.ivs[k]=31); lbeSavePools(); lbeRenderEditorPanel();
   });
 }
 
 // Export field order, fixed: species, level, ability, moves[4], nature, heldItem,
-// ivs{hp,atk,def,spa,spd,spe}, dynamaxLevel, gigantamaxFactor, totemBoost — then any
-// slot-specific extras (main: notCatchable | support: weather, startingStatus, rewardItem).
-// Same order for every slot, every pool, every export — no field ever moves position.
+// ivs{hp,atk,def,spa,spd,spe}, dynamaxLevel, gigantamaxFactor, teraType, totem —
+// then any slot-specific extras (main: notCatchable | support: weather,
+// startingStatus, rewardItem). Same order for every slot, every pool, every export
+// — no field ever moves position.
 function lbeSlotToExport(slot, extra){
   return {
     species: slot.species, level: slot.level, ability: slot.ability, moves: slot.moves,
     nature: slot.nature, heldItem: slot.heldItem,
     ivs: {hp:slot.ivs.hp, atk:slot.ivs.atk, def:slot.ivs.def, spa:slot.ivs.spa, spd:slot.ivs.spd, spe:slot.ivs.spe},
     dynamaxLevel: slot.dynamaxLevel, gigantamaxFactor: slot.gigantamaxFactor,
-    totemBoost: slot.totemBoost, ...extra
+    teraType: slot.teraType.useDefault ? null : slot.teraType.type,
+    totem: {atk:slot.totem.atk, def:slot.totem.def, spe:slot.totem.spe, spa:slot.totem.spa, spd:slot.totem.spd},
+    ...extra
   };
 }
 function lbeExportJson(){
   const out = lbePools.map(p=>({
     poolId: p.id, poolName: p.name,
     main: lbeSlotToExport(p.main, {notCatchable:p.main.notCatchable}),
-    support: p.support.map(s=>lbeSlotToExport(s, {weather:s.weather, startingStatus:s.startingStatus, rewardItem:s.rewardItem})),
+    support: p.support.map(s=>lbeSlotToExport(s, {
+      weather: s.weather,
+      startingStatus: s.startingStatus.status==='None' ? null : {scope:s.startingStatus.scope, status:s.startingStatus.status, level:s.startingStatus.level},
+      rewardItem: s.rewardItem
+    })),
   }));
   const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
   const a=document.createElement('a');
