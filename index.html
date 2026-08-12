@@ -4678,6 +4678,10 @@ const LBE_FALLBACK_NATURES=[
 ];
 
 let lbePools=[];
+function lbeDebounce(fn, ms){
+  let t=null;
+  return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); };
+}
 let lbeCurrentPoolIdx=null;
 let lbeCurrentSlot=null;
 
@@ -4762,7 +4766,7 @@ function lbePkmImgHtml(mon){
   if(!mon) return '?';
   const file = (typeof getSpriteFile==='function') ? getSpriteFile(mon) : (mon.sprite || (mon.id?String(mon.id).padStart(4,'0'):''));
   if(!file) return '?';
-  return `<img src="${PKM_BASE1}${file}.png" onerror='lbeImgErr(this,${JSON.stringify(mon.id||0)},${JSON.stringify(file)})'/>`;
+  return `<img loading="lazy" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated;" src="${PKM_BASE1}${file}.png" onerror='lbeImgErr(this,${JSON.stringify(mon.id||0)},${JSON.stringify(file)})'/>`;
 }
 function lbePkmSpriteUrl(mon){
   if(!mon) return '';
@@ -4775,7 +4779,7 @@ function lbeItemImgHtml(itemName){
   // crossorigin="anonymous" is required — without it, the canvas used for background
   // removal is "tainted" by the cross-origin image and getImageData() throws, silently
   // swallowed by the try/catch, leaving the raw (white-background) sprite untouched.
-  return `<img crossorigin="anonymous" src="${ITEM_BASE}${it.slug}.png" onerror='lbeItemImgErr(this,${JSON.stringify(it.slug)})' onload='lbeItemImgLoad(this,${JSON.stringify(it.slug)})'/>`;
+  return `<img loading="lazy" crossorigin="anonymous" src="${ITEM_BASE}${it.slug}.png" onerror='lbeItemImgErr(this,${JSON.stringify(it.slug)})' onload='lbeItemImgLoad(this,${JSON.stringify(it.slug)})'/>`;
 }
 function lbeItemSpriteUrl(itemName){
   const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.name===itemName);
@@ -4932,20 +4936,27 @@ function lbeOpenSpeciesPicker(onPick){
   function buildGrid(){
     const q=searchInp.value.toLowerCase();
     const all=(typeof POKEMON!=='undefined'?POKEMON:[]);
-    const filtered = q ? all.filter(p=>p.name.toLowerCase().includes(q)) : all;
-    countEl.textContent=filtered.length+' / '+all.length;
+    const matched = q ? all.filter(p=>p.name.toLowerCase().includes(q)) : all;
+    // Cap what actually gets built at once — 1571 tiles (each with an image
+    // request) on a bare "no search yet" open is the single biggest source of
+    // lag in this popup. Typing narrows it down naturally.
+    const CAP=150;
+    const filtered = matched.slice(0, CAP);
+    countEl.textContent = matched.length>CAP
+      ? `showing ${CAP} of ${matched.length} — keep typing to narrow it down`
+      : `${matched.length} / ${all.length}`;
     gridWrap.innerHTML='';
     filtered.forEach(p=>{
       const tile=document.createElement('div');
-      tile.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center;';
-      tile.innerHTML=`<div style="width:44px;height:44px;">${lbePkmImgHtml(p)}</div><span style="font-size:9.5px;color:#e2e8f0;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">${lbeEscapeHtml(p.name)}</span>`;
+      tile.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center;overflow:hidden;';
+      tile.innerHTML=`<div style="width:44px;height:44px;overflow:hidden;">${lbePkmImgHtml(p)}</div><span style="font-size:9.5px;color:#e2e8f0;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">${lbeEscapeHtml(p.name)}</span>`;
       tile.addEventListener('mouseenter',()=>tile.style.borderColor='var(--pl)');
       tile.addEventListener('mouseleave',()=>tile.style.borderColor='rgba(255,255,255,.06)');
       tile.addEventListener('click',()=>{ onPick(p); overlay.remove(); });
       gridWrap.appendChild(tile);
     });
   }
-  searchInp.addEventListener('input', buildGrid);
+  searchInp.addEventListener('input', lbeDebounce(buildGrid, 200));
 
   box.append(hdr, searchWrap, gridWrap);
   overlay.appendChild(box);
@@ -4983,8 +4994,12 @@ function lbeOpenItemPicker(onPick){
   function buildList(){
     const q=searchInp.value.toLowerCase();
     const all=(typeof ITEMS!=='undefined'?ITEMS:[]);
-    const filtered = q ? all.filter(it=>it.name.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q)) : all;
-    countEl.textContent=filtered.length+' / '+all.length;
+    const matched = q ? all.filter(it=>it.name.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q)) : all;
+    const CAP=150;
+    const filtered = matched.slice(0, CAP);
+    countEl.textContent = matched.length>CAP
+      ? `showing ${CAP} of ${matched.length} — keep typing to narrow it down`
+      : `${matched.length} / ${all.length}`;
     listWrap.innerHTML='';
     filtered.forEach(it=>{
       const row=document.createElement('div');
@@ -4995,7 +5010,7 @@ function lbeOpenItemPicker(onPick){
       listWrap.appendChild(row);
     });
   }
-  searchInp.addEventListener('input', buildList);
+  searchInp.addEventListener('input', lbeDebounce(buildList, 200));
 
   box.append(hdr, searchWrap, listWrap);
   overlay.appendChild(box);
@@ -5090,7 +5105,7 @@ function lbeOpenMovePicker(mon, slotIndex, onPick){
       listWrap.appendChild(wrap);
     });
   }
-  searchInp.addEventListener('input', buildList);
+  searchInp.addEventListener('input', lbeDebounce(buildList, 200));
 
   box.append(hdr, tabsWrap, searchWrap, listWrap);
   overlay.appendChild(box);
@@ -5174,6 +5189,7 @@ function lbeSavePools(){
   localStorage.setItem(LBE_LS_KEY, JSON.stringify(lbePools));
   lbeFlashStatus();
 }
+const lbeSavePoolsDebounced = lbeDebounce(lbeSavePools, 400);
 function lbeFlashStatus(){
   const el=document.getElementById('lbe-load-status');
   if(!el) return;
@@ -5452,7 +5468,7 @@ function lbeRenderSummaryCol(){
 
   document.getElementById('lbe-slot-art').addEventListener('click',()=>lbeOpenSpeciesPicker((p)=>{ slot.species=p.name; lbeSavePools(); lbeRenderDetail(); }));
   document.getElementById('lbe-slot-change').addEventListener('click',()=>lbeOpenSpeciesPicker((p)=>{ slot.species=p.name; lbeSavePools(); lbeRenderDetail(); }));
-  document.getElementById('lbe-f-level').addEventListener('input',e=>{ slot.level=+e.target.value||1; lbeSavePools(); lbeRenderDetail(); });
+  document.getElementById('lbe-f-level').addEventListener('input',e=>{ slot.level=+e.target.value||1; lbeSavePoolsDebounced(); lbeRenderSummaryCol(); });
   document.getElementById('lbe-f-nature').addEventListener('change',e=>{ slot.nature=e.target.value||null; lbeSavePools(); lbeRenderSummaryCol(); });
 
   const dmaxSlider=document.getElementById('lbe-f-dmax');
@@ -5463,7 +5479,7 @@ function lbeRenderSummaryCol(){
     const pct=Math.round(v*5+50);
     document.getElementById('lbe-dmax-desc').textContent = v===0 ? '1.5× HP (50% boost)' : mult+'× HP ('+pct+'% boost)'+(v===10?' — Maximum!':'');
   }
-  dmaxSlider.addEventListener('input',()=>{ slot.dynamaxLevel=+dmaxSlider.value; updateDmax(); lbeSavePools(); });
+  dmaxSlider.addEventListener('input',()=>{ slot.dynamaxLevel=+dmaxSlider.value; updateDmax(); lbeSavePoolsDebounced(); });
   updateDmax();
   document.getElementById('lbe-f-gmax').addEventListener('change',e=>{ slot.gigantamaxFactor=e.target.checked; lbeSavePools(); });
 
@@ -5503,7 +5519,7 @@ function lbeRenderSummaryCol(){
   if(itemInfoBtn) itemInfoBtn.addEventListener('click',(e)=>{ e.stopPropagation(); if(itemInfo) lbeOpenItemInfoPopup(itemInfo); });
 
   document.querySelectorAll('.lbe-f-iv').forEach(inp=>{
-    inp.addEventListener('input',()=>{ slot.ivs[inp.dataset.k]=Math.max(0,Math.min(31,+inp.value||0)); lbeSavePools(); lbeRenderSummaryCol(); });
+    inp.addEventListener('input',()=>{ slot.ivs[inp.dataset.k]=Math.max(0,Math.min(31,+inp.value||0)); lbeSavePoolsDebounced(); lbeRenderSummaryCol(); });
   });
   document.getElementById('lbe-iv-max-all').addEventListener('click',()=>{
     LBE_STAT_KEYS.forEach(k=>slot.ivs[k]=31); lbeSavePools(); lbeRenderSummaryCol();
@@ -5615,7 +5631,7 @@ function lbeRenderDetailsCol(){
   if(rewardInfoBtn) rewardInfoBtn.addEventListener('click',(e)=>{ e.stopPropagation(); if(rewardInfo) lbeOpenItemInfoPopup(rewardInfo); });
 
   document.querySelectorAll('.lbe-f-totem').forEach(inp=>{
-    inp.addEventListener('input',()=>{ slot.totem[inp.dataset.k]=+inp.value; inp.nextElementSibling.textContent='+'+inp.value; lbeSavePools(); });
+    inp.addEventListener('input',()=>{ slot.totem[inp.dataset.k]=+inp.value; inp.nextElementSibling.textContent='+'+inp.value; lbeSavePoolsDebounced(); });
   });
 
   document.querySelectorAll('.lbe-move-slot-btn').forEach(el=>{
