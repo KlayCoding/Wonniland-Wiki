@@ -588,6 +588,7 @@
 /* ══════════ Legendary Battle Editor (LBE) ══════════ */
 #lbe-toggle{position:fixed;top:14px;right:14px;z-index:5000;font-family:'Press Start 2P',monospace;font-size:9px;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:10px 14px;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 16px rgba(0,0,0,.4);}
 #lbe-toggle:hover{filter:brightness(1.1);}
+#lbe-toggle.lbe-hidden{display:none;}
 #lbe-root{display:none;position:fixed;inset:0;z-index:4000;background:var(--dark);overflow-y:auto;padding:24px 32px;}
 #lbe-root.open{display:block;}
 .lbe-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
@@ -639,6 +640,20 @@
 .lbe-status-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
 .lbe-status-grid .lbe-section-lbl{margin-top:0;}
 .lbe-move-slot{margin-bottom:10px;}
+.lbe-moves-grid{display:flex;flex-direction:column;gap:8px;}
+.lbe-move-slot-btn{cursor:pointer;}
+.lbe-move-empty{border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;color:var(--gray);font-size:12px;}
+.lbe-move-empty:hover{border-color:var(--pl);color:var(--pl);}
+.lbe-picker-card{display:flex;align-items:center;gap:10px;background:var(--dark);border:2px solid var(--border);border-radius:10px;padding:8px 10px;cursor:pointer;min-height:44px;}
+.lbe-picker-card:hover{border-color:var(--pl);}
+.lbe-picker-card-icon{width:36px;height:36px;flex-shrink:0;}
+.lbe-picker-card-icon img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
+.lbe-picker-card-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.lbe-picker-card-name{font-size:13px;font-weight:600;color:var(--white);}
+.lbe-picker-card-desc{font-size:10.5px;color:var(--gray);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.lbe-picker-card-empty{color:var(--gray);font-size:12px;flex:1;}
+.lbe-picker-info-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;color:var(--gray);font-size:11px;padding:3px 8px;cursor:pointer;flex-shrink:0;}
+.lbe-picker-info-btn:hover{color:var(--yellow);border-color:var(--yellow);}
 .lbe-badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
 .lbe-badge{font-size:10px;font-family:'Press Start 2P',monospace;padding:5px 9px;border-radius:6px;background:rgba(0,0,0,.35);border:1px solid var(--border);}
 .lbe-badge.lbe-weather{color:#FFD54F;} .lbe-badge.lbe-status{color:var(--pl);} .lbe-badge.lbe-totem{color:#FF8A65;}
@@ -675,10 +690,13 @@
 .lbe-checkbox-row{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:6px;}
 .lbe-checkbox-row input{width:15px;height:15px;accent-color:var(--yellow);}
 .lbe-ac-wrap{position:relative;}
-.lbe-dd{position:fixed;background:#0d1b2a;border:1px solid var(--border);border-radius:8px;max-height:280px;overflow-y:auto;z-index:6000;box-shadow:0 12px 40px rgba(0,0,0,.7);width:260px;}
+.lbe-dd{position:fixed;background:#0d1b2a;border:1px solid var(--border);border-radius:8px;max-height:320px;overflow-y:auto;z-index:6000;box-shadow:0 12px 40px rgba(0,0,0,.7);width:290px;}
 .lbe-dd-item{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid rgba(15,52,96,.4);}
 .lbe-dd-item:hover{background:rgba(255,215,0,.08);}
 .lbe-dd-item img{width:28px;height:28px;object-fit:contain;image-rendering:pixelated;flex-shrink:0;}
+.lbe-dd-text{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.lbe-dd-name{font-weight:600;}
+.lbe-dd-sub{font-size:10px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;}
 .lbe-dd-empty{padding:10px;font-size:11px;color:var(--gray);}
 
   </style>
@@ -4801,6 +4819,88 @@ function lbeOpenMoveInfoPopup(mv){
   popup.appendChild(box);
   document.body.appendChild(popup);
 }
+
+// Same visual treatment as the move info popup, for held/reward items.
+function lbeOpenItemInfoPopup(item){
+  const popup=document.createElement('div');
+  popup.style.cssText='position:fixed;inset:0;z-index:6500;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);padding:16px;';
+  popup.addEventListener('click',e=>{ if(e.target===popup) popup.remove(); });
+  const box=document.createElement('div');
+  box.style.cssText='background:#13192a;border:2px solid var(--border);border-radius:14px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden;';
+  const hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border);';
+  const iconWrap=document.createElement('div'); iconWrap.style.cssText='width:44px;height:44px;flex-shrink:0;';
+  iconWrap.innerHTML=lbeItemImgHtml(item.name);
+  const title=document.createElement('div'); title.style.cssText='font-weight:700;font-size:15px;color:#fff;flex:1;'; title.textContent=item.name;
+  const closeBtn=document.createElement('button'); closeBtn.type='button';
+  closeBtn.style.cssText='background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:var(--gray);font-size:14px;padding:3px 9px;cursor:pointer;flex-shrink:0;';
+  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>popup.remove());
+  hdr.append(iconWrap,title,closeBtn);
+  const bodyEl=document.createElement('div');
+  bodyEl.style.cssText='padding:16px;font-size:12px;color:var(--white);line-height:1.6;';
+  bodyEl.textContent=item.desc||'No description available.';
+  box.append(hdr,bodyEl);
+  popup.appendChild(box);
+  document.body.appendChild(popup);
+}
+
+// Replaces the old scrollable search dropdown for moves with the same style of
+// dedicated picker popup used in the Database Browser / Creation Mode move slots —
+// a proper modal with search, listing full lbeMoveCard() rows, click to pick.
+// (Type/category/sort filters and the learnable/restricted mode tabs from the
+// original are left out here to keep this scoped — search + species-aware
+// learnable filtering covers the common case.)
+function lbeOpenMovePicker(mon, slotIndex, onPick){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:6200;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+
+  const box=document.createElement('div');
+  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:520px;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
+
+  const hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;';
+  const title=document.createElement('span'); title.style.cssText='font-size:13px;font-weight:700;flex:1;'; title.textContent='Move '+(slotIndex+1);
+  const learnableToggleWrap=document.createElement('label'); learnableToggleWrap.style.cssText='display:flex;align-items:center;gap:5px;font-size:10px;color:var(--gray);cursor:pointer;';
+  const learnableToggle=document.createElement('input'); learnableToggle.type='checkbox'; learnableToggle.checked=true; learnableToggle.style.cssText='width:13px;height:13px;';
+  learnableToggleWrap.append(learnableToggle, document.createTextNode('Learnable only'));
+  const closeBtn=document.createElement('button'); closeBtn.type='button';
+  closeBtn.style.cssText='background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#556;font-size:14px;padding:2px 9px;cursor:pointer;';
+  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>overlay.remove());
+  hdr.append(title, learnableToggleWrap, closeBtn);
+
+  const searchWrap=document.createElement('div');
+  searchWrap.style.cssText='padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
+  const searchInp=document.createElement('input'); searchInp.type='text'; searchInp.placeholder='Search moves…';
+  searchInp.style.cssText='width:100%;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#e2e8f0;font-size:12px;padding:7px 10px;outline:none;box-sizing:border-box;';
+  searchWrap.appendChild(searchInp);
+
+  const listWrap=document.createElement('div');
+  listWrap.style.cssText='flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px;min-height:0;';
+
+  function buildList(){
+    const q=searchInp.value.toLowerCase();
+    const pool = learnableToggle.checked ? lbeMovesForSpecies(mon) : (typeof MOVES!=='undefined'?MOVES:[]);
+    const filtered = pool.filter(m=>m.name.toLowerCase().includes(q)).slice(0,150);
+    listWrap.innerHTML='';
+    if(!filtered.length){ listWrap.innerHTML='<div style="color:var(--gray);font-size:12px;padding:10px;text-align:center;">No matches.</div>'; return; }
+    filtered.forEach(m=>{
+      const card=lbeMoveCard(m.name);
+      card.style.cursor='pointer';
+      card.addEventListener('click',()=>{ onPick(m.name); overlay.remove(); });
+      listWrap.appendChild(card);
+    });
+  }
+  searchInp.addEventListener('input', buildList);
+  learnableToggle.addEventListener('change', buildList);
+
+  box.append(hdr, searchWrap, listWrap);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  buildList();
+  searchInp.focus();
+}
+
 function lbeAbilitiesList(){ return typeof ABILITIES_DB!=='undefined' ? Object.values(ABILITIES_DB) : []; }
 
 // Species-aware pre-selection: mirrors the Pokedex Browser's own resolution logic
@@ -5008,26 +5108,20 @@ function lbeRenderPillRow(id, options, current, onSelect){
 
 function lbeSelectSlotSpecies(anchor){
   lbeOpenAutocomplete({
-    anchor, items:(typeof POKEMON!=='undefined'?POKEMON:[]), getLabel:p=>p.name, getIcon:p=>lbePkmSpriteUrl(p),
+    anchor, items:(typeof POKEMON!=='undefined'?POKEMON:[]), getLabel:p=>p.name, getIconHtml:p=>lbePkmImgHtml(p),
     onPick:(p)=>{
       lbeCurrentSlotObj().species=p.name;
       lbeSavePools(); lbeRenderDetail();
     }
   });
 }
-function lbeSelectRewardItem(anchor){
-  lbeOpenAutocomplete({
-    anchor, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name, getIcon:it=>lbeItemSpriteUrl(it.name),
-    onPick:(it)=>{ lbeCurrentSlotObj().rewardItem=it.name; lbeSavePools(); lbeRenderEditorPanel(); }
-  });
-}
 
 let lbeOpenDD=null;
-function lbeOpenAutocomplete({anchor, items, getLabel, getIcon, onPick}){
+function lbeOpenAutocomplete({anchor, items, getLabel, getIconHtml, getSubtitle, onPick}){
   lbeCloseAutocomplete();
   const input=document.createElement('input');
   input.type='text'; input.placeholder='Search…';
-  input.style.cssText='width:220px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:#fff;padding:6px 9px;font-size:12px;position:fixed;z-index:6001;';
+  input.style.cssText='width:240px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:#fff;padding:6px 9px;font-size:12px;position:fixed;z-index:6001;';
   const dd=document.createElement('div'); dd.className='lbe-dd';
   document.body.appendChild(input);
   document.body.appendChild(dd);
@@ -5040,9 +5134,11 @@ function lbeOpenAutocomplete({anchor, items, getLabel, getIcon, onPick}){
     if(!filtered.length){ dd.innerHTML='<div class="lbe-dd-empty">No matches / data not loaded yet</div>'; return; }
     filtered.forEach(it=>{
       const row=document.createElement('div'); row.className='lbe-dd-item';
-      const icon=getIcon(it);
-      const img = icon ? `<img src="${icon}" onerror="this.style.visibility='hidden'"/>` : '';
-      row.innerHTML=`${img}<span>${lbeEscapeHtml(getLabel(it))}</span>`;
+      const iconHtml = getIconHtml ? getIconHtml(it) : '';
+      const sub = getSubtitle ? getSubtitle(it) : '';
+      row.innerHTML = sub
+        ? `${iconHtml}<div class="lbe-dd-text"><span class="lbe-dd-name">${lbeEscapeHtml(getLabel(it))}</span><span class="lbe-dd-sub">${lbeEscapeHtml(sub)}</span></div>`
+        : `${iconHtml}<span>${lbeEscapeHtml(getLabel(it))}</span>`;
       // mousedown+preventDefault (not click): stops the browser from blurring the
       // search input before the pick registers — same pattern the rest of the site
       // uses for its own dropdowns. A plain 'click' handler here is what caused
@@ -5066,12 +5162,13 @@ function lbeRenderEditorPanel(){
   const isMain=lbeCurrentSlot==='main';
   const body=document.getElementById('lbe-editor-panel-body');
   const mon=slot.species?lbeFindMon(slot.species):null;
-  const monTypes=mon&&mon._full?[mon._full.type1,mon._full.type2]:[];
 
-  const natOpts = lbeNaturesList().map(n=>`<option value="${n.name}" ${slot.nature===n.name?'selected':''}>${n.name}${n.up?` (+${n.up}/-${n.dn})`:''}</option>`).join('');
   const weatherOpts = LBE_WEATHERS.map(w=>`<option value="${w}" ${slot.weather===w?'selected':''}>${w}</option>`).join('');
   const statusOpts = LBE_STATUSES.map(s=>`<option value="${s}" ${slot.startingStatus===s?'selected':''}>${s}</option>`).join('');
   const totemOpts = LBE_TOTEM_STATS.map(t=>`<option value="${t}" ${slot.totemBoost===t?'selected':''}>${t}</option>`).join('');
+  const abilityInfo = slot.ability ? (typeof ABILITIES_DB!=='undefined' ? ABILITIES_DB[slot.ability.toLowerCase()] : null) : null;
+  const itemInfo = slot.heldItem ? (typeof ITEMS!=='undefined' ? ITEMS.find(i=>i.name===slot.heldItem) : null) : null;
+  const rewardInfo = slot.rewardItem ? (typeof ITEMS!=='undefined' ? ITEMS.find(i=>i.name===slot.rewardItem) : null) : null;
 
   body.innerHTML=`
     <div class="lbe-slot-header">
@@ -5084,21 +5181,43 @@ function lbeRenderEditorPanel(){
 
     <div class="lbe-field-grid">
       <div class="lbe-field"><label>Level</label><input type="number" id="lbe-f-level" min="1" max="100" value="${slot.level}"/></div>
-      <div class="lbe-field"><label>Ability</label><div class="lbe-ac-wrap"><input type="text" id="lbe-f-ability" placeholder="Search ability…" value="${slot.ability||''}"/></div></div>
-      <div class="lbe-field"><label>Nature</label><select id="lbe-f-nature"><option value="">— random —</option>${natOpts}</select></div>
-      <div class="lbe-field"><label>Held Item</label><div class="lbe-ac-wrap"><input type="text" id="lbe-f-item" placeholder="Search item…" value="${slot.heldItem||''}"/></div></div>
-      <div class="lbe-field"><label>Dynamax Level (0-10)</label><input type="number" id="lbe-f-dmax" min="0" max="10" value="${slot.dynamaxLevel}"/></div>
+      <div class="lbe-field"><label>Nature</label><select id="lbe-f-nature"><option value="">— random —</option>${lbeNaturesList().map(n=>`<option value="${n.name}" ${slot.nature===n.name?'selected':''}>${n.name}${n.up?` (+${n.up}/-${n.dn})`:''}</option>`).join('')}</select></div>
+
+      <div class="lbe-field" style="grid-column:1/-1;">
+        <label>Ability</label>
+        <div class="lbe-picker-card" id="lbe-f-ability-card">
+          ${slot.ability ? `
+            <div class="lbe-picker-card-text" style="flex:1;">
+              <div class="lbe-picker-card-name">${lbeEscapeHtml(slot.ability)}</div>
+              <div class="lbe-picker-card-desc">${lbeEscapeHtml(abilityInfo?.desc||abilityInfo?.description||'No description available.')}</div>
+            </div>
+          ` : `<div class="lbe-picker-card-empty">Click to choose an ability…</div>`}
+        </div>
+      </div>
+
+      <div class="lbe-field" style="grid-column:1/-1;">
+        <label>Held Item</label>
+        <div class="lbe-picker-card" id="lbe-f-item-card">
+          ${slot.heldItem ? `
+            <div class="lbe-picker-card-icon">${lbeItemImgHtml(slot.heldItem)}</div>
+            <div class="lbe-picker-card-text">
+              <div class="lbe-picker-card-name">${lbeEscapeHtml(slot.heldItem)}</div>
+              <div class="lbe-picker-card-desc">${lbeEscapeHtml(itemInfo?.desc||'No description available.')}</div>
+            </div>
+            <button type="button" class="lbe-picker-info-btn" id="lbe-f-item-info">ℹ</button>
+          ` : `<div class="lbe-picker-card-empty">Click to choose an item…</div>`}
+        </div>
+      </div>
+
+      <div class="lbe-field"><label>Dynamax Level: <span id="lbe-dmax-val">${slot.dynamaxLevel}</span>/10</label><input type="range" id="lbe-f-dmax" min="0" max="10" step="1" value="${slot.dynamaxLevel}"/></div>
       <div class="lbe-field"><label>Gigantamax Factor</label><div class="lbe-checkbox-row"><input type="checkbox" id="lbe-f-gmax" ${slot.gigantamaxFactor?'checked':''}/> <span>enabled</span></div></div>
     </div>
     ${isMain ? `<div class="lbe-checkbox-row"><input type="checkbox" id="lbe-f-notcatch" ${slot.notCatchable?'checked':''}/> <span>Not catchable (support Pokemon in this pool can still be caught)</span></div>` : ''}
 
     <div class="lbe-section-lbl">MOVES</div>
-    ${[0,1,2,3].map(i=>`
-      <div class="lbe-move-slot">
-        <div class="lbe-ac-wrap"><input type="text" class="lbe-f-move" data-i="${i}" placeholder="Move ${i+1}…" value="${slot.moves[i]||''}"/></div>
-        <div class="lbe-move-preview" data-i="${i}"></div>
-      </div>
-    `).join('')}
+    <div class="lbe-moves-grid">
+      ${[0,1,2,3].map(i=>`<div class="lbe-move-slot-btn" data-i="${i}"></div>`).join('')}
+    </div>
 
     <div class="lbe-section-lbl">IVs <span style="color:var(--gray);font-size:9px;text-transform:none;letter-spacing:0;cursor:pointer;text-decoration:underline;" id="lbe-iv-max-all">(set all to 31)</span></div>
     <div class="lbe-iv-grid">
@@ -5111,12 +5230,21 @@ function lbeRenderEditorPanel(){
     ` : `
       <div class="lbe-section-lbl">BATTLE SETUP (this support Pokemon only)</div>
       <div class="lbe-status-grid">
-        <div><div class="lbe-field-grid" style="grid-template-columns:1fr;"><div class="lbe-field"><label>Weather</label><select id="lbe-f-weather">${weatherOpts}</select></div></div></div>
-        <div><div class="lbe-field-grid" style="grid-template-columns:1fr;"><div class="lbe-field"><label>Starting Status</label><select id="lbe-f-status">${statusOpts}</select></div></div></div>
-        <div><div class="lbe-field-grid" style="grid-template-columns:1fr;"><div class="lbe-field"><label>Totem Boost</label><select id="lbe-f-totem">${totemOpts}</select></div></div></div>
+        <div class="lbe-field"><label>Weather</label><select id="lbe-f-weather">${weatherOpts}</select></div>
+        <div class="lbe-field"><label>Starting Status</label><select id="lbe-f-status">${statusOpts}</select></div>
+        <div class="lbe-field"><label>Totem Boost</label><select id="lbe-f-totem">${totemOpts}</select></div>
       </div>
       <div class="lbe-section-lbl">REWARD ITEM <span style="color:var(--gray);font-size:9px;text-transform:none;letter-spacing:0;">(given if this Pokemon is caught/defeated)</span></div>
-      <div class="lbe-ac-wrap"><input type="text" id="lbe-f-reward" placeholder="Search item…" value="${slot.rewardItem||''}"/></div>
+      <div class="lbe-picker-card" id="lbe-f-reward-card">
+        ${slot.rewardItem ? `
+          <div class="lbe-picker-card-icon">${lbeItemImgHtml(slot.rewardItem)}</div>
+          <div class="lbe-picker-card-text">
+            <div class="lbe-picker-card-name">${lbeEscapeHtml(slot.rewardItem)}</div>
+            <div class="lbe-picker-card-desc">${lbeEscapeHtml(rewardInfo?.desc||'No description available.')}</div>
+          </div>
+          <button type="button" class="lbe-picker-info-btn" id="lbe-f-reward-info">ℹ</button>
+        ` : `<div class="lbe-picker-card-empty">Click to choose a reward item (optional)…</div>`}
+      </div>
     `}
   `;
 
@@ -5124,7 +5252,8 @@ function lbeRenderEditorPanel(){
   document.getElementById('lbe-slot-change').addEventListener('click',()=>lbeSelectSlotSpecies(document.getElementById('lbe-slot-art')));
 
   document.getElementById('lbe-f-level').addEventListener('input',e=>{ slot.level=+e.target.value||1; lbeSavePools(); lbeRenderDetail(); });
-  document.getElementById('lbe-f-dmax').addEventListener('input',e=>{ slot.dynamaxLevel=Math.max(0,Math.min(10,+e.target.value||0)); lbeSavePools(); });
+  const dmaxSlider=document.getElementById('lbe-f-dmax');
+  dmaxSlider.addEventListener('input',e=>{ slot.dynamaxLevel=+e.target.value; document.getElementById('lbe-dmax-val').textContent=slot.dynamaxLevel; lbeSavePools(); });
   document.getElementById('lbe-f-gmax').addEventListener('change',e=>{ slot.gigantamaxFactor=e.target.checked; lbeSavePools(); });
   document.getElementById('lbe-f-nature').addEventListener('change',e=>{ slot.nature=e.target.value||null; lbeSavePools(); });
   document.getElementById('lbe-f-totem').addEventListener('change',e=>{ slot.totemBoost=e.target.value; lbeSavePools(); });
@@ -5134,32 +5263,60 @@ function lbeRenderEditorPanel(){
   if(weatherSel) weatherSel.addEventListener('change',e=>{ slot.weather=e.target.value; lbeSavePools(); });
   const statusSel=document.getElementById('lbe-f-status');
   if(statusSel) statusSel.addEventListener('change',e=>{ slot.startingStatus=e.target.value; lbeSavePools(); });
-  const rewardInput=document.getElementById('lbe-f-reward');
-  if(rewardInput) rewardInput.addEventListener('focus',()=>lbeOpenAutocomplete({
-    anchor:rewardInput, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name, getIcon:it=>lbeItemSpriteUrl(it.name),
-    onPick:(it)=>{ slot.rewardItem=it.name; rewardInput.value=it.name; lbeSavePools(); }
+
+  // Ability picker card
+  const abilityCard=document.getElementById('lbe-f-ability-card');
+  abilityCard.addEventListener('click',()=>lbeOpenAutocomplete({
+    anchor:abilityCard, items:lbeAbilitiesForSpecies(mon), getLabel:a=>a.name,
+    getSubtitle:a=>a.desc||a.description||'', getIconHtml:()=>'',
+    onPick:(a)=>{ slot.ability=a.name; lbeSavePools(); lbeRenderEditorPanel(); }
   }));
 
-  const abilityInput=document.getElementById('lbe-f-ability');
-  abilityInput.addEventListener('focus',()=>lbeOpenAutocomplete({
-    anchor:abilityInput, items:lbeAbilitiesForSpecies(mon), getLabel:a=>a.name, getIcon:()=>'',
-    onPick:(a)=>{ slot.ability=a.name; abilityInput.value=a.name; lbeSavePools(); }
-  }));
-  const itemInput=document.getElementById('lbe-f-item');
-  itemInput.addEventListener('focus',()=>lbeOpenAutocomplete({
-    anchor:itemInput, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name, getIcon:it=>lbeItemSpriteUrl(it.name),
-    onPick:(it)=>{ slot.heldItem=it.name; itemInput.value=it.name; lbeSavePools(); }
-  }));
-  document.querySelectorAll('.lbe-f-move').forEach(inp=>{
-    inp.addEventListener('focus',()=>lbeOpenAutocomplete({
-      anchor:inp, items:lbeMovesForSpecies(mon), getLabel:m=>m.name, getIcon:()=>'',
-      onPick:(m)=>{ slot.moves[+inp.dataset.i]=m.name; inp.value=m.name; lbeSavePools(); lbeRenderEditorPanel(); }
-    }));
+  // Held item picker card
+  const itemCard=document.getElementById('lbe-f-item-card');
+  itemCard.addEventListener('click',(e)=>{
+    if(e.target.closest('.lbe-picker-info-btn')) return;
+    lbeOpenAutocomplete({
+      anchor:itemCard, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name,
+      getSubtitle:it=>it.desc||'', getIconHtml:it=>lbeItemImgHtml(it.name),
+      onPick:(it)=>{ slot.heldItem=it.name; lbeSavePools(); lbeRenderEditorPanel(); }
+    });
   });
-  document.querySelectorAll('.lbe-move-preview').forEach(el=>{
-    const mv=slot.moves[+el.dataset.i];
-    if(mv) el.appendChild(lbeMoveCard(mv));
+  const itemInfoBtn=document.getElementById('lbe-f-item-info');
+  if(itemInfoBtn) itemInfoBtn.addEventListener('click',(e)=>{ e.stopPropagation(); if(itemInfo) lbeOpenItemInfoPopup(itemInfo); });
+
+  // Reward item picker card (support only)
+  const rewardCard=document.getElementById('lbe-f-reward-card');
+  if(rewardCard) rewardCard.addEventListener('click',(e)=>{
+    if(e.target.closest('.lbe-picker-info-btn')) return;
+    lbeOpenAutocomplete({
+      anchor:rewardCard, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name,
+      getSubtitle:it=>it.desc||'', getIconHtml:it=>lbeItemImgHtml(it.name),
+      onPick:(it)=>{ slot.rewardItem=it.name; lbeSavePools(); lbeRenderEditorPanel(); }
+    });
   });
+  const rewardInfoBtn=document.getElementById('lbe-f-reward-info');
+  if(rewardInfoBtn) rewardInfoBtn.addEventListener('click',(e)=>{ e.stopPropagation(); if(rewardInfo) lbeOpenItemInfoPopup(rewardInfo); });
+
+  // Move slots — click opens the full move-picker popup (not a scrollable search list)
+  document.querySelectorAll('.lbe-move-slot-btn').forEach(el=>{
+    const i=+el.dataset.i;
+    const mv=slot.moves[i];
+    el.innerHTML='';
+    if(mv){
+      el.appendChild(lbeMoveCard(mv));
+    } else {
+      const empty=document.createElement('div');
+      empty.className='lbe-move-empty';
+      empty.textContent=`+ Choose Move ${i+1}…`;
+      el.appendChild(empty);
+    }
+    el.addEventListener('click',(e)=>{
+      if(e.target.closest('.pdx-move-card-hdr') && mv){ return; } // let the ℹ inside the card handle its own click
+      lbeOpenMovePicker(mon, i, (chosenName)=>{ slot.moves[i]=chosenName; lbeSavePools(); lbeRenderEditorPanel(); });
+    });
+  });
+
   document.querySelectorAll('.lbe-f-iv').forEach(inp=>{
     inp.addEventListener('input',()=>{ slot.ivs[inp.dataset.k]=Math.max(0,Math.min(31,+inp.value||0)); lbeSavePools(); });
   });
@@ -5212,11 +5369,13 @@ function lbeInit(){
   lbeUpdateLoadStatus();
   document.getElementById('lbe-toggle').addEventListener('click',()=>{
     document.getElementById('lbe-root').classList.add('open');
+    document.getElementById('lbe-toggle').classList.add('lbe-hidden');
     lbeRenderList();
   });
   document.getElementById('lbe-btn-closeapp').addEventListener('click',()=>{
     lbeSavePools();
     document.getElementById('lbe-root').classList.remove('open');
+    document.getElementById('lbe-toggle').classList.remove('lbe-hidden');
   });
   document.getElementById('lbe-btn-add').addEventListener('click',()=>{ lbePools.push(lbeNewPool()); lbeSavePools(); lbeOpenDetail(lbePools.length-1); });
   document.getElementById('lbe-btn-save-list').addEventListener('click',lbeSavePools);
