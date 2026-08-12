@@ -697,6 +697,8 @@
 .lbe-slot-header .lbe-art:hover{border-color:var(--pl);}
 .lbe-slot-header .lbe-nm{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--yellow);}
 .lbe-slot-header .lbe-sub{font-size:11px;color:var(--gray);margin-top:4px;cursor:pointer;text-decoration:underline;}
+.lbe-change-btn{display:block;margin:0 auto;background:var(--dark);border:1px solid var(--border);border-radius:14px;color:var(--pl);font-size:10.5px;padding:5px 14px;cursor:pointer;}
+.lbe-change-btn:hover{border-color:var(--pl);background:rgba(206,147,216,.08);}
 .lbe-status-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
 .lbe-status-grid .lbe-section-lbl{margin-top:0;}
 .lbe-move-slot{margin-bottom:10px;}
@@ -4897,6 +4899,111 @@ function lbeOpenItemInfoPopup(item){
 // (Type/category/sort filters and the learnable/restricted mode tabs from the
 // original are left out here to keep this scoped — search + species-aware
 // learnable filtering covers the common case.)
+// Full-screen popup for the two lists too big for the small floating dropdown
+// (1571 Pokemon, ~800 items) — same modal shell as the move picker, so it's
+// consistent. Grid of sprite tiles for Pokemon (visual browsing), list of
+// icon+name+description cards for items (readability matters more there).
+function lbeOpenSpeciesPicker(onPick){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:6300;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+
+  const box=document.createElement('div');
+  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:760px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
+
+  const hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;';
+  const title=document.createElement('span'); title.style.cssText='font-size:13px;font-weight:700;flex:1;'; title.textContent='Choose Pokemon';
+  const countEl=document.createElement('span'); countEl.style.cssText='font-size:10px;color:var(--gray);';
+  const closeBtn=document.createElement('button'); closeBtn.type='button';
+  closeBtn.style.cssText='background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#556;font-size:14px;padding:2px 9px;cursor:pointer;';
+  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>overlay.remove());
+  hdr.append(title, countEl, closeBtn);
+
+  const searchWrap=document.createElement('div');
+  searchWrap.style.cssText='padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
+  const searchInp=document.createElement('input'); searchInp.type='text'; searchInp.placeholder='Search all 1571 Pokemon…';
+  searchInp.style.cssText='width:100%;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#e2e8f0;font-size:12px;padding:7px 10px;outline:none;box-sizing:border-box;';
+  searchWrap.appendChild(searchInp);
+
+  const gridWrap=document.createElement('div');
+  gridWrap.style.cssText='flex:1;overflow-y:auto;padding:12px 14px;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;';
+
+  function buildGrid(){
+    const q=searchInp.value.toLowerCase();
+    const all=(typeof POKEMON!=='undefined'?POKEMON:[]);
+    const filtered = q ? all.filter(p=>p.name.toLowerCase().includes(q)) : all;
+    countEl.textContent=filtered.length+' / '+all.length;
+    gridWrap.innerHTML='';
+    filtered.forEach(p=>{
+      const tile=document.createElement('div');
+      tile.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center;';
+      tile.innerHTML=`<div style="width:44px;height:44px;">${lbePkmImgHtml(p)}</div><span style="font-size:9.5px;color:#e2e8f0;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">${lbeEscapeHtml(p.name)}</span>`;
+      tile.addEventListener('mouseenter',()=>tile.style.borderColor='var(--pl)');
+      tile.addEventListener('mouseleave',()=>tile.style.borderColor='rgba(255,255,255,.06)');
+      tile.addEventListener('click',()=>{ onPick(p); overlay.remove(); });
+      gridWrap.appendChild(tile);
+    });
+  }
+  searchInp.addEventListener('input', buildGrid);
+
+  box.append(hdr, searchWrap, gridWrap);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  buildGrid();
+  searchInp.focus();
+}
+
+function lbeOpenItemPicker(onPick){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:6300;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+
+  const box=document.createElement('div');
+  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:560px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
+
+  const hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;';
+  const title=document.createElement('span'); title.style.cssText='font-size:13px;font-weight:700;flex:1;'; title.textContent='Choose Item';
+  const countEl=document.createElement('span'); countEl.style.cssText='font-size:10px;color:var(--gray);';
+  const closeBtn=document.createElement('button'); closeBtn.type='button';
+  closeBtn.style.cssText='background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#556;font-size:14px;padding:2px 9px;cursor:pointer;';
+  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>overlay.remove());
+  hdr.append(title, countEl, closeBtn);
+
+  const searchWrap=document.createElement('div');
+  searchWrap.style.cssText='padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
+  const searchInp=document.createElement('input'); searchInp.type='text'; searchInp.placeholder='Search all items…';
+  searchInp.style.cssText='width:100%;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#e2e8f0;font-size:12px;padding:7px 10px;outline:none;box-sizing:border-box;';
+  searchWrap.appendChild(searchInp);
+
+  const listWrap=document.createElement('div');
+  listWrap.style.cssText='flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px;min-height:0;';
+
+  function buildList(){
+    const q=searchInp.value.toLowerCase();
+    const all=(typeof ITEMS!=='undefined'?ITEMS:[]);
+    const filtered = q ? all.filter(it=>it.name.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q)) : all;
+    countEl.textContent=filtered.length+' / '+all.length;
+    listWrap.innerHTML='';
+    filtered.forEach(it=>{
+      const row=document.createElement('div');
+      row.className='lbe-mini-pcard';
+      row.style.cursor='pointer';
+      row.innerHTML=`${lbeItemImgHtml(it.name)}<div><div class="t">${lbeEscapeHtml(it.name)}</div><div class="d">${lbeEscapeHtml(it.desc||'')}</div></div>`;
+      row.addEventListener('click',()=>{ onPick(it); overlay.remove(); });
+      listWrap.appendChild(row);
+    });
+  }
+  searchInp.addEventListener('input', buildList);
+
+  box.append(hdr, searchWrap, listWrap);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  buildList();
+  searchInp.focus();
+}
+
 function lbeOpenMovePicker(mon, slotIndex, onPick){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:6200;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
@@ -5185,16 +5292,6 @@ function lbeRenderDetail(){
   lbeRenderEditorPanel();
 }
 
-function lbeSelectSlotSpecies(anchor){
-  lbeOpenAutocomplete({
-    anchor, items:(typeof POKEMON!=='undefined'?POKEMON:[]), getLabel:p=>p.name, getIconHtml:p=>lbePkmImgHtml(p),
-    onPick:(p)=>{
-      lbeCurrentSlotObj().species=p.name;
-      lbeSavePools(); lbeRenderDetail();
-    }
-  });
-}
-
 let lbeOpenDD=null;
 function lbeOpenAutocomplete({anchor, items, getLabel, getIconHtml, getSubtitle, onPick}){
   lbeCloseAutocomplete();
@@ -5283,7 +5380,7 @@ function lbeRenderSummaryCol(){
   col.innerHTML=`
     <div class="lbe-art" id="lbe-slot-art" style="width:88px;height:88px;border-radius:50%;margin:0 auto;border:3px solid var(--yellow);">${mon?lbePkmImgHtml(mon):'?'}</div>
     <div class="lbe-nm" id="lbe-slot-name" style="text-align:center;">${lbeEscapeHtml(slot.species||(isMain?'Choose main Pokemon':'Choose support Pokemon'))}</div>
-    <div class="lbe-sub" id="lbe-slot-change" style="text-align:center;">${slot.species?'change Pokemon':'click to choose'}</div>
+    <button type="button" class="lbe-change-btn" id="lbe-slot-change">${slot.species?'Change Pokemon':'Choose Pokemon'}</button>
 
     <div class="lbe-field"><label>Level</label><input type="number" id="lbe-f-level" min="1" max="100" value="${slot.level}"/></div>
 
@@ -5343,20 +5440,18 @@ function lbeRenderSummaryCol(){
 
     <div class="lbe-dcard-mini">
       <div class="lbe-section-lbl">TERA TYPE</div>
-      <div class="lbe-tera-row">
-        <div class="lbe-mini-pcard${slot.teraType.useDefault?' lbe-disabled':''}" id="lbe-f-tera-card" style="flex:1;">
-          ${slot.teraType.type ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${LBE_TYPE_LIST.find(([n])=>n===slot.teraType.type)?.[1]}.png" onerror="this.style.display='none'"/><div class="t">${slot.teraType.type}</div>`
-          : `<div style="color:var(--gray);font-size:11px;">Click to choose a type…</div>`}
-        </div>
-        <label class="lbe-tera-default"><input type="checkbox" id="lbe-f-tera-default" ${slot.teraType.useDefault?'checked':''}/> Use default type</label>
+      <div class="lbe-mini-pcard" id="lbe-f-tera-card" style="justify-content:center;">
+        ${slot.teraType.type ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${LBE_TYPE_LIST.find(([n])=>n===slot.teraType.type)?.[1]}.png" style="width:32px;height:32px;" onerror="this.style.display='none'"/>`
+        : `<div style="color:var(--gray);font-size:11px;">Click to choose a type…</div>`}
       </div>
+      <button type="button" class="lbe-change-btn" id="lbe-f-tera-default" style="margin-top:8px;">Use default type</button>
     </div>
 
     ${isMain ? `<div class="lbe-checkbox-row" id="lbe-f-notcatch-row"><input type="checkbox" id="lbe-f-notcatch" ${slot.notCatchable?'checked':''}/> <span>Not catchable (support Pokemon in this pool can still be caught)</span></div>` : ''}
   `;
 
-  document.getElementById('lbe-slot-art').addEventListener('click',(e)=>lbeSelectSlotSpecies(e.currentTarget));
-  document.getElementById('lbe-slot-change').addEventListener('click',()=>lbeSelectSlotSpecies(document.getElementById('lbe-slot-art')));
+  document.getElementById('lbe-slot-art').addEventListener('click',()=>lbeOpenSpeciesPicker((p)=>{ slot.species=p.name; lbeSavePools(); lbeRenderDetail(); }));
+  document.getElementById('lbe-slot-change').addEventListener('click',()=>lbeOpenSpeciesPicker((p)=>{ slot.species=p.name; lbeSavePools(); lbeRenderDetail(); }));
   document.getElementById('lbe-f-level').addEventListener('input',e=>{ slot.level=+e.target.value||1; lbeSavePools(); lbeRenderDetail(); });
   document.getElementById('lbe-f-nature').addEventListener('change',e=>{ slot.nature=e.target.value||null; lbeSavePools(); lbeRenderSummaryCol(); });
 
@@ -5373,16 +5468,21 @@ function lbeRenderSummaryCol(){
   document.getElementById('lbe-f-gmax').addEventListener('change',e=>{ slot.gigantamaxFactor=e.target.checked; lbeSavePools(); });
 
   const teraCard=document.getElementById('lbe-f-tera-card');
-  const teraDefault=document.getElementById('lbe-f-tera-default');
+  const teraDefaultBtn=document.getElementById('lbe-f-tera-default');
   teraCard.addEventListener('click',()=>{
-    if(slot.teraType.useDefault) return;
     lbeOpenAutocomplete({
       anchor:teraCard, items:LBE_TYPE_LIST, getLabel:([n])=>n,
       getIconHtml:([n,id])=>`<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${id}.png" onerror="this.style.display='none'"/>`,
-      onPick:([n])=>{ slot.teraType.type=n; lbeSavePools(); lbeRenderSummaryCol(); }
+      onPick:([n])=>{ slot.teraType.type=n; slot.teraType.useDefault=false; lbeSavePools(); lbeRenderSummaryCol(); }
     });
   });
-  teraDefault.addEventListener('change',e=>{ slot.teraType.useDefault=e.target.checked; lbeSavePools(); lbeRenderSummaryCol(); });
+  teraDefaultBtn.addEventListener('click',()=>{
+    const types=[mon?.t1, mon?.t2].filter(Boolean);
+    if(!types.length) return;
+    slot.teraType.type = types[Math.floor(Math.random()*types.length)];
+    slot.teraType.useDefault = true;
+    lbeSavePools(); lbeRenderSummaryCol();
+  });
 
   const notcatch=document.getElementById('lbe-f-notcatch');
   if(notcatch) notcatch.addEventListener('change',e=>{ slot.notCatchable=e.target.checked; lbeSavePools(); lbeRenderList(); });
@@ -5397,11 +5497,7 @@ function lbeRenderSummaryCol(){
   const itemCard=document.getElementById('lbe-f-item-card');
   itemCard.addEventListener('click',(e)=>{
     if(e.target.closest('.lbe-picker-info-btn')) return;
-    lbeOpenAutocomplete({
-      anchor:itemCard, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name,
-      getSubtitle:it=>it.desc||'', getIconHtml:it=>lbeItemImgHtml(it.name),
-      onPick:(it)=>{ slot.heldItem=it.name; lbeSavePools(); lbeRenderSummaryCol(); }
-    });
+    lbeOpenItemPicker((it)=>{ slot.heldItem=it.name; lbeSavePools(); lbeRenderSummaryCol(); });
   });
   const itemInfoBtn=document.getElementById('lbe-f-item-info');
   if(itemInfoBtn) itemInfoBtn.addEventListener('click',(e)=>{ e.stopPropagation(); if(itemInfo) lbeOpenItemInfoPopup(itemInfo); });
@@ -5513,11 +5609,7 @@ function lbeRenderDetailsCol(){
   const rewardCard=document.getElementById('lbe-f-reward-card');
   if(rewardCard) rewardCard.addEventListener('click',(e)=>{
     if(e.target.closest('.lbe-picker-info-btn')) return;
-    lbeOpenAutocomplete({
-      anchor:rewardCard, items:(typeof ITEMS!=='undefined'?ITEMS:[]), getLabel:it=>it.name,
-      getSubtitle:it=>it.desc||'', getIconHtml:it=>lbeItemImgHtml(it.name),
-      onPick:(it)=>{ slot.rewardItem=it.name; lbeSavePools(); lbeRenderDetailsCol(); }
-    });
+    lbeOpenItemPicker((it)=>{ slot.rewardItem=it.name; lbeSavePools(); lbeRenderDetailsCol(); });
   });
   const rewardInfoBtn=document.getElementById('lbe-f-reward-info');
   if(rewardInfoBtn) rewardInfoBtn.addEventListener('click',(e)=>{ e.stopPropagation(); if(rewardInfo) lbeOpenItemInfoPopup(rewardInfo); });
@@ -5555,7 +5647,7 @@ function lbeSlotToExport(slot, extra){
     nature: slot.nature, heldItem: slot.heldItem,
     ivs: {hp:slot.ivs.hp, atk:slot.ivs.atk, def:slot.ivs.def, spa:slot.ivs.spa, spd:slot.ivs.spd, spe:slot.ivs.spe},
     dynamaxLevel: slot.dynamaxLevel, gigantamaxFactor: slot.gigantamaxFactor,
-    teraType: slot.teraType.useDefault ? null : slot.teraType.type,
+    teraType: slot.teraType.type,
     totem: {atk:slot.totem.atk, def:slot.totem.def, spe:slot.totem.spe, spa:slot.totem.spa, spd:slot.totem.spd},
     ...extra
   };
