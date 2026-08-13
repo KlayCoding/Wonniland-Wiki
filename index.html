@@ -4703,8 +4703,16 @@ window.lbeItemImgErr = function(img, slug){
   else if(step==='2'){ img.src = `${IF}${hyphenSlug}.png`; }
   else { img.src = `${ITEM_BASE}question_mark.png`; img.onerror=null; }
 };
+// Memoized — this flood-fill + canvas re-encode is genuinely expensive (reads every
+// pixel, rebuilds the image via toDataURL()), and it was re-running from scratch on
+// every single re-render for the same item (a fresh <img> element still fires 'load'
+// even when the browser serves the request from its own network cache). Caching the
+// finished result per item slug turns "N renders = N flood-fills" into "1 flood-fill,
+// ever, per item" — the single biggest win found in this pass.
+const lbeItemBgCache={};
 window.lbeItemImgLoad = function(img, slug){
-  lbeRemoveItemBg(img, slug);
+  if(lbeItemBgCache[slug]){ img.src = lbeItemBgCache[slug]; return; }
+  lbeRemoveItemBg(img, slug, (dataUrl)=>{ if(dataUrl) lbeItemBgCache[slug]=dataUrl; });
   const it=(typeof ITEMS!=='undefined'?ITEMS:[]).find(i=>i.slug===slug);
   if(it) lbeApplyItemTint(img, it);
 };
@@ -4714,7 +4722,7 @@ window.lbeItemImgLoad = function(img, slug){
 // build, so background removal/tinting was silently a no-op. ITEM_BG_COLORS and
 // ITEMS themselves are already globals on this page (populated from items.json),
 // no need to redeclare either.
-function lbeRemoveImgBg(img, exactColor, tolerance){
+function lbeRemoveImgBg(img, exactColor, tolerance, onDone){
   try {
     if(!img.naturalWidth||!img.naturalHeight) return;
     const w=img.naturalWidth, h=img.naturalHeight;
@@ -4748,15 +4756,17 @@ function lbeRemoveImgBg(img, exactColor, tolerance){
       stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
     }
     ctx.putImageData(d,0,0);
-    img.src=c2.toDataURL();
+    const dataUrl=c2.toDataURL();
+    img.src=dataUrl;
+    if(onDone) onDone(dataUrl);
   } catch(e){}
 }
-function lbeRemoveItemBg(img, itemSlug){
+function lbeRemoveItemBg(img, itemSlug, onDone){
   const known = (typeof ITEM_BG_COLORS!=='undefined' ? ITEM_BG_COLORS[itemSlug] : null)
              || (typeof ITEMS!=='undefined' ? ITEMS.find(it=>it.slug===itemSlug)?.bg_color : null)
              || null;
-  if(img.complete && img.naturalWidth) lbeRemoveImgBg(img, known);
-  else img.addEventListener('load', ()=>lbeRemoveImgBg(img, known), {once:true});
+  if(img.complete && img.naturalWidth) lbeRemoveImgBg(img, known, undefined, onDone);
+  else img.addEventListener('load', ()=>lbeRemoveImgBg(img, known, undefined, onDone), {once:true});
 }
 function lbeApplyItemTint(el, item){
   if(!item || !item.tint_filter) return;
@@ -4794,11 +4804,26 @@ const LBE_MOVE_TYPE_IDS={Normal:1,Fighting:2,Flying:3,Poison:4,Ground:5,Rock:6,B
 // Mirrors refreshSlotBtnShared() from the Creation Mode move-slot picker: colored
 // left bar, ℹ info button (opens the same style of popup), type icon, two-line
 // description, and a BP/PP/Category stats column on the right.
-function lbeMoveCard(moveName){
+let lbeMovesIndexCache=null;
+function lbeMovesIndex(){
   const allMoves = typeof MOVES!=='undefined' ? MOVES : [];
-  const mnl = moveName.toLowerCase().replace(/[-\s]/g,'');
-  const mv = allMoves.find(m=>m.name.toLowerCase()===moveName.toLowerCase())
-          || allMoves.find(m=>m.name.toLowerCase().replace(/[-\s]/g,'')===mnl);
+  if(lbeMovesIndexCache && lbeMovesIndexCache.size2===allMoves.length) return lbeMovesIndexCache;
+  const byExact=new Map(), byNorm=new Map();
+  allMoves.forEach(m=>{
+    const lo=m.name.toLowerCase();
+    byExact.set(lo, m);
+    byNorm.set(lo.replace(/[-\s]/g,''), m);
+  });
+  lbeMovesIndexCache={byExact, byNorm, size2:allMoves.length};
+  return lbeMovesIndexCache;
+}
+function lbeFindMove(moveName){
+  const idx=lbeMovesIndex();
+  const lo=moveName.toLowerCase();
+  return idx.byExact.get(lo) || idx.byNorm.get(lo.replace(/[-\s]/g,''));
+}
+function lbeMoveCard(moveName){
+  const mv = lbeFindMove(moveName);
   const card=document.createElement('div');
   if(!mv){
     card.style.cssText='display:flex;overflow:hidden;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);min-height:60px;align-items:center;justify-content:center;color:#556;font-size:11px;';
