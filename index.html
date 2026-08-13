@@ -4938,7 +4938,7 @@ function lbeOpenSpeciesPicker(onPick){
   overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
 
   const box=document.createElement('div');
-  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:760px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
+  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:1120px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
 
   const hdr=document.createElement('div');
   hdr.style.cssText='display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;';
@@ -4951,37 +4951,132 @@ function lbeOpenSpeciesPicker(onPick){
 
   const searchWrap=document.createElement('div');
   searchWrap.style.cssText='padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
-  const searchInp=document.createElement('input'); searchInp.type='text'; searchInp.placeholder='Search all 1571 Pokemon…';
+  const searchInp=document.createElement('input'); searchInp.type='text'; searchInp.placeholder='Search Pokémon…';
   searchInp.style.cssText='width:100%;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#e2e8f0;font-size:12px;padding:7px 10px;outline:none;box-sizing:border-box;';
   searchWrap.appendChild(searchInp);
 
-  // ── Virtualized grid ──────────────────────────────────────────────────────
-  // Instead of capping results (which made the tail of the list unreachable),
-  // only the rows actually near the viewport get real DOM nodes. Two spacer
-  // divs (grid-column:1/-1) stand in for the rows above/below the rendered
-  // window so the scrollbar still reflects the true full-list height.
+  // ── Sort / Shiny / Favorites controls (same set as the Pokédex Browser) ────
+  const controlsRow=document.createElement('div');
+  controlsRow.style.cssText='display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
+  let pickSort='id', pickShiny=false, pickFavsOnly=false;
+  const activeTypes=new Set(), activeGroups=new Set();
+  const SORTS=[['Game ID#','id'],['Dex#','dex'],['A–Z','name'],['BST↑','bst_desc'],['BST↓','bst_asc'],['Type','type']];
+  const sortBtns=SORTS.map(([lbl,key])=>{
+    const b=document.createElement('button');b.type='button';
+    b.style.cssText=`font-size:10px;padding:5px 11px;border-radius:7px;border:1px solid ${key==='id'?'var(--pl)':'var(--border)'};background:${key==='id'?'rgba(149,117,205,.12)':'rgba(255,255,255,.04)'};color:${key==='id'?'var(--pl)':'var(--gray)'};cursor:pointer;`;
+    b.textContent=lbl;
+    b.addEventListener('click',()=>{pickSort=key;sortBtns.forEach(sb=>{sb.style.borderColor=sb===b?'var(--pl)':'var(--border)';sb.style.color=sb===b?'var(--pl)':'var(--gray)';});buildGrid();});
+    return b;
+  });
+  sortBtns.forEach(b=>controlsRow.appendChild(b));
+  const shinyToggle=document.createElement('button');shinyToggle.type='button';
+  shinyToggle.style.cssText='font-size:10px;padding:5px 11px;border-radius:7px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--gray);cursor:pointer;';
+  shinyToggle.textContent='✨ Shiny';
+  shinyToggle.addEventListener('click',()=>{
+    pickShiny=!pickShiny;
+    shinyToggle.style.background=pickShiny?'rgba(240,198,0,.15)':'rgba(255,255,255,.04)';
+    shinyToggle.style.borderColor=pickShiny?'#f0c600':'var(--border)';
+    shinyToggle.style.color=pickShiny?'#f0c600':'var(--gray)';
+    shinyToggle.style.fontWeight=pickShiny?'700':'400';
+    gridWrap.querySelectorAll('.dex-tile img').forEach(img=>{
+      const monId=img.dataset.monid, sf=img.dataset.sf;
+      if(!monId||!sf) return;
+      if(pickShiny){ img.src=`${PKM_SHINY1}${sf}.png`; img.onerror=()=>shinyUrlFallback(img,monId,sf); }
+      else{ img.src=`${PKM_BASE1}${sf}.png`; img.onerror=()=>iconUrlFallback(img,monId,sf); }
+    });
+  });
+  controlsRow.appendChild(shinyToggle);
+  const favToggle=document.createElement('button');favToggle.type='button';
+  favToggle.style.cssText='font-size:10px;padding:5px 11px;border-radius:7px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--gray);cursor:pointer;';
+  favToggle.textContent='⭐ Favorites';
+  favToggle.addEventListener('click',()=>{
+    pickFavsOnly=!pickFavsOnly;
+    favToggle.style.background=pickFavsOnly?'rgba(240,198,0,.15)':'rgba(255,255,255,.04)';
+    favToggle.style.borderColor=pickFavsOnly?'#f0c600':'var(--border)';
+    favToggle.style.color=pickFavsOnly?'#f0c600':'var(--gray)';
+    buildGrid();
+  });
+  controlsRow.appendChild(favToggle);
+
+  // ── Type filter chips ────────────────────────────────────────────────────
+  const typeFilterRow=document.createElement('div');
+  typeFilterRow.style.cssText='display:flex;flex-wrap:wrap;gap:4px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
+  (typeof ALL_TYPES!=='undefined'?ALL_TYPES:Object.keys(TYPE_COLORS)).forEach(t=>{
+    const col=TYPE_COLORS[t]||'#888';
+    const chip=document.createElement('button');chip.type='button';chip.className='dex-filter-chip';
+    chip.style.cssText=`background:${col}18;border:1px solid ${col}44;border-radius:6px;padding:3px 6px;cursor:pointer;transition:all .15s;opacity:.7;display:inline-flex;align-items:center;gap:0;`;
+    const tid=TYPE_ICON_IDS[t];
+    if(tid){
+      const img=document.createElement('img');
+      img.src=`${TYPE_ICON_BASE}${tid}.png`; img.alt=t; img.title=t;
+      img.style.cssText='height:20px;image-rendering:pixelated;display:block;';
+      img.onerror=()=>{img.style.display='none';const fb=document.createElement('span');fb.style.cssText=`font-size:9px;color:${col};font-family:'Press Start 2P',monospace;padding:2px 4px;`;fb.textContent=t;chip.appendChild(fb);};
+      chip.appendChild(img);
+    } else {
+      const fb=document.createElement('span');fb.style.cssText=`font-size:9px;color:${col};font-family:'Press Start 2P',monospace;padding:2px 4px;`;fb.textContent=t;chip.appendChild(fb);
+    }
+    chip.addEventListener('click',()=>{
+      if(activeTypes.has(t)){activeTypes.delete(t);chip.style.opacity='.7';chip.style.background=col+'18';chip.style.borderColor=col+'44';chip.style.boxShadow='none';}
+      else{activeTypes.add(t);chip.style.opacity='1';chip.style.background=col+'44';chip.style.borderColor=col;chip.style.boxShadow=`0 0 8px ${col}44`;}
+      buildGrid();
+    });
+    typeFilterRow.appendChild(chip);
+  });
+
+  // ── Group filter chips (Gen 1-9, Mega, GMax, Regional, Totem) ──────────────
+  const groupFilterRow=document.createElement('div');
+  groupFilterRow.style.cssText='display:flex;flex-wrap:wrap;gap:4px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
+  const allGroups=[...new Set(ALL_MON.map(m=>m.group||m._full?.group).filter(Boolean))].sort();
+  allGroups.forEach(g=>{
+    const col=GROUP_COLORS[g]||'#888';
+    const chip=document.createElement('button');chip.type='button';chip.className='dex-filter-chip';
+    chip.style.cssText=`border:1px solid ${col}55;background:${col}11;color:${col};opacity:.55;`;
+    chip.textContent=g;
+    chip.addEventListener('click',()=>{
+      if(activeGroups.has(g)){activeGroups.delete(g);chip.style.opacity='.55';chip.style.fontWeight='';}
+      else{activeGroups.add(g);chip.style.opacity='1';chip.style.fontWeight='700';}
+      buildGrid();
+    });
+    groupFilterRow.appendChild(chip);
+  });
+
+  // ── Virtualized grid — same rich .dex-tile card as the Pokédex Browser, but
+  // only the rows near the viewport get real DOM nodes (spacer divs stand in
+  // for the rest). Cards are heavier than the old bare-bones tiles (star,
+  // sprite, name, 1-2 type badges, gen chip), so this matters even more than
+  // it did before for keeping 1571 entries smooth. ────────────────────────
   const gridWrap=document.createElement('div');
-  gridWrap.style.cssText='flex:1;overflow-y:auto;padding:12px 14px;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;align-content:start;';
+  gridWrap.style.cssText='flex:1;overflow-y:auto;padding:12px 14px;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;align-content:start;';
 
   let currentList=[];
-  let colCount=1;
-  let tileW=84, tileH=82; // refined after the first real render (measured, not guessed)
-  let measured=false;
+  let colCount=1, tileW=100, tileH=118, measured=false, rafPending=false;
   const GAP=8, BUFFER_ROWS=4;
-  let rafPending=false;
 
-  function buildTile(p){
-    const tile=document.createElement('div');
-    tile.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center;overflow:hidden;';
-    tile.innerHTML=`<div style="width:44px;height:44px;overflow:hidden;">${lbePkmImgHtml(p)}</div><span style="font-size:9.5px;color:#e2e8f0;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">${lbeEscapeHtml(p.name)}</span>`;
-    tile.addEventListener('mouseenter',()=>tile.style.borderColor='var(--pl)');
-    tile.addEventListener('mouseleave',()=>tile.style.borderColor='rgba(255,255,255,.06)');
-    tile.addEventListener('click',()=>{ onPick(p); overlay.remove(); });
+  function buildTile(m){
+    const sf=getSpriteFile(m);
+    const tile=document.createElement('div');tile.className='dex-tile';tile.style.position='relative';
+    const img=document.createElement('img');
+    img.dataset.monid=m.id||m.spriteId; img.dataset.sf=sf; img.loading='lazy';
+    if(pickShiny){ img.src=`${PKM_SHINY1}${sf}.png`; img.onerror=()=>shinyUrlFallback(img,m.id,sf); }
+    else{ img.src=`${PKM_BASE1}${sf}.png`; img.onerror=()=>iconUrlFallback(img,m.id,m.spriteFile); }
+    const name=document.createElement('div');name.className='dex-name';setMonNameHTML(name,m.name);
+    const types=document.createElement('div');types.className='dex-types';
+    types.appendChild(tb(m.t1)); if(m.t2) types.appendChild(tb(m.t2));
+    tile.append(img,name,types);
+    const grp=m.group||m._full?.group;
+    if(grp) tile.appendChild(groupChip(grp,{fontSize:'7px',padding:'1px 5px'}));
+    const starBtn=document.createElement('button');starBtn.type='button';
+    const isFav=isFavorite(m.name);
+    starBtn.style.cssText=`position:absolute;top:5px;left:5px;background:transparent;border:none;font-size:13px;cursor:pointer;padding:0;line-height:1;opacity:${isFav?1:.3};transition:opacity .15s;`;
+    starBtn.textContent='⭐'; starBtn.title=isFav?'Remove from favorites':'Add to favorites';
+    starBtn.addEventListener('click',(e)=>{e.stopPropagation();const nowFav=toggleFavorite(m.name);starBtn.style.opacity=nowFav?1:.3;starBtn.title=nowFav?'Remove from favorites':'Add to favorites';if(pickFavsOnly)buildGrid();});
+    tile.appendChild(starBtn);
+    tile.addEventListener('click',()=>{ onPick(m); overlay.remove(); });
     return tile;
   }
 
   function computeColCount(){
-    const w=gridWrap.clientWidth || 700;
+    const w=gridWrap.clientWidth || 1000;
     colCount=Math.max(1, Math.floor((w+GAP)/(tileW+GAP)));
   }
 
@@ -4989,7 +5084,7 @@ function lbeOpenSpeciesPicker(onPick){
     computeColCount();
     const rowH=tileH+GAP;
     const rowCount=Math.ceil(currentList.length/colCount);
-    const scrollTop=gridWrap.scrollTop, viewportH=gridWrap.clientHeight||400;
+    const scrollTop=gridWrap.scrollTop, viewportH=gridWrap.clientHeight||500;
     const firstRow=Math.max(0, Math.floor(scrollTop/rowH)-BUFFER_ROWS);
     const lastRow=Math.min(rowCount, Math.ceil((scrollTop+viewportH)/rowH)+BUFFER_ROWS);
     const startIdx=firstRow*colCount, endIdx=Math.min(currentList.length, lastRow*colCount);
@@ -5011,9 +5106,6 @@ function lbeOpenSpeciesPicker(onPick){
       spacerBottom.style.cssText=`grid-column:1/-1;height:${(rowCount-lastRow)*rowH}px;`;
       gridWrap.appendChild(spacerBottom);
     }
-    // One-time measurement pass: our 84/82px guess is close but the real
-    // rendered size (font metrics, padding) can differ slightly — correcting
-    // it once keeps the spacer math (and therefore scroll position) accurate.
     if(!measured && firstNewTile){
       measured=true;
       requestAnimationFrame(()=>{
@@ -5035,21 +5127,32 @@ function lbeOpenSpeciesPicker(onPick){
   window.addEventListener('resize', onScroll);
 
   function buildGrid(){
-    const q=searchInp.value.toLowerCase();
-    const all=(typeof POKEMON!=='undefined'?POKEMON:[]);
-    currentList = q ? all.filter(p=>p.name.toLowerCase().includes(q)) : all;
-    countEl.textContent = `${currentList.length} / ${all.length}`;
+    const q=searchInp.value.toLowerCase().trim();
+    let mons=[...ALL_MON];
+    if(q) mons=mons.filter(m=>m.name.toLowerCase().includes(q));
+    if(activeTypes.size) mons=mons.filter(m=>[m.t1,m.t2].some(t=>activeTypes.has(t)));
+    if(activeGroups.size) mons=mons.filter(m=>activeGroups.has(m.group||m._full?.group));
+    if(pickFavsOnly){ const favs=getFavorites(); mons=mons.filter(m=>favs.has(m.name)); }
+    if(pickSort==='name') mons.sort((a,b)=>a.name.localeCompare(b.name));
+    else if(pickSort==='dex') mons.sort((a,b)=>(parseInt(a._full?.dex_number||a.dex_number||9999))-(parseInt(b._full?.dex_number||b.dex_number||9999)));
+    else if(pickSort==='bst_desc') mons.sort((a,b)=>(b.bst||0)-(a.bst||0));
+    else if(pickSort==='bst_asc') mons.sort((a,b)=>(a.bst||0)-(b.bst||0));
+    else if(pickSort==='type') mons.sort((a,b)=>(a.t1||'').localeCompare(b.t1||''));
+    else mons.sort((a,b)=>(a.id||9999)-(b.id||9999));
+    currentList=mons;
+    countEl.textContent=`${mons.length} / ${ALL_MON.length} Pokémon`;
     gridWrap.scrollTop=0;
     renderWindow();
   }
   searchInp.addEventListener('input', lbeDebounce(buildGrid, 200));
 
-  box.append(hdr, searchWrap, gridWrap);
+  box.append(hdr, searchWrap, controlsRow, typeFilterRow, groupFilterRow, gridWrap);
   overlay.appendChild(box);
   document.body.appendChild(overlay);
   buildGrid();
   searchInp.focus();
 }
+
 
 function lbeOpenItemPicker(onPick){
   const overlay=document.createElement('div');
