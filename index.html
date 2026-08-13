@@ -632,6 +632,11 @@
 
 .lbe-mini-lbl{font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;}
 .lbe-mini-pcard{display:flex;align-items:center;gap:7px;background:var(--dark);border:1px solid var(--border);border-radius:7px;padding:7px 8px;cursor:pointer;}
+.lbe-tera-fallback{width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:var(--gray);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;}
+.lbe-type-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.lbe-type-grid-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.lbe-type-grid-btn:hover{border-color:var(--pl);background:rgba(206,147,216,.1);transform:translateY(-1px);}
+.lbe-type-grid-btn img{width:32px;height:32px;image-rendering:pixelated;display:block;}
 .lbe-mini-pcard:hover{border-color:var(--pl);}
 .lbe-mini-pcard img{width:22px;height:22px;flex-shrink:0;}
 .lbe-mini-pcard .t{font-size:10.5px;font-weight:600;}
@@ -4703,6 +4708,15 @@ window.lbeItemImgErr = function(img, slug){
   else if(step==='2'){ img.src = `${IF}${hyphenSlug}.png`; }
   else { img.src = `${ITEM_BASE}question_mark.png`; img.onerror=null; }
 };
+// Stellar (Tera-exclusive, id 19) has no PokeAPI generation-ix type sprite — every
+// other type does, so this only ever fires for Stellar. Icon-only per your call, so
+// the fallback is a plain badge, not a name.
+window.lbeTeraTypeImgErr = function(img){
+  const badge=document.createElement('div');
+  badge.className='lbe-tera-fallback';
+  badge.textContent='?';
+  img.replaceWith(badge);
+};
 // Memoized — this flood-fill + canvas re-encode is genuinely expensive (reads every
 // pixel, rebuilds the image via toDataURL()), and it was re-running from scratch on
 // every single re-render for the same item (a fresh <img> element still fires 'load'
@@ -5160,7 +5174,7 @@ function lbeOpenItemPicker(onPick){
   overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
 
   const box=document.createElement('div');
-  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:560px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
+  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:640px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
 
   const hdr=document.createElement('div');
   hdr.style.cssText='display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;';
@@ -5177,31 +5191,110 @@ function lbeOpenItemPicker(onPick){
   searchInp.style.cssText='width:100%;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#e2e8f0;font-size:12px;padding:7px 10px;outline:none;box-sizing:border-box;';
   searchWrap.appendChild(searchInp);
 
+  // ── Sort controls ────────────────────────────────────────────────────────
+  const allItems=(typeof ITEMS!=='undefined'?ITEMS:[]);
+  let itemSort='name';
+  const activePockets=new Set();
+  const controlsRow=document.createElement('div');
+  controlsRow.style.cssText='display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
+  const ISORTS=[['A–Z','name'],['Price ↑','price_asc'],['Price ↓','price_desc'],['Category','category']];
+  const isortBtns=ISORTS.map(([lbl,key])=>{
+    const b=document.createElement('button'); b.type='button';
+    b.style.cssText=`font-size:10px;padding:5px 11px;border-radius:7px;border:1px solid ${key==='name'?'var(--pl)':'var(--border)'};background:${key==='name'?'rgba(149,117,205,.12)':'rgba(255,255,255,.04)'};color:${key==='name'?'var(--pl)':'var(--gray)'};cursor:pointer;`;
+    b.textContent=lbl;
+    b.addEventListener('click',()=>{ itemSort=key; isortBtns.forEach(sb=>{sb.style.borderColor=sb===b?'var(--pl)':'var(--border)';sb.style.color=sb===b?'var(--pl)':'var(--gray)';}); buildList(); });
+    return b;
+  });
+  isortBtns.forEach(b=>controlsRow.appendChild(b));
+
+  // ── Pocket filter chips (Poké Balls, Medicine, Berries, TMs & HMs, Key Items, …) ──
+  const pocketFilterRow=document.createElement('div');
+  pocketFilterRow.style.cssText='display:flex;flex-wrap:wrap;gap:4px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
+  const allPockets=[...new Set(allItems.map(it=>it.pocket).filter(Boolean))].sort();
+  allPockets.forEach(pk=>{
+    const chip=document.createElement('button'); chip.type='button';
+    chip.style.cssText='font-size:9px;padding:4px 9px;border-radius:5px;cursor:pointer;font-family:"Press Start 2P",monospace;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--gray);opacity:.65;transition:all .15s;';
+    chip.textContent=pk;
+    chip.addEventListener('click',()=>{
+      if(activePockets.has(pk)){ activePockets.delete(pk); chip.style.opacity='.65'; chip.style.borderColor='var(--border)'; chip.style.color='var(--gray)'; chip.style.background='rgba(255,255,255,.04)'; }
+      else{ activePockets.add(pk); chip.style.opacity='1'; chip.style.borderColor='var(--pl)'; chip.style.color='var(--pl)'; chip.style.background='rgba(149,117,205,.12)'; }
+      buildList();
+    });
+    pocketFilterRow.appendChild(chip);
+  });
+
+  // ── Virtualized list (same technique as the species picker, single-column) ──
   const listWrap=document.createElement('div');
-  listWrap.style.cssText='flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px;min-height:0;';
+  listWrap.style.cssText='flex:1;overflow-y:auto;padding:10px 14px;min-height:0;position:relative;';
+
+  let currentList=[];
+  let rowH=68, measured=false, rafPending=false;
+  const BUFFER_ROWS=6;
+
+  function buildRow(it){
+    const row=document.createElement('div');
+    row.className='lbe-mini-pcard';
+    row.style.cssText='cursor:pointer;margin-bottom:6px;';
+    row.innerHTML=`${lbeItemImgHtml(it.name)}<div><div class="t">${lbeEscapeHtml(it.name)}</div><div class="d">${lbeEscapeHtml(it.desc||'')}</div></div>`;
+    row.addEventListener('click',()=>{ onPick(it); overlay.remove(); });
+    return row;
+  }
+
+  function renderWindow(){
+    const scrollTop=listWrap.scrollTop, viewportH=listWrap.clientHeight||400;
+    const firstRow=Math.max(0, Math.floor(scrollTop/rowH)-BUFFER_ROWS);
+    const lastRow=Math.min(currentList.length, Math.ceil((scrollTop+viewportH)/rowH)+BUFFER_ROWS);
+
+    listWrap.innerHTML='';
+    if(firstRow>0){
+      const spacerTop=document.createElement('div');
+      spacerTop.style.cssText=`height:${firstRow*rowH}px;`;
+      listWrap.appendChild(spacerTop);
+    }
+    let firstNewRow=null;
+    for(let i=firstRow;i<lastRow;i++){
+      const r=buildRow(currentList[i]);
+      if(!firstNewRow) firstNewRow=r;
+      listWrap.appendChild(r);
+    }
+    if(currentList.length>lastRow){
+      const spacerBottom=document.createElement('div');
+      spacerBottom.style.cssText=`height:${(currentList.length-lastRow)*rowH}px;`;
+      listWrap.appendChild(spacerBottom);
+    }
+    if(!measured && firstNewRow){
+      measured=true;
+      requestAnimationFrame(()=>{
+        const rect=firstNewRow.getBoundingClientRect();
+        if(rect.height>10){ rowH=Math.round(rect.height)+6; renderWindow(); }
+      });
+    }
+  }
+  function onScroll(){
+    if(rafPending) return;
+    rafPending=true;
+    requestAnimationFrame(()=>{ rafPending=false; renderWindow(); });
+  }
+  listWrap.addEventListener('scroll', onScroll);
+  window.addEventListener('resize', onScroll);
 
   function buildList(){
-    const q=searchInp.value.toLowerCase();
-    const all=(typeof ITEMS!=='undefined'?ITEMS:[]);
-    const matched = q ? all.filter(it=>it.name.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q)) : all;
-    const CAP=150;
-    const filtered = matched.slice(0, CAP);
-    countEl.textContent = matched.length>CAP
-      ? `showing ${CAP} of ${matched.length} — keep typing to narrow it down`
-      : `${matched.length} / ${all.length}`;
-    listWrap.innerHTML='';
-    filtered.forEach(it=>{
-      const row=document.createElement('div');
-      row.className='lbe-mini-pcard';
-      row.style.cursor='pointer';
-      row.innerHTML=`${lbeItemImgHtml(it.name)}<div><div class="t">${lbeEscapeHtml(it.name)}</div><div class="d">${lbeEscapeHtml(it.desc||'')}</div></div>`;
-      row.addEventListener('click',()=>{ onPick(it); overlay.remove(); });
-      listWrap.appendChild(row);
-    });
+    const q=searchInp.value.toLowerCase().trim();
+    let items=[...allItems];
+    if(q) items=items.filter(it=>it.name.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q));
+    if(activePockets.size) items=items.filter(it=>activePockets.has(it.pocket));
+    if(itemSort==='price_asc') items.sort((a,b)=>(a.price||0)-(b.price||0));
+    else if(itemSort==='price_desc') items.sort((a,b)=>(b.price||0)-(a.price||0));
+    else if(itemSort==='category') items.sort((a,b)=>(a.category||'').localeCompare(b.category||'')||a.name.localeCompare(b.name));
+    else items.sort((a,b)=>a.name.localeCompare(b.name));
+    currentList=items;
+    countEl.textContent=`${items.length} / ${allItems.length}`;
+    listWrap.scrollTop=0;
+    renderWindow();
   }
   searchInp.addEventListener('input', lbeDebounce(buildList, 200));
 
-  box.append(hdr, searchWrap, listWrap);
+  box.append(hdr, searchWrap, controlsRow, pocketFilterRow, listWrap);
   overlay.appendChild(box);
   document.body.appendChild(overlay);
   buildList();
@@ -5498,6 +5591,43 @@ function lbeRenderDetail(){
 }
 
 let lbeOpenDD=null;
+// Icon-only Tera Type picker — the generic name+subtitle lbeOpenAutocomplete
+// dropdown isn't built for icon-only content, which is what was buggy about
+// reusing it here. This is a small dedicated grid instead: PokeAPI type icons,
+// no visible names anywhere (title attribute only, for hover accessibility).
+function lbeOpenTeraTypePicker(onPick){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:6300;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+
+  const box=document.createElement('div');
+  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;padding:16px;width:100%;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.6);';
+
+  const hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:12px;';
+  const title=document.createElement('span'); title.style.cssText='font-size:13px;font-weight:700;flex:1;'; title.textContent='Choose Tera Type';
+  const closeBtn=document.createElement('button'); closeBtn.type='button';
+  closeBtn.style.cssText='background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#556;font-size:14px;padding:2px 9px;cursor:pointer;';
+  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>overlay.remove());
+  hdr.append(title, closeBtn);
+
+  const grid=document.createElement('div'); grid.className='lbe-type-grid';
+  LBE_TYPE_LIST.forEach(([name,id])=>{
+    const btn=document.createElement('button'); btn.type='button'; btn.className='lbe-type-grid-btn'; btn.title=name;
+    const img=document.createElement('img');
+    img.src=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${id}.png`;
+    img.alt=name;
+    img.onerror=()=>{ img.replaceWith(Object.assign(document.createElement('span'),{textContent:'?',style:'color:var(--gray);font-weight:700;'})); };
+    btn.appendChild(img);
+    btn.addEventListener('click',()=>{ onPick([name,id]); overlay.remove(); });
+    grid.appendChild(btn);
+  });
+
+  box.append(hdr, grid);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
 function lbeOpenAutocomplete({anchor, items, getLabel, getIconHtml, getSubtitle, onPick}){
   lbeCloseAutocomplete();
   const input=document.createElement('input');
@@ -5645,8 +5775,8 @@ function lbeRenderSummaryCol(){
 
     <div class="lbe-dcard-mini">
       <div class="lbe-section-lbl">TERA TYPE</div>
-      <div class="lbe-mini-pcard" id="lbe-f-tera-card" style="justify-content:center;">
-        ${slot.teraType.type ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${LBE_TYPE_LIST.find(([n])=>n===slot.teraType.type)?.[1]}.png" style="width:32px;height:32px;" onerror="this.style.display='none'"/>`
+      <div class="lbe-mini-pcard" id="lbe-f-tera-card" style="justify-content:center;padding:14px;">
+        ${slot.teraType.type ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${LBE_TYPE_LIST.find(([n])=>n===slot.teraType.type)?.[1]}.png" style="width:44px;height:44px;image-rendering:pixelated;display:block;" onerror='lbeTeraTypeImgErr(this)'/>`
         : `<div style="color:var(--gray);font-size:11px;">Click to choose a type…</div>`}
       </div>
       <button type="button" class="lbe-change-btn" id="lbe-f-tera-default" style="margin-top:8px;">Use default type</button>
@@ -5675,11 +5805,7 @@ function lbeRenderSummaryCol(){
   const teraCard=document.getElementById('lbe-f-tera-card');
   const teraDefaultBtn=document.getElementById('lbe-f-tera-default');
   teraCard.addEventListener('click',()=>{
-    lbeOpenAutocomplete({
-      anchor:teraCard, items:LBE_TYPE_LIST, getLabel:([n])=>n,
-      getIconHtml:([n,id])=>`<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${id}.png" onerror="this.style.display='none'"/>`,
-      onPick:([n])=>{ slot.teraType.type=n; slot.teraType.useDefault=false; lbeSavePools(); lbeRenderSummaryCol(); }
-    });
+    lbeOpenTeraTypePicker(([n])=>{ slot.teraType.type=n; slot.teraType.useDefault=false; lbeSavePools(); lbeRenderSummaryCol(); });
   });
   teraDefaultBtn.addEventListener('click',()=>{
     const types=[mon?.t1, mon?.t2].filter(Boolean);
