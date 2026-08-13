@@ -4955,31 +4955,92 @@ function lbeOpenSpeciesPicker(onPick){
   searchInp.style.cssText='width:100%;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#e2e8f0;font-size:12px;padding:7px 10px;outline:none;box-sizing:border-box;';
   searchWrap.appendChild(searchInp);
 
+  // ── Virtualized grid ──────────────────────────────────────────────────────
+  // Instead of capping results (which made the tail of the list unreachable),
+  // only the rows actually near the viewport get real DOM nodes. Two spacer
+  // divs (grid-column:1/-1) stand in for the rows above/below the rendered
+  // window so the scrollbar still reflects the true full-list height.
   const gridWrap=document.createElement('div');
-  gridWrap.style.cssText='flex:1;overflow-y:auto;padding:12px 14px;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;';
+  gridWrap.style.cssText='flex:1;overflow-y:auto;padding:12px 14px;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;align-content:start;';
+
+  let currentList=[];
+  let colCount=1;
+  let tileW=84, tileH=82; // refined after the first real render (measured, not guessed)
+  let measured=false;
+  const GAP=8, BUFFER_ROWS=4;
+  let rafPending=false;
+
+  function buildTile(p){
+    const tile=document.createElement('div');
+    tile.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center;overflow:hidden;';
+    tile.innerHTML=`<div style="width:44px;height:44px;overflow:hidden;">${lbePkmImgHtml(p)}</div><span style="font-size:9.5px;color:#e2e8f0;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">${lbeEscapeHtml(p.name)}</span>`;
+    tile.addEventListener('mouseenter',()=>tile.style.borderColor='var(--pl)');
+    tile.addEventListener('mouseleave',()=>tile.style.borderColor='rgba(255,255,255,.06)');
+    tile.addEventListener('click',()=>{ onPick(p); overlay.remove(); });
+    return tile;
+  }
+
+  function computeColCount(){
+    const w=gridWrap.clientWidth || 700;
+    colCount=Math.max(1, Math.floor((w+GAP)/(tileW+GAP)));
+  }
+
+  function renderWindow(){
+    computeColCount();
+    const rowH=tileH+GAP;
+    const rowCount=Math.ceil(currentList.length/colCount);
+    const scrollTop=gridWrap.scrollTop, viewportH=gridWrap.clientHeight||400;
+    const firstRow=Math.max(0, Math.floor(scrollTop/rowH)-BUFFER_ROWS);
+    const lastRow=Math.min(rowCount, Math.ceil((scrollTop+viewportH)/rowH)+BUFFER_ROWS);
+    const startIdx=firstRow*colCount, endIdx=Math.min(currentList.length, lastRow*colCount);
+
+    gridWrap.innerHTML='';
+    if(firstRow>0){
+      const spacerTop=document.createElement('div');
+      spacerTop.style.cssText=`grid-column:1/-1;height:${firstRow*rowH}px;`;
+      gridWrap.appendChild(spacerTop);
+    }
+    let firstNewTile=null;
+    for(let i=startIdx;i<endIdx;i++){
+      const t=buildTile(currentList[i]);
+      if(!firstNewTile) firstNewTile=t;
+      gridWrap.appendChild(t);
+    }
+    if(rowCount>lastRow){
+      const spacerBottom=document.createElement('div');
+      spacerBottom.style.cssText=`grid-column:1/-1;height:${(rowCount-lastRow)*rowH}px;`;
+      gridWrap.appendChild(spacerBottom);
+    }
+    // One-time measurement pass: our 84/82px guess is close but the real
+    // rendered size (font metrics, padding) can differ slightly — correcting
+    // it once keeps the spacer math (and therefore scroll position) accurate.
+    if(!measured && firstNewTile){
+      measured=true;
+      requestAnimationFrame(()=>{
+        const rect=firstNewTile.getBoundingClientRect();
+        if(rect.width>10 && rect.height>10){
+          tileW=Math.round(rect.width); tileH=Math.round(rect.height);
+          renderWindow();
+        }
+      });
+    }
+  }
+
+  function onScroll(){
+    if(rafPending) return;
+    rafPending=true;
+    requestAnimationFrame(()=>{ rafPending=false; renderWindow(); });
+  }
+  gridWrap.addEventListener('scroll', onScroll);
+  window.addEventListener('resize', onScroll);
 
   function buildGrid(){
     const q=searchInp.value.toLowerCase();
     const all=(typeof POKEMON!=='undefined'?POKEMON:[]);
-    const matched = q ? all.filter(p=>p.name.toLowerCase().includes(q)) : all;
-    // Cap what actually gets built at once — 1571 tiles (each with an image
-    // request) on a bare "no search yet" open is the single biggest source of
-    // lag in this popup. Typing narrows it down naturally.
-    const CAP=150;
-    const filtered = matched.slice(0, CAP);
-    countEl.textContent = matched.length>CAP
-      ? `showing ${CAP} of ${matched.length} — keep typing to narrow it down`
-      : `${matched.length} / ${all.length}`;
-    gridWrap.innerHTML='';
-    filtered.forEach(p=>{
-      const tile=document.createElement('div');
-      tile.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center;overflow:hidden;';
-      tile.innerHTML=`<div style="width:44px;height:44px;overflow:hidden;">${lbePkmImgHtml(p)}</div><span style="font-size:9.5px;color:#e2e8f0;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">${lbeEscapeHtml(p.name)}</span>`;
-      tile.addEventListener('mouseenter',()=>tile.style.borderColor='var(--pl)');
-      tile.addEventListener('mouseleave',()=>tile.style.borderColor='rgba(255,255,255,.06)');
-      tile.addEventListener('click',()=>{ onPick(p); overlay.remove(); });
-      gridWrap.appendChild(tile);
-    });
+    currentList = q ? all.filter(p=>p.name.toLowerCase().includes(q)) : all;
+    countEl.textContent = `${currentList.length} / ${all.length}`;
+    gridWrap.scrollTop=0;
+    renderWindow();
   }
   searchInp.addEventListener('input', lbeDebounce(buildGrid, 200));
 
