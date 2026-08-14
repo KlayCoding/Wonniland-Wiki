@@ -3769,15 +3769,19 @@ function initEncEditor(){
     document.body.appendChild(overlay);
   }
   // ── Undo ─────────────────────────────────────────────────────────────────
-  // Snapshot-based: cheap enough at this data size, and correct-by-construction
-  // regardless of which of the several mutating actions (picker pick, X-clear,
-  // Clear All, Overwrite, Copy-Time) triggered the change.
+  // Snapshot-based, but scoped to just the current route: every mutating action
+  // in this editor (picker pick, X-clear, Clear All, Overwrite, Copy-Time) only
+  // ever touches entries for `currentMap`, so that's all a snapshot needs to
+  // hold — deep-cloning the full ~240-route dataset on every single edit was
+  // real, avoidable overhead (main-thread JSON round-trip + memory held per
+  // snapshot) that scaled with total data size instead of what actually changed.
   const undoStack=[];
   const MAX_UNDO=20;
   function pushUndoSnapshot(){
     try{
       undoStack.push({
-        encData: JSON.parse(JSON.stringify(encData)),
+        mapKey: currentMap,
+        mapEntries: JSON.parse(JSON.stringify(encData.filter(e=>e.map===currentMap))),
         draftStore: JSON.parse(JSON.stringify(Object.fromEntries(draftStore))),
         groupMode: JSON.parse(JSON.stringify(Object.fromEntries(groupMode))),
       });
@@ -3788,7 +3792,13 @@ function initEncEditor(){
   function undoLastChange(){
     if(!undoStack.length) return;
     const snap=undoStack.pop();
-    encData=snap.encData;
+    // Splice the snapshotted route's entries back in by base_label; every
+    // other route's data (and object identity) is left completely untouched.
+    encData = encData.map(e=>{
+      if(e.map!==snap.mapKey) return e;
+      const restored = snap.mapEntries.find(se=>se.base_label===e.base_label);
+      return restored || e;
+    });
     draftStore.clear(); Object.entries(snap.draftStore).forEach(([k,v])=>draftStore.set(k,v));
     groupMode.clear(); Object.entries(snap.groupMode).forEach(([k,v])=>groupMode.set(k,v));
     saveDraftsToStorage();
@@ -4949,7 +4959,7 @@ function lbeOpenItemInfoPopup(item){
 function lbeOpenSpeciesPicker(onPick){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:6300;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
-  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) closePicker(); });
 
   const box=document.createElement('div');
   box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:1120px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
@@ -4960,7 +4970,7 @@ function lbeOpenSpeciesPicker(onPick){
   const countEl=document.createElement('span'); countEl.style.cssText='font-size:10px;color:var(--gray);';
   const closeBtn=document.createElement('button'); closeBtn.type='button';
   closeBtn.style.cssText='background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#556;font-size:14px;padding:2px 9px;cursor:pointer;';
-  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>overlay.remove());
+  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>closePicker());
   hdr.append(title, countEl, closeBtn);
 
   const searchWrap=document.createElement('div');
@@ -5085,7 +5095,7 @@ function lbeOpenSpeciesPicker(onPick){
     starBtn.textContent='⭐'; starBtn.title=isFav?'Remove from favorites':'Add to favorites';
     starBtn.addEventListener('click',(e)=>{e.stopPropagation();const nowFav=toggleFavorite(m.name);starBtn.style.opacity=nowFav?1:.3;starBtn.title=nowFav?'Remove from favorites':'Add to favorites';if(pickFavsOnly)buildGrid();});
     tile.appendChild(starBtn);
-    tile.addEventListener('click',()=>{ onPick(m); overlay.remove(); });
+    tile.addEventListener('click',()=>{ onPick(m); closePicker(); });
     return tile;
   }
 
@@ -5139,6 +5149,12 @@ function lbeOpenSpeciesPicker(onPick){
   }
   gridWrap.addEventListener('scroll', onScroll);
   window.addEventListener('resize', onScroll);
+  // Popups create a fresh resize listener every time they open — without this,
+  // repeatedly opening/closing this picker over a long editing session leaks one
+  // listener (and everything its closure keeps alive, including this popup's own
+  // DOM tree) per open. This was likely the biggest single contributor to the
+  // browser slowdown.
+  function closePicker(){ window.removeEventListener('resize', onScroll); overlay.remove(); }
 
   function buildGrid(){
     const q=searchInp.value.toLowerCase().trim();
@@ -5171,7 +5187,7 @@ function lbeOpenSpeciesPicker(onPick){
 function lbeOpenItemPicker(onPick){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:6300;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
-  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) closePicker(); });
 
   const box=document.createElement('div');
   box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:640px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
@@ -5182,7 +5198,7 @@ function lbeOpenItemPicker(onPick){
   const countEl=document.createElement('span'); countEl.style.cssText='font-size:10px;color:var(--gray);';
   const closeBtn=document.createElement('button'); closeBtn.type='button';
   closeBtn.style.cssText='background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#556;font-size:14px;padding:2px 9px;cursor:pointer;';
-  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>overlay.remove());
+  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>closePicker());
   hdr.append(title, countEl, closeBtn);
 
   const searchWrap=document.createElement('div');
@@ -5277,7 +5293,7 @@ function lbeOpenItemPicker(onPick){
     row.className='lbe-mini-pcard';
     row.style.cssText='cursor:pointer;margin-bottom:6px;';
     row.innerHTML=`${lbeItemImgHtml(it.name)}<div><div class="t">${lbeEscapeHtml(it.name)}</div><div class="d">${lbeEscapeHtml(it.desc||'')}</div></div>`;
-    row.addEventListener('click',()=>{ onPick(it); overlay.remove(); });
+    row.addEventListener('click',()=>{ onPick(it); closePicker(); });
     return row;
   }
 
@@ -5318,6 +5334,7 @@ function lbeOpenItemPicker(onPick){
   }
   listWrap.addEventListener('scroll', onScroll);
   window.addEventListener('resize', onScroll);
+  function closePicker(){ window.removeEventListener('resize', onScroll); overlay.remove(); }
 
   function buildList(){
     const q=searchInp.value.toLowerCase().trim();
