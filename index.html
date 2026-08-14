@@ -633,10 +633,10 @@
 .lbe-mini-lbl{font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;}
 .lbe-mini-pcard{display:flex;align-items:center;gap:7px;background:var(--dark);border:1px solid var(--border);border-radius:7px;padding:7px 8px;cursor:pointer;}
 .lbe-tera-fallback{width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:var(--gray);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;}
-.lbe-type-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
-.lbe-type-grid-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.lbe-type-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+.lbe-type-grid-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
 .lbe-type-grid-btn:hover{border-color:var(--pl);background:rgba(206,147,216,.1);transform:translateY(-1px);}
-.lbe-type-grid-btn img{width:32px;height:32px;image-rendering:pixelated;display:block;}
+.lbe-type-grid-btn img{width:44px;height:44px;image-rendering:pixelated;display:block;}
 .lbe-mini-pcard:hover{border-color:var(--pl);}
 .lbe-mini-pcard img{width:22px;height:22px;flex-shrink:0;}
 .lbe-mini-pcard .t{font-size:10.5px;font-weight:600;}
@@ -5194,7 +5194,6 @@ function lbeOpenItemPicker(onPick){
   // ── Sort controls ────────────────────────────────────────────────────────
   const allItems=(typeof ITEMS!=='undefined'?ITEMS:[]);
   let itemSort='name';
-  const activePockets=new Set();
   const controlsRow=document.createElement('div');
   controlsRow.style.cssText='display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
   const ISORTS=[['A–Z','name'],['Price ↑','price_asc'],['Price ↓','price_desc'],['Category','category']];
@@ -5207,21 +5206,63 @@ function lbeOpenItemPicker(onPick){
   });
   isortBtns.forEach(b=>controlsRow.appendChild(b));
 
-  // ── Pocket filter chips (Poké Balls, Medicine, Berries, TMs & HMs, Key Items, …) ──
-  const pocketFilterRow=document.createElement('div');
-  pocketFilterRow.style.cssText='display:flex;flex-wrap:wrap;gap:4px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;';
-  const allPockets=[...new Set(allItems.map(it=>it.pocket).filter(Boolean))].sort();
-  allPockets.forEach(pk=>{
-    const chip=document.createElement('button'); chip.type='button';
-    chip.style.cssText='font-size:9px;padding:4px 9px;border-radius:5px;cursor:pointer;font-family:"Press Start 2P",monospace;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--gray);opacity:.65;transition:all .15s;';
-    chip.textContent=pk;
-    chip.addEventListener('click',()=>{
-      if(activePockets.has(pk)){ activePockets.delete(pk); chip.style.opacity='.65'; chip.style.borderColor='var(--border)'; chip.style.color='var(--gray)'; chip.style.background='rgba(255,255,255,.04)'; }
-      else{ activePockets.add(pk); chip.style.opacity='1'; chip.style.borderColor='var(--pl)'; chip.style.color='var(--pl)'; chip.style.background='rgba(149,117,205,.12)'; }
-      buildList();
-    });
-    pocketFilterRow.appendChild(chip);
+  // ── Filter panel — collapsible, POCKET + CATEGORY chips + Clear, same
+  // structure as the item filter in the Database Browser reference ──────────
+  const activePockets=new Set(), activeCategories=new Set();
+  const filterToggle=document.createElement('button'); filterToggle.type='button';
+  filterToggle.style.cssText='display:flex;align-items:center;gap:6px;justify-content:space-between;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:var(--gray);font-size:11px;cursor:pointer;transition:all .2s;flex-shrink:0;';
+  filterToggle.innerHTML='<span style="font-family:\'Press Start 2P\',monospace;font-size:9px;">FILTER</span><span id="lbe-itemfilter-arrow">▼</span>';
+  let filterOpen=false;
+  const filterPanel=document.createElement('div');
+  filterPanel.style.cssText='max-height:0;overflow:hidden;transition:max-height .25s ease;flex-shrink:0;';
+  const filterInner=document.createElement('div');
+  filterInner.style.cssText='display:flex;flex-direction:column;gap:10px;padding:12px 14px;background:rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.06);';
+  filterToggle.addEventListener('click',()=>{
+    filterOpen=!filterOpen;
+    filterPanel.style.maxHeight=filterOpen?'400px':'0';
+    filterToggle.querySelector('#lbe-itemfilter-arrow').textContent=filterOpen?'▲':'▼';
+    filterToggle.style.color=filterOpen?'var(--pl)':'var(--gray)';
   });
+  const pocketColors={'Berries':'#4caf50','Items':'#64b5f6','Key Items':'#f0c600','Poké Balls':'#e8622a','TMs & HMs':'#ce93d8','Medicine':'#e57373','Battle Items':'#81c784'};
+  function makeFilterSection(label, values, activeSet, colorFn){
+    const sec=document.createElement('div');
+    const lbl=document.createElement('div'); lbl.style.cssText='font-size:9px;font-family:"Press Start 2P",monospace;color:var(--gray);margin-bottom:6px;'; lbl.textContent=label;
+    const btns=document.createElement('div'); btns.style.cssText='display:flex;flex-wrap:wrap;gap:5px;';
+    values.forEach(v=>{
+      const col=colorFn(v);
+      const b=document.createElement('button'); b.type='button';
+      b.style.cssText=`font-size:9px;padding:3px 9px;border-radius:5px;border:1px solid ${col}44;background:${col}11;color:${col};cursor:pointer;transition:all .15s;`;
+      b.textContent=v; b.dataset.val=v; b.dataset.col=col;
+      b.addEventListener('click',()=>{
+        if(activeSet.has(v)){ activeSet.delete(v); b.style.background=col+'11'; b.style.borderColor=col+'44'; b.style.fontWeight=''; }
+        else{ activeSet.add(v); b.style.background=col+'44'; b.style.borderColor=col; b.style.fontWeight='700'; }
+        filterToggle.style.borderColor=(activePockets.size||activeCategories.size)?'var(--pl)':'transparent';
+        buildList();
+      });
+      btns.appendChild(b);
+    });
+    sec.append(lbl,btns);
+    return sec;
+  }
+  const allPockets=[...new Set(allItems.map(it=>it.pocket).filter(Boolean))].sort();
+  const allCategories=[...new Set(allItems.map(it=>it.category).filter(Boolean))].sort();
+  filterInner.append(
+    makeFilterSection('POCKET', allPockets, activePockets, v=>pocketColors[v]||'#888'),
+    makeFilterSection('CATEGORY', allCategories, activeCategories, ()=>'#9575cd')
+  );
+  const clearFiltersBtn=document.createElement('button'); clearFiltersBtn.type='button';
+  clearFiltersBtn.style.cssText='font-size:9px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--gray);cursor:pointer;align-self:flex-start;';
+  clearFiltersBtn.textContent='✕ Clear Filters';
+  clearFiltersBtn.addEventListener('click',()=>{
+    activePockets.clear(); activeCategories.clear();
+    filterInner.querySelectorAll('button[data-val]').forEach(b=>{
+      const col=b.dataset.col||'#888';
+      b.style.background=col+'11'; b.style.borderColor=col+'44'; b.style.fontWeight='';
+    });
+    buildList();
+  });
+  filterInner.appendChild(clearFiltersBtn);
+  filterPanel.appendChild(filterInner);
 
   // ── Virtualized list (same technique as the species picker, single-column) ──
   const listWrap=document.createElement('div');
@@ -5283,6 +5324,7 @@ function lbeOpenItemPicker(onPick){
     let items=[...allItems];
     if(q) items=items.filter(it=>it.name.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q));
     if(activePockets.size) items=items.filter(it=>activePockets.has(it.pocket));
+    if(activeCategories.size) items=items.filter(it=>activeCategories.has(it.category));
     if(itemSort==='price_asc') items.sort((a,b)=>(a.price||0)-(b.price||0));
     else if(itemSort==='price_desc') items.sort((a,b)=>(b.price||0)-(a.price||0));
     else if(itemSort==='category') items.sort((a,b)=>(a.category||'').localeCompare(b.category||'')||a.name.localeCompare(b.name));
@@ -5294,7 +5336,7 @@ function lbeOpenItemPicker(onPick){
   }
   searchInp.addEventListener('input', lbeDebounce(buildList, 200));
 
-  box.append(hdr, searchWrap, controlsRow, pocketFilterRow, listWrap);
+  box.append(hdr, searchWrap, controlsRow, filterToggle, filterPanel, listWrap);
   overlay.appendChild(box);
   document.body.appendChild(overlay);
   buildList();
@@ -5601,7 +5643,7 @@ function lbeOpenTeraTypePicker(onPick){
   overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
 
   const box=document.createElement('div');
-  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;padding:16px;width:100%;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.6);';
+  box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;padding:20px;width:100%;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,.6);';
 
   const hdr=document.createElement('div');
   hdr.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:12px;';
@@ -5685,13 +5727,16 @@ function lbeCalcStat(base, iv, level, natureName, statKey){
   }
   return val;
 }
-function lbeStatColorByValue(val, statKey){
-  // Rough banding per stat (HP/Atk/SpA use a higher ceiling than the others)
-  const ceiling = statKey==='hp' ? 200 : 150;
-  const pct = val/ceiling;
-  if(pct>=0.55) return '#4caf50';
-  if(pct>=0.32) return '#f0c600';
-  return '#e3350d';
+// Matches the Pokédex Browser's own statColor() exactly (same fixed bands,
+// not normalized against a per-stat ceiling) — that was the actual bug: the
+// old percentage-based version made nearly everything green at the levels
+// typically used for boss pools.
+function lbeStatColorByValue(val){
+  if(val<=49) return '#f34444';
+  if(val<=89) return '#ff7c44';
+  if(val<=119) return '#ffd744';
+  if(val<=149) return '#a0e515';
+  return '#4fc14f';
 }
 function lbeStatBarColor(iv){
   if(iv>=25) return '#4caf50';
