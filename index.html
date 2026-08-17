@@ -4957,6 +4957,7 @@ function lbeOpenItemInfoPopup(item){
 // consistent. Grid of sprite tiles for Pokemon (visual browsing), list of
 // icon+name+description cards for items (readability matters more there).
 function lbeOpenSpeciesPicker(onPick){
+  if(!lbeAcquireHeavyModal()) return;
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:6300;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
   overlay.addEventListener('click',e=>{ if(e.target===overlay) closePicker(); });
@@ -5154,7 +5155,7 @@ function lbeOpenSpeciesPicker(onPick){
   // listener (and everything its closure keeps alive, including this popup's own
   // DOM tree) per open. This was likely the biggest single contributor to the
   // browser slowdown.
-  function closePicker(){ window.removeEventListener('resize', onScroll); overlay.remove(); }
+  function closePicker(){ window.removeEventListener('resize', onScroll); overlay.remove(); lbeReleaseHeavyModal(); }
 
   function buildGrid(){
     const q=searchInp.value.toLowerCase().trim();
@@ -5185,6 +5186,7 @@ function lbeOpenSpeciesPicker(onPick){
 
 
 function lbeOpenItemPicker(onPick){
+  if(!lbeAcquireHeavyModal()) return;
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:6300;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
   overlay.addEventListener('click',e=>{ if(e.target===overlay) closePicker(); });
@@ -5334,7 +5336,7 @@ function lbeOpenItemPicker(onPick){
   }
   listWrap.addEventListener('scroll', onScroll);
   window.addEventListener('resize', onScroll);
-  function closePicker(){ window.removeEventListener('resize', onScroll); overlay.remove(); }
+  function closePicker(){ window.removeEventListener('resize', onScroll); overlay.remove(); lbeReleaseHeavyModal(); }
 
   function buildList(){
     const q=searchInp.value.toLowerCase().trim();
@@ -5361,9 +5363,11 @@ function lbeOpenItemPicker(onPick){
 }
 
 function lbeOpenMovePicker(mon, slotIndex, onPick){
+  if(!lbeAcquireHeavyModal()) return;
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:6200;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
-  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+  function closePicker(){ overlay.remove(); lbeReleaseHeavyModal(); }
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) closePicker(); });
 
   const box=document.createElement('div');
   box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;width:100%;max-width:560px;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);';
@@ -5373,7 +5377,7 @@ function lbeOpenMovePicker(mon, slotIndex, onPick){
   const title=document.createElement('span'); title.style.cssText='font-size:13px;font-weight:700;flex:1;'; title.textContent='Move '+(slotIndex+1);
   const closeBtn=document.createElement('button'); closeBtn.type='button';
   closeBtn.style.cssText='background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#556;font-size:14px;padding:2px 9px;cursor:pointer;';
-  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>overlay.remove());
+  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>closePicker());
   hdr.append(title, closeBtn);
 
   // Category tabs: All / Level Up / Teachable / Egg — Level Up/Teachable/Egg use the
@@ -5441,7 +5445,7 @@ function lbeOpenMovePicker(mon, slotIndex, onPick){
       const card=lbeMoveCard(name);
       card.style.cursor='pointer';
       card.style.flex='1';
-      card.addEventListener('click',()=>{ onPick(name); overlay.remove(); });
+      card.addEventListener('click',()=>{ onPick(name); closePicker(); });
       wrap.appendChild(card);
       listWrap.appendChild(wrap);
     });
@@ -5650,14 +5654,26 @@ function lbeRenderDetail(){
 }
 
 let lbeOpenDD=null;
+// Guards the 4 heavy full-viewport pickers (Species/Item/Move/Tera Type) — all
+// share the same expensive backdrop-filter:blur(4px) full-viewport overlay.
+// Nothing previously stopped a second click (e.g. one that lands before the
+// first click's overlay has visually registered) from opening a second one
+// stacked on top — each with its own blur layer, which is a known heavy cost
+// specifically in Firefox. This makes opening a no-op while one is already up,
+// instead of silently stacking.
+let lbeHeavyModalOpen=false;
+function lbeAcquireHeavyModal(){ if(lbeHeavyModalOpen) return false; lbeHeavyModalOpen=true; return true; }
+function lbeReleaseHeavyModal(){ lbeHeavyModalOpen=false; }
 // Icon-only Tera Type picker — the generic name+subtitle lbeOpenAutocomplete
 // dropdown isn't built for icon-only content, which is what was buggy about
 // reusing it here. This is a small dedicated grid instead: PokeAPI type icons,
 // no visible names anywhere (title attribute only, for hover accessibility).
 function lbeOpenTeraTypePicker(onPick){
+  if(!lbeAcquireHeavyModal()) return;
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:6300;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
-  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+  function closePicker(){ overlay.remove(); lbeReleaseHeavyModal(); }
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) closePicker(); });
 
   const box=document.createElement('div');
   box.style.cssText='background:#13192a;border:1px solid rgba(149,117,205,.35);border-radius:14px;padding:20px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.6);';
@@ -5667,7 +5683,7 @@ function lbeOpenTeraTypePicker(onPick){
   const title=document.createElement('span'); title.style.cssText='font-size:13px;font-weight:700;flex:1;'; title.textContent='Choose Tera Type';
   const closeBtn=document.createElement('button'); closeBtn.type='button';
   closeBtn.style.cssText='background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#556;font-size:14px;padding:2px 9px;cursor:pointer;';
-  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>overlay.remove());
+  closeBtn.textContent='✕'; closeBtn.addEventListener('click',()=>closePicker());
   hdr.append(title, closeBtn);
 
   const grid=document.createElement('div'); grid.className='lbe-type-grid';
@@ -5678,7 +5694,7 @@ function lbeOpenTeraTypePicker(onPick){
     img.alt=name;
     img.onerror=()=>{ img.replaceWith(Object.assign(document.createElement('span'),{textContent:'?',style:'color:var(--gray);font-weight:700;'})); };
     btn.appendChild(img);
-    btn.addEventListener('click',()=>{ onPick([name,id]); overlay.remove(); });
+    btn.addEventListener('click',()=>{ onPick([name,id]); closePicker(); });
     grid.appendChild(btn);
   });
 
@@ -5997,10 +6013,10 @@ function lbeRenderDetailsCol(){
     lvlDown.disabled = isMain || !isSpikes || slot.startingStatus.level<=1;
     lvlVal.style.opacity = isSpikes ? 1 : .35;
   }
-  scopeSel.addEventListener('change',()=>{ slot.startingStatus.scope=scopeSel.value; lbeSavePools(); rebuildStatusValues(); });
-  valueSel.addEventListener('change',()=>{ slot.startingStatus.status=valueSel.value; slot.startingStatus.level=1; lvlVal.textContent=1; lbeSavePools(); syncStatusLevel(); });
-  lvlUp.addEventListener('click',()=>{ const max = valueSel.value==='Spikes'?3:2; if(slot.startingStatus.level<max){ slot.startingStatus.level++; lvlVal.textContent=slot.startingStatus.level; lbeSavePools(); syncStatusLevel(); } });
-  lvlDown.addEventListener('click',()=>{ if(slot.startingStatus.level>1){ slot.startingStatus.level--; lvlVal.textContent=slot.startingStatus.level; lbeSavePools(); syncStatusLevel(); } });
+  scopeSel.addEventListener('change',()=>{ slot.startingStatus.scope=scopeSel.value; lbeSavePoolsDebounced(); rebuildStatusValues(); });
+  valueSel.addEventListener('change',()=>{ slot.startingStatus.status=valueSel.value; slot.startingStatus.level=1; lvlVal.textContent=1; lbeSavePoolsDebounced(); syncStatusLevel(); });
+  lvlUp.addEventListener('click',()=>{ const max = valueSel.value==='Spikes'?3:2; if(slot.startingStatus.level<max){ slot.startingStatus.level++; lvlVal.textContent=slot.startingStatus.level; lbeSavePoolsDebounced(); syncStatusLevel(); } });
+  lvlDown.addEventListener('click',()=>{ if(slot.startingStatus.level>1){ slot.startingStatus.level--; lvlVal.textContent=slot.startingStatus.level; lbeSavePoolsDebounced(); syncStatusLevel(); } });
   rebuildStatusValues();
 
   const rewardCard=document.getElementById('lbe-f-reward-card');
