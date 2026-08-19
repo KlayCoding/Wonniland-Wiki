@@ -10375,7 +10375,12 @@
         "spe": 110
       },
       "bst": 500,
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Cursed Body",
+          "hidden": false
+	}
+      ],
       "catch_rate": 45,
       "exp_yield": 0,
       "ev_yield": {
@@ -10484,7 +10489,12 @@
         "spe": 110
       },
       "bst": 500,
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Cursed Body",
+          "hidden": false
+	}
+      ],
       "catch_rate": 45,
       "exp_yield": 0,
       "ev_yield": {
