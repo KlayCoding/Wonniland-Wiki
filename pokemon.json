@@ -10382,11 +10382,11 @@
 	}
       ],
       "catch_rate": 45,
-      "exp_yield": 0,
+      "exp_yield": 250,
       "ev_yield": {
         "spa": 3
       },
-      "gender_ratio": "50% Female",
+      "gender_ratio": "50% Female | 50% Male",
       "egg_cycles": 20,
       "egg_groups": [
         "Amorphous"
@@ -10496,11 +10496,11 @@
 	}
       ],
       "catch_rate": 45,
-      "exp_yield": 0,
+      "exp_yield": 250,
       "ev_yield": {
         "spa": 3
       },
-      "gender_ratio": "50% Female",
+      "gender_ratio": "50% Female | 50% Male",
       "egg_cycles": 20,
       "egg_groups": [
         "Amorphous"
@@ -36608,7 +36608,7 @@
         }
       ],
       "catch_rate": 3,
-      "exp_yield": 0,
+      "exp_yield": 300,
       "ev_yield": {
         "atk": 1,
         "spe": 1,
@@ -36660,7 +36660,7 @@
         }
       ],
       "catch_rate": 3,
-      "exp_yield": 0,
+      "exp_yield": 300,
       "ev_yield": {
         "atk": 2,
         "spa": 1
@@ -36711,7 +36711,7 @@
         }
       ],
       "catch_rate": 3,
-      "exp_yield": 0,
+      "exp_yield": 300,
       "ev_yield": {
         "def": 2,
         "spd": 1
@@ -36762,7 +36762,7 @@
         }
       ],
       "catch_rate": 3,
-      "exp_yield": 0,
+      "exp_yield": 300,
       "ev_yield": {
         "spe": 3
       },
@@ -41661,7 +41661,7 @@
         }
       ],
       "catch_rate": 45,
-      "exp_yield": 0,
+      "exp_yield": 182,
       "ev_yield": {
         "spe": 1,
         "spa": 1
@@ -41712,7 +41712,7 @@
         }
       ],
       "catch_rate": 45,
-      "exp_yield": 0,
+      "exp_yield": 182,
       "ev_yield": {
         "spe": 1,
         "spa": 1
@@ -41763,7 +41763,7 @@
         }
       ],
       "catch_rate": 45,
-      "exp_yield": 0,
+      "exp_yield": 182,
       "ev_yield": {
         "spe": 1,
         "spa": 1
@@ -41814,7 +41814,7 @@
         }
       ],
       "catch_rate": 45,
-      "exp_yield": 0,
+      "exp_yield": 182,
       "ev_yield": {
         "spe": 1,
         "spa": 1
@@ -41865,7 +41865,7 @@
         }
       ],
       "catch_rate": 45,
-      "exp_yield": 0,
+      "exp_yield": 182,
       "ev_yield": {
         "spe": 1,
         "spa": 1
@@ -42458,7 +42458,7 @@
         }
       ],
       "catch_rate": 3,
-      "exp_yield": 0,
+      "exp_yield": 340,
       "ev_yield": {
         "hp": 3
       },
@@ -42508,7 +42508,7 @@
         }
       ],
       "catch_rate": 3,
-      "exp_yield": 0,
+      "exp_yield": 340,
       "ev_yield": {
         "hp": 3
       },
@@ -42814,7 +42814,7 @@
         }
       ],
       "catch_rate": 45,
-      "exp_yield": 0,
+      "exp_yield": 300,
       "ev_yield": {
         "hp": 3
       },
@@ -42866,7 +42866,7 @@
         }
       ],
       "catch_rate": 45,
-      "exp_yield": 0,
+      "exp_yield": 300,
       "ev_yield": {
         "spe": 3,
         "hp": 3
@@ -76569,7 +76569,7 @@
     },
     {
       "id": 1502,
-      "group": "Gen 7",
+      "group": "GMax",
       "dex_number": "0809b",
       "name": "GMax-Melmetal",
       "sprite": "1502",
