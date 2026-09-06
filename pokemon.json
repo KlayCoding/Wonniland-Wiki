@@ -3739,11 +3739,15 @@
       "bst": 585,
       "abilities": [
         {
-          "name": "Static",
+          "name": "Electric Surge",
           "hidden": false
         },
         {
-          "name": "Lightning Rod",
+          "name": "Electric Surge",
+          "hidden": false
+        },
+        {
+          "name": "Electric Surge",
           "hidden": true
         }
       ],
@@ -3798,11 +3802,15 @@
       "bst": 585,
       "abilities": [
         {
-          "name": "Static",
+          "name": "No Guard",
           "hidden": false
         },
         {
-          "name": "Lightning Rod",
+          "name": "No Guard",
+          "hidden": false
+        },
+        {
+          "name": "No Guard",
           "hidden": true
         }
       ],
@@ -13329,15 +13337,15 @@
       "bst": 660,
       "abilities": [
         {
-          "name": "Illuminate",
+          "name": "Huge Power",
           "hidden": false
         },
         {
-          "name": "Natural Cure",
+          "name": "Huge Power",
           "hidden": false
         },
         {
-          "name": "Analytic",
+          "name": "Huge Power",
           "hidden": true
         }
       ],
@@ -34332,6 +34340,14 @@
         {
           "name": "Levitate",
           "hidden": false
+        },
+        {
+          "name": "Levitate",
+          "hidden": false
+        },
+        {
+          "name": "Levitate",
+          "hidden": true
         }
       ],
       "catch_rate": 45,
@@ -34504,15 +34520,15 @@
       "bst": 565,
       "abilities": [
         {
-          "name": "Magic Bounce",
+          "name": "Sharpness",
           "hidden": false
         },
         {
-          "name": "Magic Bounce",
+          "name": "Sharpness",
           "hidden": false
         },
         {
-          "name": "Magic Bounce",
+          "name": "Sharpness",
           "hidden": true
         }
       ],
@@ -34810,11 +34826,15 @@
       "bst": 580,
       "abilities": [
         {
-          "name": "Snow Cloak",
+          "name": "Snow Warning",
           "hidden": false
         },
         {
-          "name": "Cursed Body",
+          "name": "Snow Warning",
+          "hidden": false
+        },
+        {
+          "name": "Snow Warning",
           "hidden": true
         }
       ],
@@ -37523,11 +37543,15 @@
       "bst": 585,
       "abilities": [
         {
-          "name": "Intimidate",
+          "name": "Contrary",
           "hidden": false
         },
         {
-          "name": "Reckless",
+          "name": "Contrary",
+          "hidden": false
+        },
+        {
+          "name": "Contrary",
           "hidden": true
         }
       ],
@@ -40566,11 +40590,15 @@
       "bst": 700,
       "abilities": [
         {
-          "name": "Sand Veil",
+          "name": "Levitate",
           "hidden": false
         },
         {
-          "name": "Rough Skin",
+          "name": "Levitate",
+          "hidden": false
+        },
+        {
+          "name": "Levitate",
           "hidden": true
         }
       ],
@@ -40599,7 +40627,7 @@
       "pre_evolution": null,
       "evolves_into": [],
       "alternate_forms": [],
-      "form_requirement": null
+      "form_requirement": "Garchompite Z"
     },
     {
       "id": 447,
@@ -44542,11 +44570,15 @@
       "bst": 628,
       "abilities": [
         {
-          "name": "Blaze",
+          "name": "Mold Breaker",
           "hidden": false
         },
         {
-          "name": "Reckless",
+          "name": "Mold Breaker",
+          "hidden": false
+        },
+        {
+          "name": "Mold Breaker",
           "hidden": true
         }
       ],
@@ -47527,15 +47559,15 @@
       "bst": 585,
       "abilities": [
         {
-          "name": "Poison Point",
+          "name": "Shell Armor",
           "hidden": false
         },
         {
-          "name": "Swarm",
+          "name": "Shell Armor",
           "hidden": false
         },
         {
-          "name": "Speed Boost",
+          "name": "Shell Armor",
           "hidden": true
         }
       ],
@@ -47544,7 +47576,7 @@
       "ev_yield": {
         "spe": 3
       },
-      "gender_ratio": "50% Female",
+      "gender_ratio": "50% Female | 50% Male",
       "egg_cycles": 20,
       "egg_groups": [
         "Bug"
@@ -49037,11 +49069,11 @@
       "bst": 588,
       "abilities": [
         {
-          "name": "Shed Skin",
+          "name": "Intimidate",
           "hidden": false
         },
         {
-          "name": "Moxie",
+          "name": "Intimidate",
           "hidden": false
         },
         {
@@ -52739,11 +52771,11 @@
       "bst": 620,
       "abilities": [
         {
-          "name": "Flash Fire",
+          "name": "Infiltrator",
           "hidden": false
         },
         {
-          "name": "Flame Body",
+          "name": "Infiltrator",
           "hidden": false
         },
         {
@@ -53706,15 +53738,15 @@
       "bst": 583,
       "abilities": [
         {
-          "name": "Iron Fist",
+          "name": "Unseen Fist",
           "hidden": false
         },
         {
-          "name": "Klutz",
+          "name": "Unseen Fist",
           "hidden": false
         },
         {
-          "name": "No Guard",
+          "name": "Unseen Fist",
           "hidden": true
         }
       ],
@@ -56104,7 +56136,11 @@
       "bst": 630,
       "abilities": [
         {
-          "name": "Overgrow",
+          "name": "Bulletproof",
+          "hidden": false
+        },
+        {
+          "name": "Bulletproof",
           "hidden": false
         },
         {
@@ -56334,11 +56370,15 @@
       "bst": 634,
       "abilities": [
         {
-          "name": "Blaze",
+          "name": "Levitate",
           "hidden": false
         },
         {
-          "name": "Magician",
+          "name": "Levitate",
+          "hidden": false
+        },
+        {
+          "name": "Levitate",
           "hidden": true
         }
       ],
@@ -56676,7 +56716,11 @@
       "bst": 630,
       "abilities": [
         {
-          "name": "Torrent",
+          "name": "Protean",
+          "hidden": false
+        },
+        {
+          "name": "Protean",
           "hidden": false
         },
         {
@@ -62813,11 +62857,15 @@
       "bst": 651,
       "abilities": [
         {
-          "name": "Flower Veil",
+          "name": "Fairy Aura",
           "hidden": false
         },
         {
-          "name": "Symbiosis",
+          "name": "Fairy Aura",
+          "hidden": false
+        },
+        {
+          "name": "Fairy Aura",
           "hidden": true
         }
       ],
@@ -64185,15 +64233,15 @@
       "bst": 566,
       "abilities": [
         {
-          "name": "Keen Eye",
+          "name": "Trace",
           "hidden": false
         },
         {
-          "name": "Infiltrator",
+          "name": "Trace",
           "hidden": false
         },
         {
-          "name": "Prankster",
+          "name": "Trace",
           "hidden": true
         }
       ],
@@ -64245,15 +64293,15 @@
       "bst": 566,
       "abilities": [
         {
-          "name": "Keen Eye",
+          "name": "Trace",
           "hidden": false
         },
         {
-          "name": "Infiltrator",
+          "name": "Trace",
           "hidden": false
         },
         {
-          "name": "Competitive",
+          "name": "Trace",
           "hidden": true
         }
       ],
@@ -64877,11 +64925,11 @@
           "hidden": false
         },
         {
-          "name": "Suction Cups",
+          "name": "Contrary",
           "hidden": false
         },
         {
-          "name": "Infiltrator",
+          "name": "Contrary",
           "hidden": true
         }
       ],
@@ -64890,7 +64938,7 @@
       "ev_yield": {
         "atk": 2
       },
-      "gender_ratio": "50% Female",
+      "gender_ratio": "50% Female | 50% Male",
       "egg_cycles": 20,
       "egg_groups": [
         "Water 1",
@@ -65060,11 +65108,11 @@
           "hidden": false
         },
         {
-          "name": "Sniper",
+          "name": "Tough Claws",
           "hidden": false
         },
         {
-          "name": "Pickpocket",
+          "name": "Tough Claws",
           "hidden": true
         }
       ],
@@ -65240,15 +65288,15 @@
       "bst": 594,
       "abilities": [
         {
-          "name": "Poison Point",
+          "name": "Regenerator",
           "hidden": false
         },
         {
-          "name": "Poison Touch",
+          "name": "Regenerator",
           "hidden": false
         },
         {
-          "name": "Adaptability",
+          "name": "Regenerator",
           "hidden": true
         }
       ],
@@ -65824,15 +65872,15 @@
       "bst": 600,
       "abilities": [
         {
-          "name": "Limber",
+          "name": "No Guard",
           "hidden": false
         },
         {
-          "name": "Unburden",
+          "name": "No Guard",
           "hidden": false
         },
         {
-          "name": "Mold Breaker",
+          "name": "No Guard",
           "hidden": true
         }
       ],
@@ -69288,7 +69336,7 @@
       "bst": 578,
       "abilities": [
         {
-          "name": "Hyper Cutter",
+          "name": "Iron Fist",
           "hidden": false
         },
         {
@@ -69296,7 +69344,7 @@
           "hidden": false
         },
         {
-          "name": "Anger Point",
+          "name": "Iron Fist",
           "hidden": true
         }
       ],
@@ -74578,11 +74626,11 @@
           "hidden": false
         },
         {
-          "name": "Sap Sipper",
+          "name": "Berserk",
           "hidden": false
         },
         {
-          "name": "Cloud Nine",
+          "name": "Berserk",
           "hidden": true
         }
       ],
@@ -84876,7 +84924,11 @@
       "bst": 570,
       "abilities": [
         {
-          "name": "Battle Armor",
+          "name": "Defiant",
+          "hidden": false
+        },
+        {
+          "name": "Defiant",
           "hidden": false
         },
         {
@@ -91602,11 +91654,15 @@
       "bst": 625,
       "abilities": [
         {
-          "name": "Toxic Debris",
+          "name": "Adaptability",
           "hidden": false
         },
         {
-          "name": "Corrosion",
+          "name": "Adaptability",
+          "hidden": false
+        },
+        {
+          "name": "Adaptability",
           "hidden": true
         }
       ],
