@@ -26874,7 +26874,7 @@
       "pp": 5,
       "target": "Selected",
       "priority": 0,
-      "category": "Physical",
+      "category": "Special",
       "z_move_effect": false,
       "cant_use_twice": false,
       "assist_banned": false,
