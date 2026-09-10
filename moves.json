@@ -5157,7 +5157,7 @@
       "description": "An electrical attack that may paralyze the foe.",
       "effect": "Hit",
       "power": 40,
-      "type": "Fairy",
+      "type": "Electric",
       "accuracy": 100,
       "critical_hit_stage": 0,
       "pp": 30,
