@@ -46858,7 +46858,7 @@
     {
       "id": 775,
       "name": "Wildbolt Storm",
-      "description": "Wildbolt Storm",
+      "description": "Hits with a brutal tempest. May inflict paralysis",
       "effect": "Hit",
       "power": 100,
       "type": "Electric",
