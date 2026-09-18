@@ -18867,7 +18867,7 @@
       "description": "A sharp-fanged attack. May badly poison the foe.",
       "effect": "Hit",
       "power": 50,
-      "type": "Fairy",
+      "type": "Poison",
       "accuracy": 100,
       "critical_hit_stage": 0,
       "pp": 15,
