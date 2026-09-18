@@ -5717,7 +5717,7 @@
       "description": "A psychic attack that may cause confusion.",
       "effect": "Hit",
       "power": 50,
-      "type": "Fairy",
+      "type": "Psychic",
       "accuracy": 100,
       "critical_hit_stage": 0,
       "pp": 25,
