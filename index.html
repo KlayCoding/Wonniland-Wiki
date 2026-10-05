@@ -189,6 +189,40 @@
     .fmt-textbox .fmt-page-marker{position:absolute;bottom:5px;right:8px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid rgb(112,200,160);}
     .fmt-page-label{font-size:11px;color:#eaf0f8;margin:0 0 6px 2px;font-family:'Consolas','Menlo','Courier New',monospace;}
     .fmt-empty-preview{color:#eaf0f8;font-size:13px;font-family:'Consolas','Menlo','Courier New',monospace;padding:10px 2px;}
+    /* ── Community Mon Converter (purple accent; community sheets -> debug_community_mons.h) ── */
+    #cmc-browser{width:100%;max-width:min(1100px,calc(100vw - 64px));margin-bottom:24px;animation:fadeUp .5s ease .03s both;}
+    #cmc-browser-btn{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 24px;border-radius:14px;border:2px solid rgba(206,147,216,.35);background:linear-gradient(135deg,rgba(206,147,216,.08),rgba(171,71,188,.03));cursor:pointer;transition:all .25s;width:100%;font-family:'Press Start 2P',monospace;font-size:11px;color:#ce93d8;letter-spacing:.5px;}
+    #cmc-browser-btn:hover{border-color:#ce93d8;background:rgba(206,147,216,.12);transform:translateY(-2px);}
+    #cmc-panel{display:none;margin-top:12px;background:#111827;border:1px solid rgba(206,147,216,.25);border-radius:14px;overflow:hidden;padding:20px;}
+    #cmc-panel .cmc-sub{color:var(--gray);margin:0 0 18px;font-size:12px;line-height:1.5;}
+    #cmc-panel code{background:rgba(255,255,255,.06);padding:1px 4px;border-radius:3px;}
+    .cmc-layout{display:flex;flex-direction:column;gap:18px;}
+    .cmc-inner{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;padding:16px 16px 18px;min-width:0;}
+    .cmc-inner h3{font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:.5px;margin:0 0 12px;color:#ce93d8;display:flex;align-items:center;gap:8px;}
+    .cmc-inner h3::before{content:'';width:7px;height:7px;background:#ce93d8;display:inline-block;border-radius:1px;transform:rotate(45deg);flex-shrink:0;}
+    .cmc-btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+    .cmc-btn{background:rgba(206,147,216,.12);border:1px solid rgba(206,147,216,.4);color:#ce93d8;font-weight:700;font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;letter-spacing:.3px;transition:all .15s;}
+    .cmc-btn:hover:not(:disabled){background:#ce93d8;color:#2a0f33;}
+    .cmc-btn:disabled{opacity:.4;cursor:not-allowed;}
+    .cmc-btn.copied{background:#4CAF50;border-color:#4CAF50;color:#fff;}
+    #cmc-input{width:100%;min-height:240px;resize:vertical;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Consolas','Menlo','Courier New',monospace;font-size:13px;line-height:1.5;background:#0d1117;color:var(--white);box-sizing:border-box;}
+    #cmc-input:focus{outline:2px solid #ce93d8;outline-offset:1px;}
+    .cmc-hint{font-size:11px;color:var(--gray);margin:8px 0 16px;line-height:1.5;}
+    .cmc-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 20px;margin-bottom:12px;}
+    .cmc-opt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--white);padding:6px 0;border-bottom:1px dashed var(--border);}
+    .cmc-opt-row input[type="number"]{width:76px;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-family:'Consolas','Menlo','Courier New',monospace;font-size:13px;text-align:center;background:#0d1117;color:var(--white);}
+    .cmc-details{margin:6px 0 4px;font-size:12px;color:var(--white);}
+    .cmc-details summary{cursor:pointer;color:#ce93d8;font-weight:700;padding:4px 0;}
+    .cmc-details input[type="file"]{font-size:11px;color:var(--gray);margin:2px 0 6px;}
+    .cmc-stats{display:flex;gap:14px;font-size:11px;color:var(--gray);margin-top:10px;flex-wrap:wrap;}
+    .cmc-stats b{color:#ce93d8;}
+    #cmc-messages{min-height:46px;max-height:200px;overflow:auto;background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Consolas','Menlo','Courier New',monospace;font-size:12px;line-height:1.55;}
+    #cmc-messages div{margin:1px 0;word-break:break-word;}
+    .cmc-msg-err{color:#e57373;}
+    .cmc-msg-warn{color:#ffb74d;}
+    .cmc-msg-ok{color:#81c784;}
+    .cmc-msg-dim{color:var(--gray);}
+    pre#cmc-output{background:#0d1117;color:#cfd8e6;font-family:'Consolas','Menlo','Courier New',monospace;font-size:12.5px;line-height:1.65;padding:16px;border-radius:8px;overflow:auto;white-space:pre;min-height:90px;max-height:460px;margin:0;border:1px solid var(--border);}
     /* ── Wild Encounter Editor (same structure, amber accent = editable) ───── */
     #enc-editor{width:100%;max-width:min(1100px,calc(100vw - 64px));margin-bottom:24px;animation:fadeUp .5s ease .05s both;}
     #enc-editor-btn{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 24px;border-radius:14px;border:2px solid rgba(255,183,77,.35);background:linear-gradient(135deg,rgba(255,183,77,.08),rgba(230,150,30,.03));cursor:pointer;transition:all .25s;width:100%;font-family:'Press Start 2P',monospace;font-size:11px;color:#ffb74d;letter-spacing:.5px;}
@@ -861,6 +895,63 @@ I've never seen anything like this before - are you sure it's the same one?</tex
 
         <h3 style="margin-top:20px;">Preview (in-game look)</h3>
         <div class="fmt-gba-screen" id="fmt-preview"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Community Mon Converter (community Pokémon sheets -> debug_community_mons.h) ── -->
+<div id="cmc-browser">
+  <button id="cmc-browser-btn">🧬 COMMUNITY MON CONVERTER &nbsp;▼</button>
+  <div id="cmc-panel">
+    <p class="cmc-sub">Turns the community Pokémon sheets from the website into <code>src/data/debug_community_mons.h</code> for the debug menu (<code>Community Pokemon…</code>). Everything runs locally in your browser, nothing is uploaded.</p>
+    <div class="cmc-layout">
+      <div class="cmc-inner">
+        <h3>Input</h3>
+        <div class="cmc-btnrow">
+          <button class="cmc-btn" id="cmc-pasteBtn">📋 Paste</button>
+          <button class="cmc-btn" id="cmc-fileBtn">📂 Open file…</button>
+          <button class="cmc-btn" id="cmc-clearBtn">🗑 Clear</button>
+          <input type="file" id="cmc-file" accept=".txt,text/plain" hidden>
+        </div>
+        <textarea id="cmc-input" spellcheck="false" placeholder="Pokémon: Dolliv (#1314)
+Level : 20
+Shiny: No
+Gender: Male
+...
+
+Paste one or many blocks here (or use Paste / Open file)."></textarea>
+        <div class="cmc-hint">Every block starts with <code>Pokémon: Name (#ID)</code>, blocks can be separated by blank lines. <code>Spd</code> = Speed and <code>SpD</code> = Special Defense (the case matters; <code>Speed</code> / <code>SpDef</code> work as well). The <code>Evolution</code> line is ignored. Species, moves and held item are taken from the number in brackets.</div>
+
+        <h3>Options</h3>
+        <div class="cmc-options">
+          <div class="cmc-opt-row">
+            <label for="cmc-maxNick">Max. nickname length (warning)</label>
+            <input type="number" id="cmc-maxNick" value="12" min="1" max="30">
+          </div>
+          <div class="cmc-opt-row">
+            <label for="cmc-maxOT">Max. OT name length (warning)</label>
+            <input type="number" id="cmc-maxOT" value="7" min="1" max="30">
+          </div>
+        </div>
+        <details class="cmc-details">
+          <summary>Optional: check the IDs against your repo</summary>
+          <div class="cmc-hint">Pick <code>include/constants/species.h</code>, <code>moves.h</code>, <code>items.h</code> and <code>abilities.h</code> (any of them). Every ID in the sheets is then compared with your constants, mismatches (stale IDs after a merge) show up as warnings. The files are only read in your browser.</div>
+          <input type="file" id="cmc-repoFiles" accept=".h" multiple>
+          <div class="cmc-hint" id="cmc-repoStatus">No constants files loaded.</div>
+        </details>
+        <div class="cmc-stats" id="cmc-stats"></div>
+      </div>
+
+      <div class="cmc-inner">
+        <h3>Messages</h3>
+        <div id="cmc-messages"></div>
+        <h3 style="margin-top:20px;">Generated Code</h3>
+        <div class="cmc-btnrow">
+          <button class="cmc-btn" id="cmc-copyBtn" disabled>📋 Copy</button>
+          <button class="cmc-btn" id="cmc-downloadBtn" disabled>⬇ Download .h</button>
+        </div>
+        <pre id="cmc-output"></pre>
       </div>
     </div>
   </div>
@@ -3151,6 +3242,296 @@ function initFormatterTool(){
   build();
 }
 
+// ── COMMUNITY MON CONVERTER (sheets -> debug_community_mons.h) ──────────────────
+// Same logic as tools/community_mons.py. Ids/classes are namespaced with cmc- so
+// nothing here can collide with the rest of the page. Everything runs locally,
+// nothing is uploaded.
+function initCommunityMonTool(){
+  const $=id=>document.getElementById(id);
+
+  // CMC-CORE-START
+  // Game order: HP, ATK, DEF, SPEED, SPATK, SPDEF. The case matters on purpose: the
+  // sheets write "Spd" for SPEED and "SpD" for SPECIAL DEFENSE (clearer spellings work too).
+  const STAT_RES=[
+    /(\d+)\s*HP\b/i,
+    /(\d+)\s*(?:Atk|Attack)\b/i,
+    /(\d+)\s*(?:Def|Defense)\b/i,
+    /(\d+)\s*(?:Spd|Speed|Spe)\b/,
+    /(\d+)\s*(?:SpA|SpAtk|Sp\.?\s*Atk|SpAttack)\b/,
+    /(\d+)\s*(?:SpD|SpDef|Sp\.?\s*Def|SpDefense)\b/
+  ];
+  const GENDER_C={male:'MON_MALE',female:'MON_FEMALE',genderless:'MON_GENDERLESS'};
+  const OTGENDER_C={male:'MALE',female:'FEMALE'};
+  const stripAcc=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const constName=(prefix,text)=>prefix+stripAcc(text).toUpperCase().replace(/&/g,' AND ').replace(/[’'`.]/g,'').replace(/[^A-Z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+  const norm=s=>stripAcc(s).toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const cstr=s=>s.replace(/\\/g,'\\\\').replace(/"/g,'\\"');
+
+  function parseBlocks(text){
+    const blocks=[]; let cur=null;
+    text.split(/\r?\n/).forEach((raw,i)=>{
+      const line=raw.trim();
+      if(/^Pok[eé]mon\s*:/i.test(line)){ cur={line:i+1,lines:[line]}; blocks.push(cur); }
+      else if(cur && line){ cur.lines.push(line); }
+    });
+    return blocks;
+  }
+
+  function parseBlock(block){
+    const errs=[]; const d={line:block.line,moves:[]};
+    const m=block.lines[0].match(/^Pok[eé]mon\s*:\s*(.*?)\s*\(#\s*(\d+)\)\s*$/i);
+    if(!m) return {d:null,errs:['line '+block.line+': cannot read species line: '+block.lines[0]]};
+    d.speciesName=m[1]; d.species=parseInt(m[2],10);
+    let inMoves=false;
+    for(const line of block.lines.slice(1)){
+      if(inMoves && line.startsWith('-')){
+        const mm=line.match(/^-\s*(.*?)\s*\(#\s*(\d+)\)\s*$/);
+        if(mm) d.moves.push([mm[1],parseInt(mm[2],10)]); else errs.push('move line not understood: '+line);
+        continue;
+      }
+      inMoves=false;
+      const idx=line.indexOf(':'); if(idx<0) continue;
+      const key=line.slice(0,idx).trim().toLowerCase(), val=line.slice(idx+1).trim();
+      const num=v=>{const n=parseInt(v.replace(/\D/g,''),10);return Number.isNaN(n)?null:n;};
+      switch(key){
+        case 'level': case 'lvl': d.level=num(val); if(d.level===null) errs.push('level not understood: '+val); break;
+        case 'shiny': d.shiny=/^y/i.test(val); break;
+        case 'gender': d.gender=val.toLowerCase(); break;
+        case 'nature': d.nature=val; break;
+        case 'ability': d.ability=val; break;
+        case 'tera type': d.tera=val; break;
+        case 'dmax lvl': d.dmax=num(val); if(d.dmax===null) errs.push('Dmax level not understood: '+val); break;
+        case 'gmax factor': d.gmax=/^y/i.test(val); break;
+        case 'ivs': case 'evs': {
+          const vals=STAT_RES.map(re=>{const mm=val.match(re);return mm?parseInt(mm[1],10):null;});
+          if(vals.includes(null)) errs.push(key.toUpperCase()+' line not understood: '+val);
+          d[key]=vals; break;
+        }
+        case 'moves': inMoves=true; break;
+        case 'ball': d.ball=val; break;
+        case 'held item': {
+          const mm=val.match(/^(.*?)\s*\(#\s*(\d+)\)\s*$/);
+          if(mm){ d.itemName=mm[1]; d.item=parseInt(mm[2],10); }
+          else if(['','none','-','---'].includes(val.toLowerCase())){ d.itemName='None'; d.item=0; }
+          else errs.push('held item not understood: '+val);
+          break;
+        }
+        case 'ot gender': d.otGender=val.toLowerCase(); break;
+        case 'ot name': d.otName=val.replace(/\s*\((male|female)\)\s*$/i,''); break;
+        case 'nickname': d.nickname=val; break;
+        default: break; // "Evolution: ..." and anything unknown is ignored on purpose
+      }
+    }
+    for(const k of ['level','shiny','gender','nature','ability','tera','dmax','gmax','ivs','evs','ball','item','otGender','otName','nickname'])
+      if(d[k]===undefined) errs.push('missing field: '+k);
+    if(!d.moves.length) errs.push('no moves');
+    if(d.moves.length>4) errs.push('more than 4 moves');
+    if(d.gender!==undefined && !(d.gender in GENDER_C)) errs.push('unknown gender '+JSON.stringify(d.gender));
+    if(d.otGender!==undefined && !(d.otGender in OTGENDER_C)) errs.push('unknown OT gender '+JSON.stringify(d.otGender));
+    return {d,errs};
+  }
+
+  function sanity(d,maxNick,maxOT){
+    const w=[]; const sum=a=>a.reduce((x,y)=>x+y,0);
+    if(d.level<1||d.level>100) w.push('level '+d.level+' out of range');
+    if(d.ivs.some(v=>v>31)) w.push('IV above 31');
+    if(d.evs.some(v=>v>252)) w.push('EV above 252');
+    if(sum(d.evs)>510) w.push('EV total '+sum(d.evs)+' is above 510');
+    if(d.nickname.length>maxNick) w.push('nickname "'+d.nickname+'" is longer than '+maxNick);
+    if(d.otName.length>maxOT) w.push('OT name "'+d.otName+'" is longer than '+maxOT);
+    return w;
+  }
+
+  // Optional cross-check against include/constants/*.h: number -> [constant names]
+  function loadConsts(text,prefix){
+    const byNum={}, names=new Set();
+    for(const m of text.matchAll(new RegExp('\\b('+prefix+'[A-Z0-9_]+)\\b','g'))) names.add(m[1]);
+    const add=(name,val)=>{const n=Number(val); (byNum[n]=byNum[n]||[]).push(name);};
+    for(const m of text.matchAll(new RegExp('\\b('+prefix+'[A-Z0-9_]+)\\s*=\\s*(0x[0-9A-Fa-f]+|\\d+)\\b','g'))) add(m[1],m[2]);
+    for(const m of text.matchAll(new RegExp('#define\\s+('+prefix+'[A-Z0-9_]+)\\s+(0x[0-9A-Fa-f]+|\\d+)\\b','g'))) add(m[1],m[2]);
+    return {byNum,names};
+  }
+
+  function checkRepo(mons,repo){
+    const notes=[], warns=[];
+    const pad=n=>String(n).padStart(4,'0');
+    const check=(kind,id,name,who)=>{
+      const t=repo[kind]; if(!t||!Object.keys(t.byNum).length) return;
+      const label={species:'species',moves:'move',items:'item'}[kind];
+      const cands=t.byNum[id];
+      if(!cands){ warns.push(who+': '+label+' #'+pad(id)+' "'+name+'": no constant with this value'); return; }
+      const want=norm(name);
+      if(!cands.some(c=>norm(c.replace(/^[A-Z]+_/,''))===want))
+        warns.push(who+': '+label+' #'+pad(id)+' is '+cands.join('/')+' but the sheet says "'+name+'"');
+    };
+    for(const kind of ['species','moves','items'])
+      if(repo[kind] && !Object.keys(repo[kind].byNum).length) notes.push('no explicit "NAME = number" values found in the '+kind+' file, '+kind+' IDs not verified');
+    for(const d of mons){
+      const who=d.speciesName+' (line '+d.line+')';
+      check('species',d.species,d.speciesName,who);
+      d.moves.forEach(([n,id])=>check('moves',id,n,who));
+      if(d.item) check('items',d.item,d.itemName,who);
+      if(repo.abilities && !repo.abilities.names.has(constName('ABILITY_',d.ability))) warns.push(who+': no constant '+constName('ABILITY_',d.ability));
+      if(repo.items && !repo.items.names.has(constName('ITEM_',d.ball))) warns.push(who+': no constant '+constName('ITEM_',d.ball));
+    }
+    return {notes,warns};
+  }
+
+  function emit(mons){
+    const out=[];
+    out.push('// GENERATED by the Community Mon Converter -- do not edit by hand, re-run the converter.');
+    out.push('// '+mons.length+' Pokemon. Included by src/debug_community_mons.c.');
+    out.push('');
+    out.push('static const struct DebugCommunityMon sDebugCommunityMons[] =');
+    out.push('{');
+    mons.forEach((d,i)=>{
+      out.push('    ['+i+'] = { // '+d.speciesName+' "'+d.nickname+'" (OT '+d.otName+')');
+      out.push('        .species = '+d.species+',');
+      out.push('        .speciesName = COMPOUND_STRING("'+cstr(d.speciesName)+'"),');
+      out.push('        .level = '+d.level+',');
+      out.push('        .shiny = '+(d.shiny?'TRUE':'FALSE')+',');
+      out.push('        .gender = '+GENDER_C[d.gender]+',');
+      out.push('        .nature = '+constName('NATURE_',d.nature)+',');
+      out.push('        .ability = '+constName('ABILITY_',d.ability)+',');
+      out.push('        .teraType = '+constName('TYPE_',d.tera)+',');
+      out.push('        .dynamaxLevel = '+d.dmax+',');
+      out.push('        .gigantamaxFactor = '+(d.gmax?'TRUE':'FALSE')+',');
+      out.push('        .ivs = {'+d.ivs.join(', ')+'},');
+      out.push('        .evs = {'+d.evs.join(', ')+'},');
+      const mv=d.moves.map(m=>m[1]); while(mv.length<4) mv.push(0);
+      out.push('        .moves = {'+mv.join(', ')+'}, // '+d.moves.map(m=>m[0]).join(', '));
+      out.push('        .ball = '+constName('ITEM_',d.ball)+',');
+      out.push('        .heldItem = '+d.item+', // '+d.itemName);
+      out.push('        .otGender = '+OTGENDER_C[d.otGender]+',');
+      out.push('        .otName = COMPOUND_STRING("'+cstr(d.otName)+'"),');
+      out.push('        .nickname = COMPOUND_STRING("'+cstr(d.nickname)+'"),');
+      out.push('    },');
+    });
+    out.push('};');
+    out.push('');
+    return out.join('\n');
+  }
+
+  function convert(text,opts){
+    const errors=[], warnings=[], notes=[], mons=[];
+    const blocks=parseBlocks(text.replace(/^\uFEFF/,''));
+    for(const b of blocks){
+      const {d,errs}=parseBlock(b);
+      if(errs.length){ errors.push('line '+b.line+': '+errs.join('; ')); continue; }
+      sanity(d,opts.maxNick,opts.maxOT).forEach(w=>warnings.push(d.speciesName+' (line '+d.line+'): '+w));
+      mons.push(d);
+    }
+    if(opts.repo){
+      const r=checkRepo(mons,opts.repo);
+      if(r){ r.warns.forEach(w=>warnings.push(w)); r.notes.forEach(n=>notes.push(n)); }
+    }
+    return {mons,errors,warnings,notes,blocks:blocks.length,output:(!errors.length && mons.length)?emit(mons):null};
+  }
+  // CMC-CORE-END
+
+  // ── UI ──
+  const input=$('cmc-input'), output=$('cmc-output'), msgs=$('cmc-messages'), stats=$('cmc-stats');
+  const copyBtn=$('cmc-copyBtn'), dlBtn=$('cmc-downloadBtn'), pasteBtn=$('cmc-pasteBtn');
+  const clearBtn=$('cmc-clearBtn'), fileBtn=$('cmc-fileBtn'), fileInput=$('cmc-file');
+  const maxNick=$('cmc-maxNick'), maxOT=$('cmc-maxOT');
+  const repoInput=$('cmc-repoFiles'), repoStatus=$('cmc-repoStatus');
+  const repo={species:null,moves:null,items:null,abilities:null};
+  const REPO_PREFIX={species:'SPECIES_',moves:'MOVE_',items:'ITEM_',abilities:'ABILITY_'};
+  const loadedFiles=[];
+
+  function flash(btn,label){
+    const old=btn.dataset.label||btn.textContent;
+    btn.dataset.label=old; btn.textContent=label; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent=old; btn.classList.remove('copied');},1400);
+  }
+
+  function copyText(text,btn){
+    const done=()=>flash(btn,'Copied ✓');
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done));
+    } else fallbackCopy(text,done);
+  }
+  function fallbackCopy(text,done){
+    const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); done(); }catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  function render(){
+    const text=input.value;
+    const r=convert(text,{maxNick:parseInt(maxNick.value,10)||12,maxOT:parseInt(maxOT.value,10)||7,repo:loadedFiles.length?repo:null});
+    msgs.textContent='';
+    const add=(cls,t)=>{const d=document.createElement('div');d.className=cls;d.textContent=t;msgs.appendChild(d);};
+    if(!text.trim()){
+      add('cmc-msg-dim','Waiting for input: paste the sheets on the left or open a .txt file.');
+    } else if(!r.blocks){
+      add('cmc-msg-err','✗ No Pokémon found. Every block has to start with a line like "Pokémon: Dolliv (#1314)".');
+    }
+    r.errors.forEach(e=>add('cmc-msg-err','✗ '+e));
+    r.warnings.forEach(w=>add('cmc-msg-warn','⚠ '+w));
+    r.notes.forEach(n=>add('cmc-msg-dim','ℹ '+n));
+    if(r.errors.length) add('cmc-msg-err','Nothing generated: fix the errors above first (a partial list would silently drop Pokémon).');
+    else if(r.mons.length) add('cmc-msg-ok','✓ '+r.mons.length+' Pokémon converted'+(r.warnings.length?' ('+r.warnings.length+' warning(s))':''));
+
+    output.textContent=r.output||'';
+    copyBtn.disabled=dlBtn.disabled=!r.output;
+    const shiny=r.mons.filter(d=>d.shiny).length;
+    stats.innerHTML='<span><b>'+r.mons.length+'</b> Pokémon</span><span><b>'+shiny+'</b> shiny</span><span><b>'+r.errors.length+'</b> error(s)</span><span><b>'+r.warnings.length+'</b> warning(s)</span>';
+  }
+
+  [input,maxNick,maxOT].forEach(el=>el.addEventListener('input',render));
+
+  pasteBtn.addEventListener('click',async()=>{
+    try{
+      const t=await navigator.clipboard.readText();
+      input.value=t; render(); flash(pasteBtn,'Pasted ✓');
+    }catch(e){
+      input.focus();
+      msgs.textContent='';
+      const d=document.createElement('div'); d.className='cmc-msg-warn';
+      d.textContent='⚠ The browser blocked clipboard access. Click into the input box and press Ctrl+V instead.';
+      msgs.appendChild(d);
+    }
+  });
+  clearBtn.addEventListener('click',()=>{input.value=''; render(); input.focus();});
+  fileBtn.addEventListener('click',()=>fileInput.click());
+  fileInput.addEventListener('change',async()=>{
+    const f=fileInput.files[0]; if(!f) return;
+    input.value=await f.text(); fileInput.value=''; render();
+  });
+  copyBtn.addEventListener('click',()=>{ if(output.textContent) copyText(output.textContent,copyBtn); });
+  dlBtn.addEventListener('click',()=>{
+    if(!output.textContent) return;
+    const blob=new Blob([output.textContent],{type:'text/plain'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='debug_community_mons.h';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  });
+
+  repoInput.addEventListener('change',async()=>{
+    for(const f of Array.from(repoInput.files)){
+      const n=f.name.toLowerCase();
+      const kind=n.includes('species')?'species':n.includes('move')?'moves':n.includes('item')?'items':n.includes('abilit')?'abilities':null;
+      if(!kind) continue;
+      repo[kind]=loadConsts(await f.text(),REPO_PREFIX[kind]);
+      if(!loadedFiles.includes(f.name)) loadedFiles.push(f.name);
+    }
+    repoInput.value='';
+    repoStatus.textContent=loadedFiles.length?'Loaded: '+loadedFiles.join(', '):'No constants files loaded (only species, moves, items and abilities files are used).';
+    render();
+  });
+
+  const btn=$('cmc-browser-btn'), panel=$('cmc-panel');
+  let open=false;
+  btn.addEventListener('click',()=>{
+    open=!open; panel.style.display=open?'block':'none';
+    btn.textContent=open?'🧬 COMMUNITY MON CONVERTER  ▲':'🧬 COMMUNITY MON CONVERTER  ▼';
+  });
+
+  render();
+}
+
 // ── WILD ENCOUNTER EDITOR (editable copy of the Wild Encounter Browser) ──────
 // Works on its own in-memory copy of wild_encounters.json — edits made here are
 // session-only for now (not saved back to a file, not synced to the read-only
@@ -4581,6 +4962,7 @@ loadPokemonData().then(()=>{
   document.getElementById('loadingScreen')?.remove();
   SPECIES_INDEX=buildSpeciesIndex();
   initFormatterTool();
+  initCommunityMonTool();
   initEncEditor();
   initPoolBrowser();
   initEncBrowser();
